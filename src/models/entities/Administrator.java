@@ -36,6 +36,18 @@ public class Administrator extends Staff{
 
     }
 
+    public void displayStaff(String filter){
+        switch (filter){
+            case "role":
+                break;
+            case "gender":
+                break;
+            case "age":
+                break;
+            default:
+        }
+    }
+
     public void retrieveAppointment(Appointment appointment) {
         System.out.println("Viewing appointment records for: " + appointment.getAppointmentId());
         System.out.println("Patient ID: " + appointment.getPatientId());
@@ -48,6 +60,7 @@ public class Administrator extends Staff{
 
     public void updateMedicineStock(Medicine medicine, int stock){
         medicine.setStock(stock);
+        System.out.println("Stock for medicine: " + medicine.getName() + " is updated to " + stock);
     }
 
     public void removeMedicineStock(Medicine medicine, int stock){
@@ -61,15 +74,20 @@ public class Administrator extends Staff{
         }
 
         medicine.setStock(currentStock);
+
+        System.out.println("Stock for medicine: " + medicine.getName() + " is updated to " + currentStock);
     }
 
     public void addMedicineStock(Medicine medicine, int stock){
         int currentStock = medicine.getStock();
         medicine.setStock(currentStock + stock);
+
+        System.out.println("Stock for medicine: " + medicine.getName() + " is updated to " + currentStock);
     }
 
     public void updateMedicineLowStockLevelAlert(Medicine medicine, int stock){
         medicine.setLowStockAlert(stock);
+        System.out.println("Low Stock level alert for medicine: " + medicine.getName() + " is updated to " + stock);
     }
 
     public void approveReplenishmentRequest(){
