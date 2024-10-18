@@ -32,16 +32,16 @@ public class LoginScreen implements Screen {
                 switch (user.getRole().toLowerCase()) {
                     case "patient":
 //                        PatientScreen patientScreen = new PatientScreen();
-//                        patientScreen.display();
+//                        patientScreen.display(scanner, user);
                     case "doctor":
 //                        DoctorScreen doctorScreen = new DoctorScreen();
-//                        doctorScreen.display();
+//                        doctorScreen.display(scanner, user);
                     case "pharmacist":
 //                        PharmacistScreen pharmacistScreen = new PharmacistScreen();
-//                        pharmacistScreen.display();
+//                        pharmacistScreen.display(scanner, user);
                     case "administrator":
 //                        AdminScreen adminScreen = new AdminScreen();
-//                        adminScreen.display();
+//                        adminScreen.display(scanner,user);
                     default:
                         System.out.println("Error: Unknown role. Redirecting to main menu...");
                         Main.displayMain(scanner); // Redirect to the main menu or home screen
