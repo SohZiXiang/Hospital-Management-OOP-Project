@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.*;
 
-public class LoginScreen implements Screen {
+public class LoginScreen implements BaseScreen {
     private static final String DEFAULT_PASSWORD = "P@ssw0rd123";
 
     public void display(Scanner scanner) {
