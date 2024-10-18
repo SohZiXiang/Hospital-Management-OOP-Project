@@ -7,8 +7,13 @@ import models.entities.*;
 import java.util.*;
 
 public class Main {
+    private static final Scanner scanner = new Scanner(System.in);
+
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+        displayMain(scanner);
+    }
+
+    public static void displayMain(Scanner scanner){
         String blue = "\u001B[34m";
         String reset = "\u001B[0m";
 
@@ -25,10 +30,11 @@ public class Main {
         System.out.print("Enter your choice: ");
 
         int choice = scanner.nextInt();
+        scanner.nextLine();
         switch (choice) {
             case 1:
                 LoginScreen loginScreen = new LoginScreen();
-                loginScreen.display();
+                loginScreen.display(scanner);
                 break;
             case 2:
                 System.out.println("Thank you for using the system!");
@@ -37,8 +43,6 @@ public class Main {
                 System.out.println("Invalid choice, please try again.");
                 break;
         }
-
-        scanner.close();
     }
 
     private static void login() {

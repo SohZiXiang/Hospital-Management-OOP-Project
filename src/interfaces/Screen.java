@@ -1,5 +1,6 @@
 package interfaces;
+import java.util.Scanner;
 
 public interface Screen {
-    void display();
+    void display(Scanner scanner);
 }

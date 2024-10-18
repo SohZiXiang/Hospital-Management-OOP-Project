@@ -11,7 +11,6 @@ public class InventoryLoader implements DataLoader {
     @Override
     public List<Medicine> loadData(String filePath) {
         List<Medicine> MedicineList = new ArrayList<>();
-
         return MedicineList;
     }
 }
