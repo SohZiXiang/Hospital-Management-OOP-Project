@@ -13,7 +13,7 @@ import java.util.List;
 
 public class StaffLoader implements DataLoader {
         @Override
-        public void loadData(String filePath) {
+        public List<Staff> loadData(String filePath) {
             List<Staff> staffList = new ArrayList<>();
 
             try (FileInputStream fis = new FileInputStream(new File(filePath));
@@ -33,15 +33,17 @@ public class StaffLoader implements DataLoader {
 
                         Staff staff = createStaff(role, staffId, name, gender, age);
                         if (staff != null) {
+                            staff.setPassword("P@ssw0rd123");
                             staffList.add(staff);
                         }
                     }
                 }
-                System.out.println("Successfully loaded patients!");
+                //System.out.println("Staff loading complete!");
             }
             catch (IOException e) {
                 e.printStackTrace();
             }
+            return staffList;
         }
 
     private Staff createStaff(String role, String staffId, String name, Gender gender, int age) {
@@ -50,9 +52,9 @@ public class StaffLoader implements DataLoader {
             case "doctor":
                 return new Doctor(defaultHospId, staffId, name, gender, age);
             case "pharmacist":
-//                return new Pharmacist(defaultHospId, staffId, name, gender, age);
+                  return new Pharmacist(defaultHospId, staffId, name, gender, age);
             case "administrator":
-//                return new Administrator(defaultHospId, staffId, name, gender, age);
+                return new Administrator(defaultHospId, staffId, name, gender, age);
             default:
                 System.out.println("Unknown role: " + role);
                 return null;

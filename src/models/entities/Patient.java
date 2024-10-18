@@ -3,12 +3,12 @@ package models.entities;
 import models.enums.BloodType;
 import models.enums.Gender;
 
+import java.time.LocalDate;
 import java.util.*;
 
 public class Patient extends User {
     private String patientID;
-    private String name;
-    private Date dateOfBirth;
+    private LocalDate dateOfBirth;
     private Gender gender;
     private String phoneNumber;
     private String  email;
@@ -21,13 +21,12 @@ public class Patient extends User {
         super(hospitalID);
     }
 
-    public Patient(String hospitalID, String password,
-                   String patientID, String name, Date dateOfBirth, Gender gender,
+    public Patient(String hospitalID, String name, String password,
+                   String patientID, LocalDate dateOfBirth, Gender gender,
                    String phoneNumber, String email, BloodType bloodType,
                    List<String> pastDiagnoses, List<String> pastTreatments) {
-        super(hospitalID, password);
+        super(hospitalID, name, password);
         this.patientID = patientID;
-        this.name = name;
         this.dateOfBirth = dateOfBirth;
         this.gender = gender;
         this.phoneNumber = phoneNumber;
@@ -38,11 +37,10 @@ public class Patient extends User {
     }
 
     public Patient(String hospitalID,
-                   String patientID, String name, Date dateOfBirth, Gender gender,
+                   String patientID, String name, LocalDate dateOfBirth, Gender gender,
                    String email, BloodType bloodType) {
-        super(hospitalID);
+        super(hospitalID, name, "P@ssw0rd123");
         this.patientID = patientID;
-        this.name = name;
         this.dateOfBirth = dateOfBirth;
         this.gender = gender;
         this.email = email;
@@ -51,15 +49,12 @@ public class Patient extends User {
         this.pastTreatments = pastTreatments;
     }
 
+
     public String getPatientID() {
         return patientID;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public Date getDateOfBirth() {
+    public LocalDate getDateOfBirth() {
         return dateOfBirth;
     }
 

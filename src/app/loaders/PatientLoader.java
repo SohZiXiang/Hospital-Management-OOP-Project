@@ -9,16 +9,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class PatientLoader implements DataLoader {
-    private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd");
 
     @Override
-    public void loadData(String filePath) {
-        List<Patient> patients = new ArrayList<>();
+    public List<Patient> loadData(String filePath) {
+        List<Patient> patientList = new ArrayList<>();
 
         try (FileInputStream fis = new FileInputStream(new File(filePath));
              Workbook workbook = new XSSFWorkbook(fis)) {
@@ -27,25 +26,23 @@ public class PatientLoader implements DataLoader {
 
             for (int i = 1; i <= sheet.getLastRowNum(); i++) { // Starting with 1 skips header
                 Row row = sheet.getRow(i);
-
+//                System.out.println("Processing row " + (i + 1));
                 if (row != null) {
                     String patientId = row.getCell(0).getStringCellValue();
                     String name = row.getCell(1).getStringCellValue();
-                    Date dob = row.getCell(2).getDateCellValue();
+                    LocalDate dob = LocalDate.parse(row.getCell(2).getStringCellValue());
                     Gender gender = Gender.valueOf(row.getCell(3).getStringCellValue().toUpperCase());
-                    BloodType bloodType = BloodType.valueOf(row.getCell(4).getStringCellValue().toUpperCase());
+                    BloodType bloodType = BloodType.fromString(row.getCell(4).getStringCellValue().toUpperCase());
                     String contactInfo = row.getCell(5).getStringCellValue();
 
                     Patient patient = new Patient("H000", patientId, name, dob, gender, contactInfo, bloodType);
-                    patients.add(patient);
-                    System.out.println("Loaded patient: " + patient.getName());
+                    patientList.add(patient);
                 }
             }
-            for (Patient patient : patients) {
-                System.out.println("Loaded patient: " + patient.getName());
-            }
-            System.out.println("Successfully loaded patients!");
-
+//            for (Patient patient : patients) {
+//                System.out.println("Loaded patient: " + patient.getName());
+//            }
+            //System.out.println("Patient loading complete!");
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -53,5 +50,6 @@ public class PatientLoader implements DataLoader {
         catch (IllegalArgumentException e) {
             System.out.println("Error parsing gender: " + e.getMessage());
         }
+        return patientList;
     }
 }

@@ -1,49 +1,52 @@
 package app;
+import app.screens.*;
 import interfaces.*;
 import app.loaders.*;
+import models.entities.*;
 
 import java.util.*;
 
 public class Main {
-
+    private static final Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) {
-        DataLoader staffLoader = new StaffLoader();
-        DataLoader patientLoader = new PatientLoader();
-        DataLoader inventoryLoader = new InventoryLoader();
+        displayMain(scanner);
+    }
 
-        String staffPath = "data/Staff_List.xlsx";
-        String patientPath = "data/Patient_List.xlsx";
-        String inventoryPath = "data/Medicine_List.xlsx";
-
-        try {
-            staffLoader.loadData(staffPath);
-            patientLoader.loadData(patientPath);
-            //inventoryLoader.loadData(inventoryPath);
-        } catch (Exception e) {
-            System.err.println("Error loading data: " + e.getMessage());
-            return;
-        }
-
-        Scanner scanner = new Scanner(System.in);
+    public static void displayMain(Scanner scanner){
         while (true) {
-            System.out.println("Welcome to the Hospital Management System");
+            String blue = "\u001B[34m";
+            String reset = "\u001B[0m";
+
+            System.out.println(blue + " _   _ __  __ ____  ");
+            System.out.println("| | | |  \\/  / ___| ");
+            System.out.println("| |_| | |\\/| \\___ \\ ");
+            System.out.println("|  _  | |  | |___) |");
+            System.out.println("|_| |_|_|  |_|____/ ");
+            System.out.println(reset);
+
             System.out.println("Please select an option:");
             System.out.println("1. Log in");
             System.out.println("2. Exit");
             System.out.print("Enter your choice: ");
-            String choice = scanner.nextLine();
 
-            switch (choice) {
-                case "1":
-                    login();
-                    break;
-                case "2":
-                    scanner.close();
-                    System.out.println("Exiting the application. Goodbye!");
-                    return;
-                default:
-                    System.out.println("Invalid choice. Please try again.");
+            String input = scanner.nextLine();
+
+            try {
+                int choice = Integer.parseInt(input);
+                switch (choice) {
+                    case 1:
+                        LoginScreen loginScreen = new LoginScreen();
+                        loginScreen.display(scanner);
+                        break;
+                    case 2:
+                        System.out.println("Thank you for using the system!");
+                        break;
+                    default:
+                        System.out.println("Invalid choice, please try again.");
+                }
+            }catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number (1 or 2).");
             }
         }
     }
