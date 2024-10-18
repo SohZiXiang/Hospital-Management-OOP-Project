@@ -7,21 +7,44 @@ import java.util.List;
 import java.util.*;
 
 public class LoginScreen implements Screen {
+    private static final String DEFAULT_PASSWORD = "P@ssw0rd123";
+
     public void display() {
         Scanner scanner = new Scanner(System.in);
-        System.out.print("Enter hospital ID: ");
-        String hospitalId = scanner.nextLine();
-        System.out.print("Enter password: ");
-        String password = scanner.nextLine();
+        while (true) {
+            System.out.print("Enter hospital ID: (or '0' to return to main menu): ");
+            String hospitalId = scanner.nextLine();
+            if (hospitalId.equals("0")) {
+                System.out.println("Returning to the main menu...");
+                break;
+            }
+            System.out.print("Enter password: ");
+            String password = scanner.nextLine();
 
-
-        if (authenticateUser(hospitalId, password)) {
-            System.out.println("Login successful!");
-            // Proceed to the main application logic after login
-        } else {
-            System.out.println("Invalid hospital ID or password.");
+            if (authenticateUser(hospitalId, password)) {
+                if (password.equals(DEFAULT_PASSWORD)) {
+                    System.out.println("Your password is the default. Please change your password.");
+                    changePassword(hospitalId);
+                }
+                System.out.println("Login successful!");
+                // Proceed to the main application logic after login
+            } else {
+                System.out.println("Invalid hospital ID or password. Please try again.");
+            }
         }
+        scanner.close();
     }
+
+    private void changePassword(String hospitalId) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter new password: ");
+        String newPassword = scanner.nextLine();
+        // add code to update password of user
+
+        scanner.close();
+        System.out.println("Password has been successfully updated for Hospital ID: " + hospitalId);
+    }
+
     private boolean authenticateUser(String hospitalId, String password) {
         DataLoader staffLoader = new StaffLoader();
         DataLoader patientLoader = new PatientLoader();
@@ -43,13 +66,13 @@ public class LoginScreen implements Screen {
             return false;
         }
         for (Staff staff : staffList) {
-            if (staff.getHospitalID().equals(hospitalId) && staff.getPassword().equals(password)) {
+            if (staff.getStaffId().equals(hospitalId) && staff.getPassword().equals(password)) {
                 return true;
             }
         }
 
         for (Patient patient : patientList) {
-            if (patient.getHospitalID().equals(hospitalId) && patient.getPassword().equals(password)) {
+            if (patient.getPatientID().equals(hospitalId) && patient.getPassword().equals(password)) {
                 return true;
             }
         }

@@ -33,11 +33,12 @@ public class StaffLoader implements DataLoader {
 
                         Staff staff = createStaff(role, staffId, name, gender, age);
                         if (staff != null) {
+                            staff.setPassword("P@ssw0rd123");
                             staffList.add(staff);
                         }
                     }
                 }
-                System.out.println("Staff loading complete!");
+                //System.out.println("Staff loading complete!");
             }
             catch (IOException e) {
                 e.printStackTrace();

@@ -8,26 +8,6 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
-        DataLoader staffLoader = new StaffLoader();
-        DataLoader patientLoader = new PatientLoader();
-        DataLoader inventoryLoader = new InventoryLoader();
-        List<Patient> patientList = new ArrayList<>();
-        List<Staff> staffList = new ArrayList<>();
-        List<Medicine> inventory = new ArrayList<>();
-
-        String staffPath = "data/Staff_List.xlsx";
-        String patientPath = "data/Patient_List.xlsx";
-        String inventoryPath = "data/Medicine_List.xlsx";
-
-        try {
-            staffList = staffLoader.loadData(staffPath);
-            patientList = patientLoader.loadData(patientPath);
-            //inventory = inventoryLoader.loadData(inventoryPath);
-        } catch (Exception e) {
-            System.err.println("Error loading data: " + e.getMessage());
-            return;
-        }
-
         Scanner scanner = new Scanner(System.in);
         String blue = "\u001B[34m";
         String reset = "\u001B[0m";
@@ -49,7 +29,6 @@ public class Main {
             case 1:
                 LoginScreen loginScreen = new LoginScreen();
                 loginScreen.display();
-                System.out.println("Proceeding to log in...");
                 break;
             case 2:
                 System.out.println("Thank you for using the system!");
