@@ -13,13 +13,13 @@ public class LoginScreen implements Screen {
 
     public void display(Scanner scanner) {
         while (true) {
-            System.out.print("Enter hospital ID: (or '0' to return to main menu): ");
+            System.out.print("\nEnter hospital ID: (or '0' to return to main menu): ");
             String hospitalId = scanner.nextLine();
             if (hospitalId.equals("0")) {
                 Main.displayMain(scanner);
                 break;
             }
-            System.out.print("Enter password: ");
+            System.out.print("Enter password: \n");
             String password = scanner.nextLine();
 
             User user = authenticateUser(hospitalId, password);
@@ -28,7 +28,7 @@ public class LoginScreen implements Screen {
                     System.out.println("Your password is the default. Please change your password.");
                     changePassword(user);
                 }
-                System.out.println("Login successful! Role: ");
+                System.out.println("Login successful! Welcome " + user.getName());
                 switch (user.getRole().toLowerCase()) {
                     case "patient":
 //                        PatientScreen patientScreen = new PatientScreen();
@@ -59,7 +59,7 @@ public class LoginScreen implements Screen {
         String newPassword = scanner.nextLine();
         // Code to update password of user
 
-        System.out.println("Password has been successfully updated for Hospital ID: " + user.getHospitalID());
+        System.out.println("Password has been successfully updated!");
     }
 
     private User authenticateUser(String hospitalId, String password) {

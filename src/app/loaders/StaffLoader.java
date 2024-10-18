@@ -52,9 +52,9 @@ public class StaffLoader implements DataLoader {
             case "doctor":
                 return new Doctor(defaultHospId, staffId, name, gender, age);
             case "pharmacist":
-//                return new Pharmacist(defaultHospId, staffId, name, gender, age);
+                  return new Pharmacist(defaultHospId, staffId, name, gender, age);
             case "administrator":
-//                return new Administrator(defaultHospId, staffId, name, gender, age);
+                return new Administrator(defaultHospId, staffId, name, gender, age);
             default:
                 System.out.println("Unknown role: " + role);
                 return null;

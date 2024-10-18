@@ -36,7 +36,6 @@ public class PatientLoader implements DataLoader {
                     String contactInfo = row.getCell(5).getStringCellValue();
 
                     Patient patient = new Patient("H000", patientId, name, dob, gender, contactInfo, bloodType);
-                    patient.setPassword("P@ssw0rd123");
                     patientList.add(patient);
                 }
             }

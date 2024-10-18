@@ -5,6 +5,7 @@ import java.util.regex.*;
 public abstract class User {
     private String hospitalID;
     private String password;
+    private String name;
 
     public User(String hospitalID) {
         this.hospitalID = hospitalID;
@@ -13,6 +14,12 @@ public abstract class User {
 
     public User(String hospitalID, String password) {
         this.hospitalID = hospitalID;
+        this.password = password;
+    }
+
+    public User(String hospitalID, String name, String password) {
+        this.hospitalID = hospitalID;
+        this.name = name;
         this.password = password;
     }
 
@@ -42,6 +49,14 @@ public abstract class User {
 
     public String getPassword() {
         return password;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public void setHospitalID(String hospitalID) {
