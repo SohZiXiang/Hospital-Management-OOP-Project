@@ -9,7 +9,6 @@ import java.util.*;
 public class Patient extends User {
     private String patientID;
     private LocalDate dateOfBirth;
-    private Gender gender;
     private String phoneNumber;
     private String  email;
     private BloodType bloodType;
@@ -25,10 +24,9 @@ public class Patient extends User {
                    String patientID, LocalDate dateOfBirth, Gender gender,
                    String phoneNumber, String email, BloodType bloodType,
                    List<String> pastDiagnoses, List<String> pastTreatments) {
-        super(hospitalID, name, password);
+        super(hospitalID, name, password, gender);
         this.patientID = patientID;
         this.dateOfBirth = dateOfBirth;
-        this.gender = gender;
         this.phoneNumber = phoneNumber;
         this.email = email;
         this.bloodType = bloodType;
@@ -39,10 +37,9 @@ public class Patient extends User {
     public Patient(String hospitalID,
                    String patientID, String name, LocalDate dateOfBirth, Gender gender,
                    String email, BloodType bloodType) {
-        super(hospitalID, name, "P@ssw0rd123");
+        super(hospitalID, name,"P@ssw0rd123", gender);
         this.patientID = patientID;
         this.dateOfBirth = dateOfBirth;
-        this.gender = gender;
         this.email = email;
         this.bloodType = bloodType;
         this.pastDiagnoses = pastDiagnoses;
@@ -56,10 +53,6 @@ public class Patient extends User {
 
     public LocalDate getDateOfBirth() {
         return dateOfBirth;
-    }
-
-    public Gender getGender() {
-        return gender;
     }
 
     public String getPhoneNumber() {

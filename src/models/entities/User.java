@@ -1,11 +1,12 @@
 package models.entities;
-
+import models.enums.*;
 import java.util.regex.*;
 
 public abstract class User {
     private String hospitalID;
     private String password;
     private String name;
+    private Gender gender;
 
     public User(String hospitalID) {
         this.hospitalID = hospitalID;
@@ -22,6 +23,19 @@ public abstract class User {
         this.name = name;
         this.password = password;
     }
+    public User(String hospitalID, String name, String password, Gender gender) {
+        this.hospitalID = hospitalID;
+        this.name = name;
+        this.password = password;
+        this.gender = gender;
+    }
+
+    public User(String hospitalID, String name, Gender gender) {
+        this.hospitalID = hospitalID;
+        this.name = name;
+        this.gender = gender;
+    }
+
 
     public static boolean isValidPassword(String password)
     {
@@ -57,6 +71,14 @@ public abstract class User {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Gender getGender() {
+        return gender;
+    }
+
+    public void setGender(Gender gender) {
+        this.gender = gender;
     }
 
     public void setHospitalID(String hospitalID) {
