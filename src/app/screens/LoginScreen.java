@@ -1,17 +1,12 @@
 package app.screens;
-import app.loaders.InventoryLoader;
-import app.loaders.PatientLoader;
-import app.loaders.StaffLoader;
-import interfaces.DataLoader;
-import models.entities.Medicine;
-import models.entities.Patient;
-import models.entities.Staff;
-
+import app.loaders.*;
+import interfaces.*;
+import models.entities.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
-public class LoginScreen {
+public class LoginScreen implements Screen {
     public void display() {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Enter hospital ID: ");

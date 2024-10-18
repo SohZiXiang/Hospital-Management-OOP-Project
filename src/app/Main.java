@@ -7,8 +7,6 @@ import models.entities.*;
 import java.util.*;
 
 public class Main {
-
-
     public static void main(String[] args) {
         DataLoader staffLoader = new StaffLoader();
         DataLoader patientLoader = new PatientLoader();
