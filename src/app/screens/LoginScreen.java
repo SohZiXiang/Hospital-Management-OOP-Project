@@ -1,4 +1,5 @@
 package app.screens;
+import app.Main;
 import app.loaders.*;
 import interfaces.*;
 import models.entities.*;
@@ -15,7 +16,7 @@ public class LoginScreen implements Screen {
             System.out.print("Enter hospital ID: (or '0' to return to main menu): ");
             String hospitalId = scanner.nextLine();
             if (hospitalId.equals("0")) {
-                System.out.println("Returning to the main menu...");
+                Main.main(new String[]{});
                 break;
             }
             System.out.print("Enter password: ");
@@ -28,6 +29,7 @@ public class LoginScreen implements Screen {
                 }
                 System.out.println("Login successful!");
                 // Proceed to the main application logic after login
+                break; //replace this
             } else {
                 System.out.println("Invalid hospital ID or password. Please try again.");
             }
