@@ -1,5 +1,7 @@
 package interfaces;
 
+import java.util.List;
+
 public interface DataLoader {
-    void loadData(String filePath);
+    List loadData(String filePath);
 }
