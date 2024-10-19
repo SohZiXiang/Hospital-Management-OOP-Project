@@ -27,7 +27,8 @@ public class Main {
 
             System.out.println("Please select an option:");
             System.out.println("1. Log in");
-            System.out.println("2. Exit");
+            System.out.println("2. Change Password");
+            System.out.println("3. Exit");
             System.out.print("Enter your choice: ");
 
             String input = scanner.nextLine();
@@ -40,6 +41,10 @@ public class Main {
                         loginScreen.display(scanner);
                         break;
                     case 2:
+                        ChangePwScreen changePasswordScreen = new ChangePwScreen();
+                        changePasswordScreen.display(scanner);
+                        break;
+                    case 3:
                         System.out.println("Thank you for using the system!");
                         break;
                     default:

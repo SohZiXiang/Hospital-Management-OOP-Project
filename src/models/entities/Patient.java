@@ -37,7 +37,7 @@ public class Patient extends User {
     public Patient(String hospitalID,
                    String patientID, String name, LocalDate dateOfBirth, Gender gender,
                    String email, BloodType bloodType) {
-        super(hospitalID, name,"P@ssw0rd123", gender);
+        super(hospitalID = patientID, name,"P@ssw0rd123", gender);
         this.patientID = patientID;
         this.dateOfBirth = dateOfBirth;
         this.email = email;

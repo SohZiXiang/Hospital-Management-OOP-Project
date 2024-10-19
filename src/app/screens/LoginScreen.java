@@ -4,6 +4,8 @@ import app.loaders.*;
 import interfaces.*;
 import app.Main;
 import models.entities.*;
+import utils.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.*;
@@ -55,10 +57,14 @@ public class LoginScreen implements BaseScreen {
 
     private void changePassword(User user) {
         Scanner scanner = new Scanner(System.in);
-        System.out.print("Enter new password: ");
-        String newPassword = scanner.nextLine();
-        // Code to update password of user
+        boolean passwordValid = false;
 
+        while (!passwordValid) {
+            System.out.print("Enter new password: ");
+            String newPassword = scanner.nextLine();
+            passwordValid = user.setPassword(newPassword);
+        }
+        user.storePassword();
         System.out.println("Password has been successfully updated!");
     }
 
@@ -68,28 +74,44 @@ public class LoginScreen implements BaseScreen {
         List<Patient> patientList = new ArrayList<>();
         List<Staff> staffList = new ArrayList<>();
 
+        String authDataPath = "data/Auth_Data.xlsx";
         String staffPath = "data/Staff_List.xlsx";
         String patientPath = "data/Patient_List.xlsx";
 
-        try {
-            staffList = staffLoader.loadData(staffPath);
-            patientList = patientLoader.loadData(patientPath);
-        } catch (Exception e) {
-            System.err.println("Error loading data: " + e.getMessage());
-            return null;
-        }
+        AuthLoader authLoader = new AuthLoader(authDataPath);
+        Map<String, String[]> authData = authLoader.loadAuthData();
 
-        for (Staff staff : staffList) {
-            if (staff.getStaffId().equals(hospitalId) && staff.getPassword().equals(password)) {
-                return staff;
+        if(authData.containsKey(hospitalId)) {
+            String[] storedData = authData.get(hospitalId);
+            String storedSalt = storedData[0];
+            String storedPassword = storedData[1];
+            if (storedPassword == null || storedPassword.isEmpty() || storedSalt == null || storedSalt.isEmpty()) {
+                storedSalt = PasswordUtil.generateSalt();
+                storedPassword = PasswordUtil.hashPassword("P@ssw0rd123", storedSalt);
             }
-        }
-        for (Patient patient : patientList) {
-            if (patient.getPatientID().equals(hospitalId) && patient.getPassword().equals(password)) {
-                return patient;
-            }
-        }
+            String hashedPassword = PasswordUtil.hashPassword(password, storedSalt);
 
+            try {
+                staffList = staffLoader.loadData(staffPath);
+                patientList = patientLoader.loadData(patientPath);
+            } catch (Exception e) {
+                System.err.println("Error loading data: " + e.getMessage());
+                return null;
+            }
+            if (hashedPassword.equals(storedPassword)) {{
+                    for (Staff staff : staffList) {
+                        if (staff.getStaffId().equals(hospitalId)) {
+                            return staff;
+                        }
+                    }
+                }
+                for (Patient patient : patientList) {
+                        if (patient.getPatientID().equals(hospitalId)) {
+                            return patient;
+                        }
+                    }
+                }
+            }
         return null;
     }
 }

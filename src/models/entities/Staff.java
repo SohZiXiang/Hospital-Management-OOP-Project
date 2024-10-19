@@ -6,7 +6,7 @@ public abstract class Staff extends User{
     private int age;
 
     public Staff(String hospitalID, String staffId, String name, Gender gender, int age) {
-        super(hospitalID, name , gender);
+        super(hospitalID = staffId, name , gender);
         this.staffId = staffId;
         this.age = age;
     }
