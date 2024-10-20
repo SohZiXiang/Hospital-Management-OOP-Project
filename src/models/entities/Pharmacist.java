@@ -1,6 +1,6 @@
 package models.entities;
 
-import models.enums.Gender;
+import models.enums.*;
 
 public class Pharmacist extends Staff {
     public Pharmacist(String hospitalID, String staffId, String name, Gender gender, int age) {
@@ -8,8 +8,8 @@ public class Pharmacist extends Staff {
     }
 
     @Override
-    public String getRole() {
-        return "Pharmacist";
+    public Role getRole() {
+        return Role.PHARMACIST;
     }
 
     public void viewAppOutRecord(Appointment appointment) {

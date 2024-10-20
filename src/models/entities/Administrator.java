@@ -1,6 +1,7 @@
 package models.entities;
 
 import models.enums.Gender;
+import models.enums.Role;
 
 public class Administrator extends Staff{
     public Administrator(String hospitalID, String staffId, String name, Gender gender, int age) {
@@ -8,8 +9,8 @@ public class Administrator extends Staff{
     }
 
     @Override
-    public String getRole(){
-        return "administrator";
+    public Role getRole(){
+        return Role.ADMINISTRATOR;
     }
 
     public void addDoctor(String hospitalID, String staffId, String name, Gender gender, int age){

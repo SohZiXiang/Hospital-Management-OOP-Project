@@ -2,6 +2,7 @@ package models.entities;
 
 import models.enums.BloodType;
 import models.enums.Gender;
+import models.enums.Role;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -93,7 +94,7 @@ public class Patient extends User {
     }
 
     @Override
-    public String getRole() {
-        return "patient";
+    public Role getRole() {
+        return Role.PATIENT;
     }
 }

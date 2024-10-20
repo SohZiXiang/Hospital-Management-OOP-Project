@@ -31,17 +31,17 @@ public class LoginScreen implements BaseScreen {
                     changePassword(user);
                 }
                 System.out.println("Login successful! Welcome " + user.getName());
-                switch (user.getRole().toLowerCase()) {
-                    case "patient":
+                switch (user.getRole()) {
+                    case PATIENT:
 //                        PatientScreen patientScreen = new PatientScreen();
 //                        patientScreen.display(scanner, user);
-                    case "doctor":
+                    case DOCTOR:
 //                        DoctorScreen doctorScreen = new DoctorScreen();
 //                        doctorScreen.display(scanner, user);
-                    case "pharmacist":
+                    case PHARMACIST:
 //                        PharmacistScreen pharmacistScreen = new PharmacistScreen();
 //                        pharmacistScreen.display(scanner, user);
-                    case "administrator":
+                    case ADMINISTRATOR:
 //                        AdminScreen adminScreen = new AdminScreen();
 //                        adminScreen.display(scanner,user);
                     default:

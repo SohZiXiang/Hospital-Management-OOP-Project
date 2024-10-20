@@ -2,8 +2,8 @@ package models.entities;
 
 import java.util.ArrayList;
 import java.util.List;
-import models.enums.Gender;
-import models.records.AppointmentOutcomeRecord;
+import models.enums.*;
+import models.records.*;
 
 import java.util.*;
 
@@ -74,7 +74,7 @@ public class Doctor extends Staff{
     }
 
     @Override
-    public String getRole() {
-        return "doctor";
+    public Role getRole() {
+        return Role.DOCTOR;
     }
 }

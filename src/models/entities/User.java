@@ -161,5 +161,5 @@ public abstract class User {
         return PasswordUtil.verifyPassword(password, this.password, this.salt);
     }
 
-    public abstract String getRole();
+    public abstract Role getRole();
 }
