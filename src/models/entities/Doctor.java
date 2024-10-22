@@ -17,6 +17,12 @@ public class Doctor extends Staff{
         this.patientsUnderCare = new ArrayList<>();
     }
 
+    public Doctor(String staffId, String name, Gender gender, int age) {
+        super(staffId, staffId, name, gender, age);
+        this.appointments = new ArrayList<>();
+        this.patientsUnderCare = new ArrayList<>();
+    }
+
     public void viewMedicalRecord(Patient patient){
         System.out.println("Viewing medical records for: " + patient.getName());
         System.out.println("Patient ID: " + patient.getPatientID());

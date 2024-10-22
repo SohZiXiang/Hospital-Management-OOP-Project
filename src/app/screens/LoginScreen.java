@@ -4,6 +4,7 @@ import app.loaders.*;
 import interfaces.*;
 import app.Main;
 import models.entities.*;
+import models.enums.FilePaths;
 import utils.*;
 
 import java.util.ArrayList;
@@ -35,15 +36,19 @@ public class LoginScreen implements BaseScreen {
                     case PATIENT:
 //                        PatientScreen patientScreen = new PatientScreen();
 //                        patientScreen.display(scanner, user);
+                        break;
                     case DOCTOR:
 //                        DoctorScreen doctorScreen = new DoctorScreen();
 //                        doctorScreen.display(scanner, user);
+                        break;
                     case PHARMACIST:
 //                        PharmacistScreen pharmacistScreen = new PharmacistScreen();
 //                        pharmacistScreen.display(scanner, user);
+                        break;
                     case ADMINISTRATOR:
-//                        AdminScreen adminScreen = new AdminScreen();
-//                        adminScreen.display(scanner,user);
+                        AdminMainScreen adminScreen = new AdminMainScreen();
+                        adminScreen.display(scanner,user);
+                        break;
                     default:
                         System.out.println("Error: Unknown role. Redirecting to main menu...");
                         Main.displayMain(scanner); // Redirect to the main menu or home screen
@@ -74,9 +79,9 @@ public class LoginScreen implements BaseScreen {
         List<Patient> patientList = new ArrayList<>();
         List<Staff> staffList = new ArrayList<>();
 
-        String authDataPath = "data/Auth_Data.xlsx";
-        String staffPath = "data/Staff_List.xlsx";
-        String patientPath = "data/Patient_List.xlsx";
+        String authDataPath = FilePaths.AUTH_DATA.getPath();
+        String staffPath = FilePaths.STAFF_DATA.getPath();
+        String patientPath = FilePaths.PATIENT_DATA.getPath();
 
         AuthLoader authLoader = new AuthLoader(authDataPath);
         Map<String, String[]> authData = authLoader.loadAuthData();
