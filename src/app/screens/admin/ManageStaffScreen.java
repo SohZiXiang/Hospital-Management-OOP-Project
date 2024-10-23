@@ -67,6 +67,7 @@ public class ManageStaffScreen implements Screen {
     }
 
     private void viewStaffList(Scanner scanner) {
+        staffList = loadStaffList();
         System.out.println("\n--- View Staff List ---");
         System.out.println("Filter by: ");
         System.out.println("1. Role");
