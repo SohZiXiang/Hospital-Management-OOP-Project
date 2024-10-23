@@ -41,9 +41,8 @@ public class AdminMainScreen implements Screen{
 //                        viewAppointmentsScreen.display(scanner, user);
                         break;
                     case 3:
-//                        // Navigate to View and Manage Medication Inventory Screen
-//                        ManageInventoryScreen manageInventoryScreen = new ManageInventoryScreen();
-//                        manageInventoryScreen.display(scanner, user);
+                        ManageInventoryScreen manageInventoryScreen = new ManageInventoryScreen();
+                        manageInventoryScreen.display(scanner, user);
                         break;
                     case 4:
 //                        // Navigate to Approve Replenishment Requests Screen
