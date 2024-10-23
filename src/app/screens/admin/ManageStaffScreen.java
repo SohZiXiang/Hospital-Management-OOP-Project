@@ -14,7 +14,7 @@ import java.util.*;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell; // Make sure to import Cell
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 
 import java.io.File;
@@ -488,7 +488,7 @@ public class ManageStaffScreen implements Screen {
             sheet.removeRow(sheet.getRow(rowToRemove));
             int lastRowIndex = sheet.getLastRowNum();
             if (rowToRemove < lastRowIndex) {
-                sheet.shiftRows(rowToRemove + 1, lastRowIndex, -1); // Shift rows up
+                sheet.shiftRows(rowToRemove + 1, lastRowIndex, -1);
             }
 
             try (FileOutputStream fos = new FileOutputStream(staffPath)) {
@@ -523,7 +523,7 @@ public class ManageStaffScreen implements Screen {
             sheet.removeRow(sheet.getRow(rowToRemove));
             int lastRowIndex = sheet.getLastRowNum();
             if (rowToRemove < lastRowIndex) {
-                sheet.shiftRows(rowToRemove + 1, lastRowIndex, -1); // Shift rows up
+                sheet.shiftRows(rowToRemove + 1, lastRowIndex, -1);
             }
             try (FileOutputStream fos = new FileOutputStream(authDataPath)) {
                 workbook.write(fos);
