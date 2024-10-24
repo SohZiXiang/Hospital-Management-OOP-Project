@@ -85,7 +85,6 @@ public class ManageStaffScreen implements Screen {
                 System.out.print("Enter your choice (1 or 2): ");
                 int role = Integer.parseInt(scanner.nextLine());
 
-                Staff newStaff = null;
                 switch (role) {
                     case 1:
                         displayStaffDetailsHeader();
@@ -210,6 +209,7 @@ public class ManageStaffScreen implements Screen {
     }
 
     private void updateStaff(Scanner scanner) {
+        staffList = loadStaffList();
         System.out.println("\n--- Update Staff Member ---");
         System.out.print("Enter the staff ID of the member to update: ");
         String staffId = scanner.nextLine();
@@ -272,16 +272,13 @@ public class ManageStaffScreen implements Screen {
                 return;
         }
 
-        if (updateStaffInExcel(staff)) {
-            System.out.println("Staff member updated successfully.");
-        } else {
-            System.out.println("Failed to update staff member in the Excel file.");
-        }
+       updateStaffInExcel(staff);
     }
 
 
 
     private void removeStaff(Scanner scanner, User user) {
+        staffList = loadStaffList();
         System.out.println("\n--- Remove Staff Member ---");
         System.out.print("Enter the staff ID of the member to remove: ");
         String staffId = scanner.nextLine();
@@ -297,17 +294,8 @@ public class ManageStaffScreen implements Screen {
         }
 
         staffList.remove(staff);
-        if (removeStaffFromExcel(staffId)) {
-            System.out.println("Staff member removed successfully from Staff_List.xlsx.");
-        } else {
-            System.out.println("Failed to remove staff member from Staff_List.xlsx.");
-        }
-
-        if (removeStaffAuthData(staffId)) {
-            System.out.println("Staff account data removed successfully from auth_data.");
-        } else {
-            System.out.println("Failed to remove staff account data from auth_data.");
-        }
+        removeStaffFromExcel(staffId);
+        removeStaffAuthData(staffId);
     }
 
     private Staff findStaffById(String staffId) {
@@ -379,7 +367,7 @@ public class ManageStaffScreen implements Screen {
             System.out.println("Staff member added successfully.");
 
         } catch (IOException e) {
-            System.err.println("Error writing to Excel: " + e.getMessage());
+            System.err.println("Error storing new staff data: " + e.getMessage());
         } finally {
             try {
                 if (workbook != null) {
@@ -427,7 +415,7 @@ public class ManageStaffScreen implements Screen {
             System.out.println("Authentication data added successfully for staff ID: " + staff.getStaffId());
 
         } catch (IOException e) {
-            System.err.println("Error writing to Auth_Data: " + e.getMessage());
+            System.err.println("Error storing staff login data: " + e.getMessage());
         } finally {
             try {
                 if (workbook != null) {
@@ -442,7 +430,7 @@ public class ManageStaffScreen implements Screen {
         }
     }
 
-    private boolean updateStaffInExcel(Staff staff) {
+    private void updateStaffInExcel(Staff staff) {
         String staffPath = FilePaths.STAFF_DATA.getPath();
         try (FileInputStream fis = new FileInputStream(staffPath);
              Workbook workbook = WorkbookFactory.create(fis)) {
@@ -458,16 +446,14 @@ public class ManageStaffScreen implements Screen {
                     try (FileOutputStream fos = new FileOutputStream(staffPath)) {
                         workbook.write(fos);
                     }
-                    return true;
                 }
             }
         } catch (IOException | InvalidFormatException e) {
             System.err.println("Error updating staff in Excel: " + e.getMessage());
         }
-        return false;
     }
 
-    private boolean removeStaffFromExcel(String staffId) {
+    private void removeStaffFromExcel(String staffId) {
         String staffPath = FilePaths.STAFF_DATA.getPath();
         try (FileInputStream fis = new FileInputStream(staffPath);
              Workbook workbook = WorkbookFactory.create(fis)) {
@@ -484,7 +470,7 @@ public class ManageStaffScreen implements Screen {
 
             if (rowToRemove == -1) {
                 System.out.println("Staff ID not found.");
-                return false;
+                return;
             }
             sheet.removeRow(sheet.getRow(rowToRemove));
             int lastRowIndex = sheet.getLastRowNum();
@@ -495,14 +481,12 @@ public class ManageStaffScreen implements Screen {
             try (FileOutputStream fos = new FileOutputStream(staffPath)) {
                 workbook.write(fos);
             }
-            return true;
         } catch (IOException | InvalidFormatException e) {
-            System.err.println("Error removing staff in Excel: " + e.getMessage());
+            System.err.println("Error removing staff from storage: " + e.getMessage());
         }
-        return false;
     }
 
-    private boolean removeStaffAuthData(String staffId) {
+    private void removeStaffAuthData(String staffId) {
         String authDataPath = FilePaths.AUTH_DATA.getPath();
         try (FileInputStream fis = new FileInputStream(authDataPath);
              Workbook workbook = WorkbookFactory.create(fis)) {
@@ -519,7 +503,8 @@ public class ManageStaffScreen implements Screen {
             }
 
             if (rowToRemove == -1) {
-                return false;
+                System.out.println("Could not find staff in storage.");
+                return;
             }
             sheet.removeRow(sheet.getRow(rowToRemove));
             int lastRowIndex = sheet.getLastRowNum();
@@ -529,10 +514,9 @@ public class ManageStaffScreen implements Screen {
             try (FileOutputStream fos = new FileOutputStream(authDataPath)) {
                 workbook.write(fos);
             }
-            return true;
+            return;
         } catch (IOException | InvalidFormatException e) {
-            System.err.println("Error removing account data in auth_data: " + e.getMessage());
+            System.err.println("Error removing account data" + e.getMessage());
         }
-        return false;
     }
 }
