@@ -4,7 +4,6 @@ import app.loaders.*;
 import interfaces.*;
 import app.Main;
 import models.entities.*;
-import models.enums.FilePaths;
 import utils.*;
 
 import java.util.ArrayList;
@@ -36,19 +35,15 @@ public class LoginScreen implements BaseScreen {
                     case PATIENT:
 //                        PatientScreen patientScreen = new PatientScreen();
 //                        patientScreen.display(scanner, user);
-                        break;
                     case DOCTOR:
 //                        DoctorScreen doctorScreen = new DoctorScreen();
 //                        doctorScreen.display(scanner, user);
-                        break;
                     case PHARMACIST:
-//                        PharmacistScreen pharmacistScreen = new PharmacistScreen();
-//                        pharmacistScreen.display(scanner, user);
-                        break;
+                        PharmacistMainScreen pharmacistScreen = new PharmacistMainScreen();
+                        pharmacistScreen.display(scanner, user);
                     case ADMINISTRATOR:
-                        AdminMainScreen adminScreen = new AdminMainScreen();
-                        adminScreen.display(scanner,user);
-                        break;
+//                        AdminScreen adminScreen = new AdminScreen();
+//                        adminScreen.display(scanner,user);
                     default:
                         System.out.println("Error: Unknown role. Redirecting to main menu...");
                         Main.displayMain(scanner); // Redirect to the main menu or home screen
@@ -79,9 +74,9 @@ public class LoginScreen implements BaseScreen {
         List<Patient> patientList = new ArrayList<>();
         List<Staff> staffList = new ArrayList<>();
 
-        String authDataPath = FilePaths.AUTH_DATA.getPath();
-        String staffPath = FilePaths.STAFF_DATA.getPath();
-        String patientPath = FilePaths.PATIENT_DATA.getPath();
+        String authDataPath = "data/Auth_Data.xlsx";
+        String staffPath = "data/Staff_List.xlsx";
+        String patientPath = "data/Patient_List.xlsx";
 
         AuthLoader authLoader = new AuthLoader(authDataPath);
         Map<String, String[]> authData = authLoader.loadAuthData();
@@ -104,19 +99,19 @@ public class LoginScreen implements BaseScreen {
                 return null;
             }
             if (hashedPassword.equals(storedPassword)) {{
-                    for (Staff staff : staffList) {
-                        if (staff.getStaffId().equals(hospitalId)) {
-                            return staff;
-                        }
-                    }
-                }
-                for (Patient patient : patientList) {
-                        if (patient.getPatientID().equals(hospitalId)) {
-                            return patient;
-                        }
+                for (Staff staff : staffList) {
+                    if (staff.getStaffId().equals(hospitalId)) {
+                        return staff;
                     }
                 }
             }
+                for (Patient patient : patientList) {
+                    if (patient.getPatientID().equals(hospitalId)) {
+                        return patient;
+                    }
+                }
+            }
+        }
         return null;
     }
 }

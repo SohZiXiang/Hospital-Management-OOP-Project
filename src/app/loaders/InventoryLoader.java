@@ -1,45 +1,53 @@
 package app.loaders;
-import interfaces.*;
-import models.entities.Medicine;
-import models.entities.Patient;
-import models.entities.Staff;
-import models.enums.Gender;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.File;
+import interfaces.DataLoader;
+import models.entities.Medicine;
+import org.apache.poi.ss.usermodel.*;
+
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+
+
+
 public class InventoryLoader implements DataLoader {
+
     @Override
     public List<Medicine> loadData(String filePath) {
-        List<Medicine> MedicineList = new ArrayList<>();
+        List<Medicine> medicineList = new ArrayList<>();
 
-        try (FileInputStream fis = new FileInputStream(new File(filePath));
-             Workbook workbook = new XSSFWorkbook(fis)) {
+        try (FileInputStream fis = new FileInputStream(filePath);
+             Workbook workbook = WorkbookFactory.create(fis)) {
 
+            // Assuming the first sheet contains the medicine data
             Sheet sheet = workbook.getSheetAt(0);
 
-            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
-                Row row = sheet.getRow(i);
-                if (row != null) {
-                    String name = row.getCell(0).getStringCellValue();
-                    int stock = (int) row.getCell(1).getNumericCellValue();
-                    int stockAlert = (int) row.getCell(2).getNumericCellValue();
-
-                    Medicine medicine = new Medicine(name, stock, stockAlert);
-                    MedicineList.add(medicine);
+            // Iterate through each row (starting after the header row)
+            for (Row row : sheet) {
+                if (row.getRowNum() == 0) {
+                    // Skip the header row
+                    continue;
                 }
+
+                // Reading cell values from the row
+                Cell nameCell = row.getCell(0);
+                Cell quantityCell = row.getCell(1);
+                Cell lowStockAlertCell = row.getCell(2);
+
+                String name = nameCell.getStringCellValue();
+                int quantity = (int) quantityCell.getNumericCellValue();
+                int lowStockAlert = (int) lowStockAlertCell.getNumericCellValue();
+
+                // Create Medicine object and add to list
+                Medicine medicine = new Medicine(name, quantity, lowStockAlert);
+                medicineList.add(medicine);
             }
+
+        } catch (Exception e) {
+            System.err.println("Error loading authentication data: " + e.getMessage());
         }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-        return MedicineList;
+
+        return medicineList;
     }
 }

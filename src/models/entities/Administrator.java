@@ -65,7 +65,7 @@ public class Administrator extends Staff{
     }
 
     public void removeMedicineStock(Medicine medicine, int stock){
-        int currentStock = medicine.getStock();
+        int currentStock = medicine.getQuantity();
 
         if(currentStock - stock > 0){
             currentStock = currentStock - stock;
@@ -80,7 +80,7 @@ public class Administrator extends Staff{
     }
 
     public void addMedicineStock(Medicine medicine, int stock){
-        int currentStock = medicine.getStock();
+        int currentStock = medicine.getQuantity();
         medicine.setStock(currentStock + stock);
 
         System.out.println("Stock for medicine: " + medicine.getName() + " is updated to " + currentStock);
