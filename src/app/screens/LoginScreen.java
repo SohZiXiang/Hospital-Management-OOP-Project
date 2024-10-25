@@ -2,7 +2,6 @@ package app.screens;
 import app.Main;
 import app.loaders.*;
 import interfaces.*;
-import app.Main;
 import models.entities.*;
 import models.enums.FilePaths;
 import utils.*;
@@ -34,8 +33,8 @@ public class LoginScreen implements BaseScreen {
                 System.out.println("Login successful! Welcome " + user.getName());
                 switch (user.getRole()) {
                     case PATIENT:
-//                        PatientScreen patientScreen = new PatientScreen();
-//                        patientScreen.display(scanner, user);
+                          PatientScreen patientScreen = new PatientScreen();
+                          patientScreen.display(scanner, user);
                         break;
                     case DOCTOR:
 //                        DoctorScreen doctorScreen = new DoctorScreen();
