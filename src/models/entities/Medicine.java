@@ -16,7 +16,7 @@ public class Medicine {
     public void setName(String name) {
         this.name = name;
     }
-    public int getStock() {
+    public int getQuantity() {
         return stock;
     }
     public void setStock(int stock) {

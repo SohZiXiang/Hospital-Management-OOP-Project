@@ -39,8 +39,8 @@ public class LoginScreen implements BaseScreen {
 //                        DoctorScreen doctorScreen = new DoctorScreen();
 //                        doctorScreen.display(scanner, user);
                     case PHARMACIST:
-//                        PharmacistScreen pharmacistScreen = new PharmacistScreen();
-//                        pharmacistScreen.display(scanner, user);
+                        PharmacistMainScreen pharmacistScreen = new PharmacistMainScreen();
+                        pharmacistScreen.display(scanner, user);
                     case ADMINISTRATOR:
 //                        AdminScreen adminScreen = new AdminScreen();
 //                        adminScreen.display(scanner,user);
@@ -99,19 +99,19 @@ public class LoginScreen implements BaseScreen {
                 return null;
             }
             if (hashedPassword.equals(storedPassword)) {{
-                    for (Staff staff : staffList) {
-                        if (staff.getStaffId().equals(hospitalId)) {
-                            return staff;
-                        }
-                    }
-                }
-                for (Patient patient : patientList) {
-                        if (patient.getPatientID().equals(hospitalId)) {
-                            return patient;
-                        }
+                for (Staff staff : staffList) {
+                    if (staff.getStaffId().equals(hospitalId)) {
+                        return staff;
                     }
                 }
             }
+                for (Patient patient : patientList) {
+                    if (patient.getPatientID().equals(hospitalId)) {
+                        return patient;
+                    }
+                }
+            }
+        }
         return null;
     }
 }
