@@ -38,16 +38,15 @@ public class ViewMedicalRecord implements Screen {
         System.out.println("Patient Date Of Birth: " + currentPatient.getDateOfBirth());
         System.out.println("Patient Gender: " + currentPatient.getGender());
         System.out.println("Patient Blood Type: " + currentPatient.getBloodType());
-        System.out.println("Patient Phone Number: " + currentPatient.getPhoneNumber());
-        System.out.println("Patient Email: " + currentPatient.getEmail());
+        System.out.println("Patient Contact: " + currentPatient.getContact());
 
         try {
-            System.out.println("1: Return to menu");
-            String input = scanner.nextLine();
-            int choice = Integer.parseInt(input);
+            String input = "0";
+            int choice = 0;
 
             while (choice != 1){
-                System.out.println("1: Return to menu");
+                System.out.println("Please Select the following options");
+                System.out.println("1: Return To Menu");
                 input = scanner.nextLine();
                 choice = Integer.parseInt(input);
             }

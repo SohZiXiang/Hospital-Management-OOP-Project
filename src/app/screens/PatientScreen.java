@@ -1,4 +1,5 @@
 package app.screens;
+import app.screens.patient.UpdatePersonalInformationScreen;
 import app.screens.patient.ViewMedicalRecord;
 import interfaces.Screen;
 import models.entities.User;
@@ -35,7 +36,8 @@ public class PatientScreen implements Screen {
                         viewMedicalRecord.display(scanner,user);
                         break;
                     case 2:
-
+                        UpdatePersonalInformationScreen updatePersonalInformationScreen = new UpdatePersonalInformationScreen();
+                        updatePersonalInformationScreen.display(scanner,user);
                         break;
                     case 3:
 

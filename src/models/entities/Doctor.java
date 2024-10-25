@@ -28,8 +28,8 @@ public class Doctor extends Staff{
         System.out.println("Patient ID: " + patient.getPatientID());
         System.out.println("Date of Birth: " + patient.getDateOfBirth());
         System.out.println("Gender: " + patient.getGender());
-        System.out.println("Phone Number: " + patient.getPhoneNumber());
-        System.out.println("Email: " + patient.getEmail());
+        System.out.println("Phone Number: " + patient.getContact());
+        System.out.println("Email: " + patient.getContact());
         System.out.println("Blood Type: " + patient.getBloodType());
 
         System.out.println("Past Diagnoses: ");
