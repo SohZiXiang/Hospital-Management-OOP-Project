@@ -1,6 +1,6 @@
 package models.enums;
 
-public enum prescriptionStatus {
+public enum PrescriptionStatus {
     PENDING,
     DISPENSED
 }

@@ -13,6 +13,10 @@ public class Pharmacist extends Staff {
         super(hospitalID, staffId, name, gender, age);
     }
 
+    public Pharmacist(String staffId, String name, Gender gender, int age) {
+        super(staffId,staffId, name, gender, age);
+    }
+
     @Override
     public Role getRole() {
         return Role.PHARMACIST;
