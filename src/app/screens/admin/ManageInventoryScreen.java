@@ -4,8 +4,7 @@ import app.loaders.*;
 import app.screens.AdminMainScreen;
 import interfaces.*;
 import models.entities.*;
-import models.enums.FilePaths;
-import models.enums.Gender;
+import models.enums.*;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -59,7 +58,7 @@ public class ManageInventoryScreen implements Screen {
         }
     }
 
-    private List<Medicine> loadInventory() {
+    public static List<Medicine> loadInventory() {
         String invPath = FilePaths.INV_DATA.getPath();
         DataLoader invLoader = new InventoryLoader();
         try {
@@ -70,7 +69,7 @@ public class ManageInventoryScreen implements Screen {
         }
     }
 
-    private void viewInventory(Scanner scanner) {
+    public void viewInventory(Scanner scanner) {
         inventory = loadInventory();
         System.out.println("\n--- Current Inventory ---");
         displayMedicineDetailsHeader();
@@ -78,26 +77,26 @@ public class ManageInventoryScreen implements Screen {
                 .forEach(medicine -> displayMedicineDetails(medicine));
     }
 
-    private void displayMedicineDetailsHeader(){
+    public void displayMedicineDetailsHeader(){
         System.out.printf("\n%-15s %-15s %-10s%n", "Medicine Name", "Initial Stock", "Low Stock Level Alert");
         System.out.println("------------------------------------------------------");
     }
 
-    private void displayMedicineDetails(Medicine medicine) {
+    public void displayMedicineDetails(Medicine medicine) {
         System.out.printf("%-15s %-15d %-10d%n",
                 medicine.getName(),
                 medicine.getStock(),
                 medicine.getLowStockAlert());
     }
 
-    private Medicine findMedicine(String medName) {
+    public Medicine findMedicine(String medName) {
         return inventory.stream()
                 .filter(medicine -> medicine.getName().equals(medName))
                 .findFirst()
                 .orElse(null);
     }
 
-    private void addStock(Scanner scanner) {
+    public void addStock(Scanner scanner) {
         System.out.println("\n--- Add new medicine ---");
         System.out.print("Enter Medicine Name: ");
         String name = scanner.nextLine();
@@ -113,7 +112,7 @@ public class ManageInventoryScreen implements Screen {
         writeMedicineToExcel(newMedicine);
     }
 
-    private void updateStock(Scanner scanner) {
+    public void updateStock(Scanner scanner) {
         inventory = loadInventory();
         System.out.println("\n--- Update Stock ---");
         System.out.print("Enter the name of medicine to update: ");
@@ -186,7 +185,12 @@ public class ManageInventoryScreen implements Screen {
         updateInventoryInExcel(medicine, name);
     }
 
-    private void removeStock(Scanner scanner){
+    public void updateStock(Medicine medicine, int stock) {
+        medicine.setStock(stock);
+        updateInventoryInExcel(medicine, medicine.getName());
+    }
+
+    public void removeStock(Scanner scanner){
         inventory = loadInventory();
         System.out.println("\n--- Remove Stock ---");
         System.out.print("Enter the name of stock to remove: ");
@@ -201,7 +205,7 @@ public class ManageInventoryScreen implements Screen {
         removeMedicineFromExcel(name);
     }
 
-    private void removeMedicineFromExcel(String name) {
+    public void removeMedicineFromExcel(String name) {
         String staffPath = FilePaths.INV_DATA.getPath();
         try (FileInputStream fis = new FileInputStream(staffPath);
              Workbook workbook = WorkbookFactory.create(fis)) {
@@ -236,7 +240,7 @@ public class ManageInventoryScreen implements Screen {
     }
 
 
-    private void updateInventoryInExcel(Medicine medicine, String oldName) {
+    public void updateInventoryInExcel(Medicine medicine, String oldName) {
         String filePath = FilePaths.INV_DATA.getPath();
         try (FileInputStream fis = new FileInputStream(filePath);
              Workbook workbook = WorkbookFactory.create(fis)) {
@@ -260,7 +264,7 @@ public class ManageInventoryScreen implements Screen {
         }
     }
 
-    private void writeMedicineToExcel(Medicine medicine) {
+    public void writeMedicineToExcel(Medicine medicine) {
         String filePath = FilePaths.INV_DATA.getPath();
         FileInputStream fis = null;
         Workbook workbook = null;

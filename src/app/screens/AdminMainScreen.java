@@ -29,7 +29,6 @@ public class AdminMainScreen implements Screen{
 
             try {
                 int choice = Integer.parseInt(input);
-
                 switch (choice) {
                     case 1:
                         ManageStaffScreen manageStaffScreen = new ManageStaffScreen();
@@ -45,10 +44,9 @@ public class AdminMainScreen implements Screen{
                         manageInventoryScreen.display(scanner, user);
                         break;
                     case 4:
-//                        // Navigate to Approve Replenishment Requests Screen
-//                        ApproveReplenishmentScreen approveReplenishmentScreen = new ApproveReplenishmentScreen();
-//                        approveReplenishmentScreen.display(scanner, user);
-//                        break;
+                        ApproveReplenishmentScreen approveReplenishmentScreen = new ApproveReplenishmentScreen();
+                        approveReplenishmentScreen.display(scanner, user);
+                        break;
                     case 5:
                         System.out.println("Logging out...");
                         Main.displayMain(scanner);

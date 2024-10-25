@@ -2,6 +2,8 @@ package models.entities;
 
 import app.loaders.InventoryLoader;
 import models.enums.*;
+import models.records.ReplenishmentRequest;
+import models.records.ReplenishmentRequestManager;
 
 //my imports
 import java.util.List;

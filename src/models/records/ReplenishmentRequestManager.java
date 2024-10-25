@@ -1,4 +1,4 @@
-package models.entities;
+package models.records;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;

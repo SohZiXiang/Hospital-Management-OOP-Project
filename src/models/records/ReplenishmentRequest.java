@@ -1,4 +1,4 @@
-package models.entities;
+package models.records;
 
 import java.time.LocalDate;
 
@@ -19,6 +19,17 @@ public class ReplenishmentRequest {
         this.requestedAmount = requestedAmount;
         this.status = "pending";  // Default status
         this.requestDate = LocalDate.now();  //Set to current date
+    }
+
+    public ReplenishmentRequest(int requestId, String hospitalId, String requesterName,
+                                String medicineName, int requestedAmount, String status, String requestDate) {
+        this.requestId = requestId;
+        this.hospitalId = hospitalId;
+        this.requesterName = requesterName;
+        this.medicineName = medicineName;
+        this.requestedAmount = requestedAmount;
+        this.status = status;
+        this.requestDate = LocalDate.parse(requestDate);
     }
 
     public int getRequestId() {

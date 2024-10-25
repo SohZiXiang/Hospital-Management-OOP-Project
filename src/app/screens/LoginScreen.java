@@ -42,8 +42,8 @@ public class LoginScreen implements BaseScreen {
                         PharmacistMainScreen pharmacistScreen = new PharmacistMainScreen();
                         pharmacistScreen.display(scanner, user);
                     case ADMINISTRATOR:
-//                        AdminScreen adminScreen = new AdminScreen();
-//                        adminScreen.display(scanner,user);
+                        AdminMainScreen adminScreen = new AdminMainScreen();
+                        adminScreen.display(scanner,user);
                     default:
                         System.out.println("Error: Unknown role. Redirecting to main menu...");
                         Main.displayMain(scanner); // Redirect to the main menu or home screen

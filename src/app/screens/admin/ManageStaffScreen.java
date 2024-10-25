@@ -88,10 +88,10 @@ public class ManageStaffScreen implements Screen {
                 switch (role) {
                     case 1:
                         displayStaffDetailsHeader();
-                        staffList.stream()
-                                .filter(staff -> staff.getRole().toString().toLowerCase().equals("doctor"))
-                                .forEach(staff -> displayStaffDetails(staff));
-                        break;
+                            staffList.stream()
+                                    .filter(staff -> staff.getRole().toString().toLowerCase().equals("doctor"))
+                                    .forEach(staff -> displayStaffDetails(staff));
+                            break;
                     case 2:
                         displayStaffDetailsHeader();
                         staffList.stream()
@@ -256,15 +256,11 @@ public class ManageStaffScreen implements Screen {
             case 1:
                 if (!(staff instanceof Doctor)) {
                     staff = new Doctor(staff.getStaffId(), staff.getName(), staff.getGender(), staff.getAge());
-                } else {
-                    System.out.println("Staff member is already a Doctor.");
                 }
                 break;
             case 2:
                 if (!(staff instanceof Pharmacist)) {
                     staff = new Pharmacist(staff.getStaffId(), staff.getName(), staff.getGender(), staff.getAge());
-                } else {
-                    System.out.println("Staff member is already a Pharmacist.");
                 }
                 break;
             default:
@@ -325,8 +321,8 @@ public class ManageStaffScreen implements Screen {
         System.out.printf("%-15s %-20s %-20s %-10s %-10d%n",
                 staff.getStaffId(),
                 staff.getName(),
-                staff.getRole().toString(),
-                staff.getGender().toString(),
+                StringFormatUtil.toCamelCase(staff.getRole().toString()),
+                StringFormatUtil.toCamelCase(staff.getGender().toString()),
                 staff.getAge());
     }
 

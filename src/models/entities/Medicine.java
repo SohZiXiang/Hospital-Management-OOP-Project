@@ -22,6 +22,7 @@ public class Medicine {
     public void setStock(int stock) {
         this.stock = stock;
     }
+    public int getStock() {return stock;}
     public int getLowStockAlert() {
         return lowStockAlert;
     }
