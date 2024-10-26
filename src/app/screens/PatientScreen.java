@@ -1,4 +1,5 @@
 package app.screens;
+import app.Main;
 import app.screens.patient.UpdatePersonalInformationScreen;
 import app.screens.patient.ViewMedicalRecord;
 import interfaces.Screen;
@@ -58,7 +59,8 @@ public class PatientScreen implements Screen {
 
                         break;
                     case 9:
-
+                        System.out.println("Logging out...");
+                        Main.displayMain(scanner);
                         break;
 
                     default:
