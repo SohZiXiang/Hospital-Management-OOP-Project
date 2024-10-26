@@ -4,29 +4,29 @@ import java.util.*;
 import models.enums.AppointmentStatus;
 
 public class Appointment {
-    private Integer appointmentId;
-    private Integer patientId;
-    private Integer doctorId;
+    private String appointmentId;
+    private String patientId;
+    private String doctorId;
     private AppointmentStatus status;
     private Date appointmentDate;
     private String appointmentTime;
     private String outcomeRecord;
 
-    public Appointment(Integer appointmentId, Integer patientId, Integer doctorId, Date appointmentDate, String appointmentTime) {
+    public Appointment(String appointmentId, String patientId, String doctorId, AppointmentStatus status, Date appointmentDate, String appointmentTime, String outcomeRecord) {
         this.appointmentId = appointmentId;
         this.patientId = patientId;
         this.doctorId = doctorId;
-        this.status = AppointmentStatus.SCHEDULED;
+        this.status = status;
         this.appointmentDate = appointmentDate;
         this.appointmentTime = appointmentTime;
-        this.outcomeRecord = "";
+        this.outcomeRecord = outcomeRecord;
     }
 
-    public Integer getPatientId() {
+    public String getPatientId() {
         return patientId;
     }
 
-    public Integer getAppointmentId() {
+    public String getAppointmentId() {
         return appointmentId;
     }
 
@@ -34,7 +34,7 @@ public class Appointment {
         return status;
     }
 
-    public Integer getDoctorId() {
+    public String getDoctorId() {
         return doctorId;
     }
 
@@ -66,7 +66,7 @@ public class Appointment {
         this.appointmentDate = appointmentDate;
     }
 
-    public void setDoctorId(Integer doctorId) {
+    public void setDoctorId(String doctorId) {
         this.doctorId = doctorId;
     }
 }
