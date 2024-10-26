@@ -38,7 +38,7 @@ public class ViewMedicalRecord implements Screen {
         System.out.println("Patient Date Of Birth: " + currentPatient.getDateOfBirth());
         System.out.println("Patient Gender: " + currentPatient.getGender());
         System.out.println("Patient Blood Type: " + currentPatient.getBloodType());
-        System.out.println("Patient Contact: " + currentPatient.getContact());
+        System.out.println("Patient Contact: " + currentPatient.getPhoneNumber());
 
         try {
             String input = "0";

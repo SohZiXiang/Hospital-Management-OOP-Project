@@ -65,7 +65,7 @@ public class UpdatePersonalInformationScreen implements Screen {
 
                         if(matcherEmail.matches() || matcherPhone.matches()){
                             System.out.println("Contact Successfully Updated To " + newContact);
-                            currentPatient.setContact(newContact);
+                            currentPatient.setPhoneNumber(newContact);
                         }
                         else{
                             System.out.println("Invalid Contact Format");
