@@ -5,7 +5,9 @@ public enum FilePaths {
     PATIENT_DATA("data/Patient_List.xlsx"),
     AUTH_DATA("data/Auth_Data.xlsx"),
     INV_DATA("data/Medicine_List.xlsx"),
-    REPLENISH_REQ_DATA("data/ReplenishmentRequests.xlsx");
+    REPLENISH_REQ_DATA("data/ReplenishmentRequests.xlsx"),
+    APPT_DATA("data/Appointment_List.xlsx"),
+    DOCAVAIL_DATA("data/Availability_List.xlsx");
 
     private final String path;
 

@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class PatientLoader implements DataLoader {
@@ -35,7 +36,13 @@ public class PatientLoader implements DataLoader {
                     BloodType bloodType = BloodType.fromString(row.getCell(4).getStringCellValue().toUpperCase());
                     String contactInfo = row.getCell(5).getStringCellValue();
 
-                    Patient patient = new Patient("H000", patientId, name, dob, gender, contactInfo, bloodType);
+                    // Added the below 2 lines
+                    // Parse comma-separated diagnosis and treatment into lists
+                    List<String> pastDiagnoses = splitCommaSeparatedString(row.getCell(6));
+                    List<String> pastTreatments = splitCommaSeparatedString(row.getCell(7));
+
+                    // changed the constructor values, pastdiagnosis and pasttreatments
+                    Patient patient = new Patient("H000", patientId, name, dob, gender, contactInfo, bloodType, pastDiagnoses, pastTreatments);
                     patientList.add(patient);
                 }
             }
@@ -51,5 +58,13 @@ public class PatientLoader implements DataLoader {
             System.out.println("Error parsing gender: " + e.getMessage());
         }
         return patientList;
+    }
+
+    // Helper method to split comma-separated strings into a list
+    private List<String> splitCommaSeparatedString(Cell cell) {
+        if (cell == null || cell.getStringCellValue().isEmpty()) {
+            return List.of(); // Return empty list if cell is empty or null
+        }
+        return Arrays.asList(cell.getStringCellValue().split(",\\s*")); // Split by comma and optional whitespace
     }
 }

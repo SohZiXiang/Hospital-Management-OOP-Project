@@ -2,8 +2,8 @@ package app.screens;
 import app.Main;
 import app.loaders.*;
 import interfaces.*;
-import app.Main;
 import models.entities.*;
+import models.enums.FilePaths;
 import utils.*;
 
 import java.util.ArrayList;
@@ -36,8 +36,9 @@ public class LoginScreen implements BaseScreen {
 //                        PatientScreen patientScreen = new PatientScreen();
 //                        patientScreen.display(scanner, user);
                     case DOCTOR:
-//                        DoctorScreen doctorScreen = new DoctorScreen();
-//                        doctorScreen.display(scanner, user);
+                        DoctorMainScreen doctorScreen = new DoctorMainScreen();
+                        doctorScreen.display(scanner, user);
+                        break;
                     case PHARMACIST:
                         PharmacistMainScreen pharmacistScreen = new PharmacistMainScreen();
                         pharmacistScreen.display(scanner, user);
@@ -74,9 +75,10 @@ public class LoginScreen implements BaseScreen {
         List<Patient> patientList = new ArrayList<>();
         List<Staff> staffList = new ArrayList<>();
 
-        String authDataPath = "data/Auth_Data.xlsx";
-        String staffPath = "data/Staff_List.xlsx";
-        String patientPath = "data/Patient_List.xlsx";
+        String authDataPath = FilePaths.AUTH_DATA.getPath();
+        String staffPath = FilePaths.STAFF_DATA.getPath();
+        String patientPath = FilePaths.PATIENT_DATA.getPath();
+
 
         AuthLoader authLoader = new AuthLoader(authDataPath);
         Map<String, String[]> authData = authLoader.loadAuthData();
