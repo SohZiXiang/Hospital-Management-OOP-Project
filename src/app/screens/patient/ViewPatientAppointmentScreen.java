@@ -58,5 +58,20 @@ public class ViewPatientAppointmentScreen implements Screen {
             }
         }
 
+        try {
+            String input = "0";
+            int choice = 0;
+
+            while (choice != 1){
+                System.out.println("Please Select the following options");
+                System.out.println("1: Return To Menu");
+                input = scanner.nextLine();
+                choice = Integer.parseInt(input);
+            }
+
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input. Please enter a number.");
+        }
+
     }
 }

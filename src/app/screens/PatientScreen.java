@@ -1,6 +1,7 @@
 package app.screens;
 import app.Main;
 import app.screens.patient.UpdatePersonalInformationScreen;
+import app.screens.patient.ViewAvailableAppointmentPatientScreen;
 import app.screens.patient.ViewMedicalRecord;
 import app.screens.patient.ViewPatientAppointmentScreen;
 import interfaces.Screen;
@@ -42,7 +43,8 @@ public class PatientScreen implements Screen {
                         updatePersonalInformationScreen.display(scanner,user);
                         break;
                     case 3:
-
+                        ViewAvailableAppointmentPatientScreen viewAvailableAppointmentPatientScreen = new ViewAvailableAppointmentPatientScreen();
+                        viewAvailableAppointmentPatientScreen.display(scanner,user);
                         break;
                     case 4:
 
