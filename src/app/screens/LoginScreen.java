@@ -2,7 +2,6 @@ package app.screens;
 import app.Main;
 import app.loaders.*;
 import interfaces.*;
-import app.Main;
 import models.entities.*;
 import models.enums.FilePaths;
 import utils.*;
@@ -38,8 +37,8 @@ public class LoginScreen implements BaseScreen {
 //                        patientScreen.display(scanner, user);
                         break;
                     case DOCTOR:
-//                        DoctorScreen doctorScreen = new DoctorScreen();
-//                        doctorScreen.display(scanner, user);
+                        DoctorMainScreen doctorScreen = new DoctorMainScreen();
+                        doctorScreen.display(scanner, user);
                         break;
                     case PHARMACIST:
 //                        PharmacistScreen pharmacistScreen = new PharmacistScreen();
