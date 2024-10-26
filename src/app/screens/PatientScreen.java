@@ -2,6 +2,7 @@ package app.screens;
 import app.Main;
 import app.screens.patient.UpdatePersonalInformationScreen;
 import app.screens.patient.ViewMedicalRecord;
+import app.screens.patient.ViewPatientAppointmentScreen;
 import interfaces.Screen;
 import models.entities.User;
 import java.util.Scanner;
@@ -53,7 +54,8 @@ public class PatientScreen implements Screen {
 
                         break;
                     case 7:
-
+                        ViewPatientAppointmentScreen viewPatientAppointmentScreen = new ViewPatientAppointmentScreen();
+                        viewPatientAppointmentScreen.display(scanner,user);
                         break;
                     case 8:
 
