@@ -1,25 +1,17 @@
 package models.entities;
 
 import models.enums.BloodType;
-import models.enums.FilePaths;
 import models.enums.Gender;
 import models.enums.Role;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.time.LocalDate;
 import java.util.*;
 
 public class Patient extends User {
     private String patientID;
     private LocalDate dateOfBirth;
-    private String contact;
+    private String phoneNumber;
+    private String  email;
     private BloodType bloodType;
     private List<String> pastDiagnoses;
     private List<String> pastTreatments;
@@ -31,27 +23,28 @@ public class Patient extends User {
 
     public Patient(String hospitalID, String name, String password,
                    String patientID, LocalDate dateOfBirth, Gender gender,
-                   String contact, BloodType bloodType,
+                   String phoneNumber, String email, BloodType bloodType,
                    List<String> pastDiagnoses, List<String> pastTreatments) {
         super(hospitalID, name, password, gender);
         this.patientID = patientID;
         this.dateOfBirth = dateOfBirth;
-        this.contact = contact;
+        this.phoneNumber = phoneNumber;
+        this.email = email;
         this.bloodType = bloodType;
-        this.pastDiagnoses = pastDiagnoses;
-        this.pastTreatments = pastTreatments;
+        this.pastDiagnoses = (pastDiagnoses != null) ? pastDiagnoses : new ArrayList<>();
+        this.pastTreatments = (pastTreatments != null) ? pastTreatments : new ArrayList<>();
     }
-
+    //Changed this part
     public Patient(String hospitalID,
                    String patientID, String name, LocalDate dateOfBirth, Gender gender,
-                   String contact, BloodType bloodType) {
+                   String email, BloodType bloodType, List<String> pastDiagnoses, List<String> pastTreatments) {
         super(hospitalID = patientID, name,"P@ssw0rd123", gender);
         this.patientID = patientID;
         this.dateOfBirth = dateOfBirth;
+        this.email = email;
         this.bloodType = bloodType;
-        this.contact = contact;
-        this.pastDiagnoses = pastDiagnoses;
-        this.pastTreatments = pastTreatments;
+        this.pastDiagnoses = (pastDiagnoses != null) ? pastDiagnoses : new ArrayList<>();
+        this.pastTreatments = (pastTreatments != null) ? pastTreatments : new ArrayList<>();
     }
 
 
@@ -63,8 +56,12 @@ public class Patient extends User {
         return dateOfBirth;
     }
 
-    public String getContact() {
-        return contact;
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public String getEmail() {
+        return email;
     }
 
     public BloodType getBloodType() {
@@ -79,57 +76,27 @@ public class Patient extends User {
         return pastTreatments;
     }
 
-    public void setContact(String contact) {
-        this.contact = contact;
-
-        String filePath = FilePaths.PATIENT_DATA.getPath();
-        Workbook workbook = null;
-        FileInputStream fileInputStream = null;
-        FileOutputStream fileOutputStream = null;
-
-        try {
-            fileInputStream = new FileInputStream(filePath);
-            workbook = new XSSFWorkbook(fileInputStream);
-
-            Sheet sheet = workbook.getSheetAt(0);
-            boolean found = false;
-
-            for (Row row : sheet) {
-                Cell cell = row.getCell(0);
-                if (cell != null && cell.getStringCellValue().equals(this.patientID)) {
-                    row.createCell(5).setCellValue(contact);
-                    break;
-                }
-            }
-
-            fileOutputStream = new FileOutputStream(filePath);
-            workbook.write(fileOutputStream);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (fileInputStream != null) {
-                    fileInputStream.close();
-                }
-                if (fileOutputStream != null) {
-                    fileOutputStream.close();
-                }
-                if (workbook != null) {
-                    workbook.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
+    public void setEmail(String email) {
+        this.email = email;
+    }
+    // Changed this part
     public void addDiagnosis(String diagnosis) {
+        if (this.pastDiagnoses == null) {
+            this.pastDiagnoses = new ArrayList<>();
+        }
         this.pastDiagnoses.add(diagnosis);
     }
 
+    // Changed this part
     // Method to add a new treatment
     public void addTreatment(String treatment) {
+        if (this.pastTreatments == null) {
+            this.pastTreatments = new ArrayList<>();
+        }
         this.pastTreatments.add(treatment);
     }
 

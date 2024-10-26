@@ -12,14 +12,14 @@ public class Appointment {
     private String appointmentTime;
     private String outcomeRecord;
 
-    public Appointment(String appointmentId, String patientId, String doctorId, AppointmentStatus status, Date appointmentDate, String appointmentTime, String outcomeRecord) {
+    public Appointment(String appointmentId, String patientId, String doctorId, Date appointmentDate, String appointmentTime) {
         this.appointmentId = appointmentId;
         this.patientId = patientId;
         this.doctorId = doctorId;
-        this.status = status;
+        this.status = AppointmentStatus.SCHEDULED;
         this.appointmentDate = appointmentDate;
         this.appointmentTime = appointmentTime;
-        this.outcomeRecord = outcomeRecord;
+        this.outcomeRecord = "";
     }
 
     public String getPatientId() {
