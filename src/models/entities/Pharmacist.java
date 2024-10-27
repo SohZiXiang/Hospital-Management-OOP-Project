@@ -3,7 +3,6 @@ package models.entities;
 import app.loaders.InventoryLoader;
 import models.enums.*;
 
-//my imports
 import java.util.List;
 import java.util.Scanner;
 
@@ -39,10 +38,10 @@ public class Pharmacist extends Staff {
         }
     }
 
-    public void viewSpecificMedicineStock(List<Medicine> medicineStock, String medicineName){
+    public void viewSpecificMedicineStock(List<Medicine> medicineStock, String inputMedicine){
         boolean found = false;
         for (Medicine med : medicineStock) {
-            if (med.getName().equalsIgnoreCase(medicineName)) {
+            if (med.getName().equalsIgnoreCase(inputMedicine)) {
                 System.out.println("Medicine: " + med.getName());
                 System.out.println("Stock: " + med.getQuantity());
                 found = true;
@@ -51,7 +50,7 @@ public class Pharmacist extends Staff {
         }
 
         if (!found) {
-            System.out.println("Medicine " + medicineName + " not found in inventory.");
+            System.out.println("Medicine " + inputMedicine + " not found in inventory.");
         }
 
     }
@@ -84,7 +83,7 @@ public class Pharmacist extends Staff {
         List<ReplenishmentRequest> existingRequests = requestManager.getAllRequests();
         for (ReplenishmentRequest request : existingRequests) {
             if (request.getMedicineName().equalsIgnoreCase(medicineName) && request.getHospitalId().equals(getHospitalID())) {
-                System.out.println("A replenishment request for " + medicineName + " has already been made by you previously.");
+                System.out.println("A replenishment request for " + medicineName + " has already been made by you.");
                 System.out.println("Do you still want to submit this request? (yes/no): ");
                 String reconfirmation = scanner.nextLine().trim().toLowerCase();
 
@@ -110,7 +109,7 @@ public class Pharmacist extends Staff {
 
         // Submit the replenishment request
         ReplenishmentRequest request = new ReplenishmentRequest(0, getHospitalID(), getName(), selectedMedicine.getName(), requestedAmount);
-        request = requestManager.addRequest(request);   // Add request and assign a proper ID
+        request = requestManager.addRequest(request);
 
         System.out.println("Replenishment request with ID:" +request.getRequestId()+ " for " + requestedAmount + " units of " + selectedMedicine.getName() + " has been submitted.");
     }

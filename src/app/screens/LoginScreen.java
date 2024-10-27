@@ -41,6 +41,7 @@ public class LoginScreen implements BaseScreen {
                     case PHARMACIST:
                         PharmacistMainScreen pharmacistScreen = new PharmacistMainScreen();
                         pharmacistScreen.display(scanner, user);
+                        break;
                     case ADMINISTRATOR:
 //                        AdminScreen adminScreen = new AdminScreen();
 //                        adminScreen.display(scanner,user);
@@ -48,7 +49,7 @@ public class LoginScreen implements BaseScreen {
                         System.out.println("Error: Unknown role. Redirecting to main menu...");
                         Main.displayMain(scanner); // Redirect to the main menu or home screen
                         break;
-                }
+                } break;//here
             } else {
                 System.out.println("Invalid hospital ID or password. Please try again.");
             }
