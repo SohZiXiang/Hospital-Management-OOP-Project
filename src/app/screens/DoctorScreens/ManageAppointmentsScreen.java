@@ -8,15 +8,12 @@ import java.time.*;
 import java.util.*;
 
 public class ManageAppointmentsScreen implements Screen {
-    // Change variableName
-    private List<Appointment> appointmentList;
-    private List<Availability> availabilityList;
-    //Change variableNames
+
     @Override
     public void display(Scanner scanner, User user) {
-        Doctor doctor = (Doctor) user;
-        appointmentList = doctor.getAppointments();
-        availabilityList = doctor.getAvailabilityList();
+        Doctor doc = (Doctor) user;
+        doc.getApptList();
+        doc.getAvailList();
 
         while (true) {
             System.out.println("\n--- Manage Appointments ---");
@@ -32,17 +29,12 @@ public class ManageAppointmentsScreen implements Screen {
                 int choice = Integer.parseInt(input);
 
                 switch (choice) {
-                    // Change variableName
-                    case 1 -> {
-                        LocalDate currentDate = LocalDate.now();
-                        int year = currentDate.getYear();
-                        int month = currentDate.getMonthValue();
-                        doctor.viewSchedule(year, month);
-                    }
-                    case 2 -> checkAvailability(scanner, doctor);
+                    case 1 -> doc.viewDoctorSchedule();
+                    case 2 -> manageAvailability(scanner, doc);
                     // case 3 -> acceptDeclineAppointments(scanner, user);
                     case 4 -> {
                         System.out.println("Returning to Main Menu...");
+                        doc.resetData();
                         return;
                     }
                     default -> System.out.println("Invalid choice, please try again.");
@@ -52,43 +44,39 @@ public class ManageAppointmentsScreen implements Screen {
             }
         }
     }
-    // Change variableName
-    public void checkAvailability(Scanner scanner, Doctor doctor) {
-        System.out.println("\n--- Set Availability ---");
+
+    public void manageAvailability(Scanner scanner, Doctor doc) {
+        System.out.println("\n--- Manage your Availability ---");
 
         System.out.print("Enter year for availability (e.g., 2024): ");
-        int year = Integer.parseInt(scanner.nextLine());
+        int chosenYr = Integer.parseInt(scanner.nextLine());
 
         System.out.print("Enter month for availability (1-12): ");
-        int month = Integer.parseInt(scanner.nextLine());
+        int chosenMth = Integer.parseInt(scanner.nextLine());
 
         while (true) {
             System.out.print("Enter day (1-31, or 0 to stop): ");
-            int day = Integer.parseInt(scanner.nextLine());
+            int chosenDay = Integer.parseInt(scanner.nextLine());
 
-            if (day == 0) {
+            if (chosenDay == 0) {
                 System.out.println("Exiting availability setting.");
                 break;
             }
 
-            LocalDate date = LocalDate.of(year, month, day);
-            if (date.isBefore(LocalDate.now())) {
-                System.out.println("Invalid date. Please enter a current or future date.");
-                continue;
-            }
+            LocalDate combinedDate = LocalDate.of(chosenYr, chosenMth, chosenDay);
 
-            System.out.print("Enter start time (HH:MM, 24-hour format): ");
-            String startTime = scanner.nextLine();
+            System.out.print("Enter start time (hh:mm, 12-hour format): ");
+            String start = scanner.nextLine();
 
-            System.out.print("Enter end time (HH:MM, 24-hour format): ");
-            String endTime = scanner.nextLine();
+            System.out.print("Enter end time (hh:mm, 12-hour format): ");
+            String end = scanner.nextLine();
 
             System.out.print("Is the doctor available or busy at this time? (A for Available, B for Busy): ");
-            String statusInput = scanner.nextLine().toUpperCase();
-            DoctorAvailability status = statusInput.equals("A") ? DoctorAvailability.AVAILABLE : DoctorAvailability.BUSY;
+            String enteredStatus = scanner.nextLine().toUpperCase();
+            DoctorAvailability docAvail = enteredStatus.equals("A") ? DoctorAvailability.AVAILABLE :
+                    DoctorAvailability.BUSY;
 
-            // Call validateAndSetAvailability in Doctor class with the collected input
-            doctor.validateAndSetAvailability(date, startTime, endTime, status);
+            doc.addAvail(combinedDate, start, end, docAvail);
         }
     }
 

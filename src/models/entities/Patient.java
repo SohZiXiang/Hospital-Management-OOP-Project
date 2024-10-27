@@ -31,8 +31,8 @@ public class Patient extends User {
         this.phoneNumber = phoneNumber;
         this.email = email;
         this.bloodType = bloodType;
-        this.pastDiagnoses = (pastDiagnoses != null) ? pastDiagnoses : new ArrayList<>();
-        this.pastTreatments = (pastTreatments != null) ? pastTreatments : new ArrayList<>();
+        this.pastDiagnoses = (pastDiagnoses != null) ? new ArrayList<>(pastDiagnoses) : new ArrayList<>();
+        this.pastTreatments = (pastTreatments != null) ? new ArrayList<>(pastTreatments) : new ArrayList<>();
     }
     //Changed this part
     public Patient(String hospitalID,
@@ -43,8 +43,8 @@ public class Patient extends User {
         this.dateOfBirth = dateOfBirth;
         this.email = email;
         this.bloodType = bloodType;
-        this.pastDiagnoses = (pastDiagnoses != null) ? pastDiagnoses : new ArrayList<>();
-        this.pastTreatments = (pastTreatments != null) ? pastTreatments : new ArrayList<>();
+        this.pastDiagnoses = (pastDiagnoses != null) ? new ArrayList<>(pastDiagnoses) : new ArrayList<>();
+        this.pastTreatments = (pastTreatments != null) ? new ArrayList<>(pastTreatments) : new ArrayList<>();
     }
 
 
@@ -91,7 +91,7 @@ public class Patient extends User {
         this.pastDiagnoses.add(diagnosis);
     }
 
-    // Changed this part
+
     // Method to add a new treatment
     public void addTreatment(String treatment) {
         if (this.pastTreatments == null) {
