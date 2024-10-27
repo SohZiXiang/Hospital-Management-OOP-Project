@@ -11,6 +11,7 @@ import models.entities.User;
 import models.enums.DoctorAvailability;
 import models.enums.FilePaths;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,8 @@ public class ViewPatientAppointmentScreen implements Screen {
     DataLoader staffLoader = new StaffLoader();
     List<Staff> staffList = new ArrayList<>();
     String staffPath = FilePaths.STAFF_DATA.getPath();
+
+    SimpleDateFormat formatter = new SimpleDateFormat("EEE dd/MM/yyyy");
 
     @Override
     public void display(Scanner scanner, User user) {
@@ -68,7 +71,7 @@ public class ViewPatientAppointmentScreen implements Screen {
 
                 System.out.printf("%-35s %-35s %-35s %-35s %-35s%n",
                         appointment.getAppointmentId(), doctorName,
-                        appointment.getStatus(), appointment.getAppointmentDate(),
+                        appointment.getStatus(), formatter.format(appointment.getAppointmentDate()),
                         appointment.getAppointmentTime());
             }
         }
@@ -94,7 +97,7 @@ public class ViewPatientAppointmentScreen implements Screen {
 
                     System.out.printf("%-35s %-35s %-35s %-35s%n",
                             ("Dr " + doctorName),
-                            availability.getAvailableDate(),
+                            formatter.format(availability.getAvailableDate()),
                             availability.getStartTime() + " - " + availability.getEndTime(),
                             availability.getStatus());
                 }

@@ -11,6 +11,7 @@ import models.entities.User;
 import models.enums.DoctorAvailability;
 import models.enums.FilePaths;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -78,9 +79,11 @@ public class ViewAvailableAppointmentPatientScreen implements Screen {
                         }
                     }
 
+                    SimpleDateFormat formatter = new SimpleDateFormat("EEE dd/MM/yyyy");
+
                     System.out.printf("%-35s %-35s %-35s %-35s%n",
                             ("Dr " + doctorName),
-                            availability.getAvailableDate(),
+                            formatter.format(availability.getAvailableDate()),
                             availability.getStartTime() + " - " + availability.getEndTime(),
                             availability.getStatus());
                 }
