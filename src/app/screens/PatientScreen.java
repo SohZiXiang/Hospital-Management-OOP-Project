@@ -20,7 +20,7 @@ public class PatientScreen implements Screen {
                     "   \\ \\__\\    \\ \\__\\ \\__\\   \\ \\__\\ \\ \\__\\ \\_______\\ \\__\\\\ \\__\\   \\ \\__\\\n" +
                     "    \\|__|     \\|__|\\|__|    \\|__|  \\|__|\\|_______|\\|__| \\|__|    \\|__|");
             System.out.println("\n--- Patient Menu---");
-            System.out.println("1. View Medical Records");
+            System.out.println("1. Manage Medical Records");
             System.out.println("2. Update Personal Information");
             System.out.println("3. Manage Appointment");
             System.out.println("4. View Past Appointment Outcome Records");
@@ -39,8 +39,6 @@ public class PatientScreen implements Screen {
                         updatePersonalInformationScreen.display(scanner,user);
                         break;
                     case 3:
-//                        ViewAvailableAppointmentPatientScreen viewAvailableAppointmentPatientScreen = new ViewAvailableAppointmentPatientScreen();
-//                        viewAvailableAppointmentPatientScreen.display(scanner,user);
                         ViewPatientAppointmentScreen viewPatientAppointmentScreen = new ViewPatientAppointmentScreen();
                         viewPatientAppointmentScreen.display(scanner,user);
                         break;

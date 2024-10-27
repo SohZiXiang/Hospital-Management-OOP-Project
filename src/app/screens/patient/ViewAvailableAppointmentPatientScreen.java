@@ -59,16 +59,18 @@ public class ViewAvailableAppointmentPatientScreen implements Screen {
 //
 //        }
 
-        System.out.printf("%-20s %-20s %-20s %-20s%n",
+        System.out.println();
+        System.out.println("-------- Displaying Available Appointment Slots ---------\n");
+
+        System.out.printf("%-35s %-35s %-35s %-35s%n",
                 "Doctor", "Date", "Time", "Status");
-        System.out.println("-------------------------------------------------------------------");
+        System.out.println("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
 
         for (List<Availability> availabilityList : availabilityMap.values()) {
             for (Availability availability : availabilityList) {
                 if (availability.getStatus() == DoctorAvailability.AVAILABLE) {
                     String doctorName = "N/A";
 
-                    // Find doctor name from staff list
                     for (Staff staff : staffList) {
                         if (staff.getStaffId().equals(availability.getDoctorId())) {
                             doctorName = staff.getName();
@@ -76,9 +78,8 @@ public class ViewAvailableAppointmentPatientScreen implements Screen {
                         }
                     }
 
-                    // Print each row of data
-                    System.out.printf("%-20s %-20s %-20s %-20s%n",
-                            doctorName,
+                    System.out.printf("%-35s %-35s %-35s %-35s%n",
+                            ("Dr " + doctorName),
                             availability.getAvailableDate(),
                             availability.getStartTime() + " - " + availability.getEndTime(),
                             availability.getStatus());

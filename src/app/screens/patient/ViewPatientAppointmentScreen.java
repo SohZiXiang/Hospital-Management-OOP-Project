@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.regex.Matcher;
 
 public class ViewPatientAppointmentScreen implements Screen {
 
@@ -100,20 +101,40 @@ public class ViewPatientAppointmentScreen implements Screen {
             }
         }
 
-        try {
-            String input = "0";
-            int choice = 0;
 
-            while (choice != 1){
-                System.out.println();
-                System.out.println("Please Select the following options");
-                System.out.println("1: Return To Menu");
-                input = scanner.nextLine();
-                choice = Integer.parseInt(input);
+        Boolean exit = false;
+
+        while(!exit){
+            System.out.println();
+            System.out.println("Please Select the following options");
+            System.out.println("1: Return To Menu");
+            System.out.println("2: Schedule An Appointment");
+            System.out.println("3: Reschedule An Appointment");
+            System.out.println("4: Cancel Appointment");
+            String input = scanner.nextLine();
+
+            try {
+                int choice = Integer.parseInt(input);
+                switch (choice) {
+                    case 1:
+                        exit = true;
+                        break;
+                    case 2:
+
+                        break;
+                    case 3:
+
+                        break;
+                    case 4:
+
+                        break;
+                    default:
+                        System.out.println("Invalid choice, please try again.");
+                        break;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number.");
             }
-
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid input. Please enter a number.");
         }
 
     }

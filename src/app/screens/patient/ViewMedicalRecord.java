@@ -9,8 +9,14 @@ import models.enums.FilePaths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 public class ViewMedicalRecord implements Screen {
+
+    private final static Pattern VALID_EMAIL_REGEX =
+            Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+    private final static Pattern VALID_PHONE_REGEX =
+            Pattern.compile("(6|8|9)\\d{7}");
 
     DataLoader patientLoader = new PatientLoader();
     List<Patient> patientList = new ArrayList<>();
@@ -34,25 +40,47 @@ public class ViewMedicalRecord implements Screen {
         }
 
         System.out.println("----- Displaying Medical Record for " + user.getHospitalID() + " -----");
-        System.out.println("Patient Name: " + currentPatient.getName());
-        System.out.println("Patient Date Of Birth: " + currentPatient.getDateOfBirth());
-        System.out.println("Patient Gender: " + currentPatient.getGender());
-        System.out.println("Patient Blood Type: " + currentPatient.getBloodType());
-        System.out.println("Patient Contact: " + currentPatient.getPhoneNumber());
+        System.out.println();
+        System.out.printf("%-30s %-30s%n", "Attribute", "Details");
+        System.out.println("----------------------------------------------------------------------------------------------------------------------------");
 
-        try {
-            String input = "0";
-            int choice = 0;
+        System.out.printf("%-30s %-30s%n", "Name:", currentPatient.getName());
+        System.out.printf("%-30s %-30s%n", "DOB:", currentPatient.getDateOfBirth());
+        System.out.printf("%-30s %-30s%n", "Gender:", currentPatient.getGender());
+        System.out.printf("%-30s %-30s%n", "Blood Type:", currentPatient.getBloodType());
+        System.out.printf("%-30s %-30s%n", "Phone Number:", currentPatient.getPhoneNumber());
+        System.out.printf("%-30s %-30s%n", "Email:", currentPatient.getEmail());
 
-            while (choice != 1){
-                System.out.println("Please Select the following options");
-                System.out.println("1: Return To Menu");
-                input = scanner.nextLine();
-                choice = Integer.parseInt(input);
+        System.out.println();
+
+        Boolean exit = false;
+
+        while(!exit){
+            System.out.println();
+            System.out.println("Please Select the following options");
+            System.out.println("1: Return To Menu");
+            System.out.println("2: Update Phone Number");
+            System.out.println("3: Update Email");
+            String input = scanner.nextLine();
+
+            try {
+                int choice = Integer.parseInt(input);
+                switch (choice) {
+                    case 1:
+                        exit = true;
+                        break;
+                    case 2:
+                        System.out.println("Please Enter New Contact (Email Address or Phone Number)");
+                        break;
+                    case 3:
+                        break;
+                    default:
+                        System.out.println("Invalid choice, please try again.");
+                        break;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number.");
             }
-
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid input. Please enter a number.");
         }
 
     }
