@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.regex.Matcher;
 
 public class ViewPatientAppointmentScreen implements Screen {
 
@@ -32,6 +31,7 @@ public class ViewPatientAppointmentScreen implements Screen {
     String staffPath = FilePaths.STAFF_DATA.getPath();
 
     SimpleDateFormat formatter = new SimpleDateFormat("EEE dd/MM/yyyy");
+    int slotCount = 0;
 
     @Override
     public void display(Scanner scanner, User user) {
@@ -79,8 +79,8 @@ public class ViewPatientAppointmentScreen implements Screen {
         System.out.println();
         System.out.println("-------- Displaying Available Appointment Slots ---------\n");
 
-        System.out.printf("%-35s %-35s %-35s %-35s%n",
-                "Doctor", "Date", "Time", "Status");
+        System.out.printf("%-15s %-35s %-35s %-35s %-35s%n",
+                "Option", "Doctor", "Date", "Time", "Status");
         System.out.println("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
 
         for (List<Availability> availabilityList : availabilityMap.values()) {
@@ -95,7 +95,8 @@ public class ViewPatientAppointmentScreen implements Screen {
                         }
                     }
 
-                    System.out.printf("%-35s %-35s %-35s %-35s%n",
+                    System.out.printf("%-15s %-35s %-35s %-35s %-35s%n",
+                            ++slotCount,
                             ("Dr " + doctorName),
                             formatter.format(availability.getAvailableDate()),
                             availability.getStartTime() + " - " + availability.getEndTime(),
@@ -123,6 +124,8 @@ public class ViewPatientAppointmentScreen implements Screen {
                         exit = true;
                         break;
                     case 2:
+                        System.out.println("Select A Option For Your Prefer Slot, example 1");
+                        String option = scanner.nextLine();
 
                         break;
                     case 3:
