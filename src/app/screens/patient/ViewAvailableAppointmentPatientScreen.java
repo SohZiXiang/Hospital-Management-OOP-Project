@@ -38,27 +38,52 @@ public class ViewAvailableAppointmentPatientScreen implements Screen {
 
         System.out.println("Displaying Available Appointment Slots\n");
 
+//        for (List<Availability> availabilityList : availabilityMap.values()) {
+//
+//            for (Availability availability : availabilityList) {
+//
+//                if(availability.getStatus() == DoctorAvailability.AVAILABLE){
+//
+//                    for (Staff staff : staffList) {
+//                        if (staff.getStaffId().equals(availability.getDoctorId())) {
+//                            System.out.println("Doctor: " + staff.getName());
+//                        }
+//                    }
+//
+//                    System.out.println("Date: " + availability.getAvailableDate());
+//                    System.out.println("Time: " + availability.getStartTime() + " - " + availability.getEndTime());
+//                    System.out.println("Status: " + availability.getStatus());
+//
+//                }
+//            }
+//
+//        }
+
+        System.out.printf("%-20s %-20s %-20s %-20s%n",
+                "Doctor", "Date", "Time", "Status");
+        System.out.println("-------------------------------------------------------------------");
+
         for (List<Availability> availabilityList : availabilityMap.values()) {
-
             for (Availability availability : availabilityList) {
+                if (availability.getStatus() == DoctorAvailability.AVAILABLE) {
+                    String doctorName = "N/A";
 
-                if(availability.getStatus() == DoctorAvailability.AVAILABLE){
-
-                    System.out.println("----Appointment Slot----");
-
+                    // Find doctor name from staff list
                     for (Staff staff : staffList) {
                         if (staff.getStaffId().equals(availability.getDoctorId())) {
-                            System.out.println("Doctor: Dr " + staff.getName());
+                            doctorName = staff.getName();
+                            break;
                         }
                     }
 
-                    System.out.println("Date: " + availability.getAvailableDate());
-                    System.out.println("Time: " + availability.getStartTime() + " - " + availability.getEndTime());
-                    System.out.println("Status: " + availability.getStatus());
-
+                    // Print each row of data
+                    System.out.printf("%-20s %-20s %-20s %-20s%n",
+                            doctorName,
+                            availability.getAvailableDate(),
+                            availability.getStartTime() + " - " + availability.getEndTime(),
+                            availability.getStatus());
                 }
             }
-
         }
 
         try {
