@@ -30,6 +30,8 @@ public class LoginScreen implements BaseScreen {
                     System.out.println("Your password is the default. Please change your password.");
                     changePassword(user);
                 }
+                String logMsg = "User " + user.getName() + " (ID: " + hospitalId + ") has logged in.";
+                ActivityLogUtil.logActivity(logMsg, user);
                 System.out.println("Login successful! Welcome " + user.getName());
                 switch (user.getRole()) {
                     case PATIENT:
