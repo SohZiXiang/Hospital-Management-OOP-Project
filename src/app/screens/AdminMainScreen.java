@@ -12,12 +12,15 @@ public class AdminMainScreen implements Screen{
 
     @Override
     public void display(Scanner scanner, User user) {
+        Administrator admin = (Administrator) user;
         while (true) {
             System.out.println("    _       _           _       ");
             System.out.println("   / \\   __| |_ __ ___ (_)_ __  ");
             System.out.println("  / _ \\ / _` | '_ ` _ \\| | '_ \\ ");
             System.out.println(" / ___ \\ (_| | | | | | | | | | |");
             System.out.println("/_/   \\_\\__,_|_| |_| |_|_|_| |_|");
+            System.out.println("\nWelcome, Administrator: " + admin.getName());
+            System.out.println("What would you like to do?");
             System.out.println("\n--- Administrator Menu ---");
             System.out.println("1. View and Manage Hospital Staff");
             System.out.println("2. View Appointments details");

@@ -140,7 +140,7 @@ public class ApproveReplenishmentScreen implements Screen {
             int newStock = addedStock + initialStock;
 
             ManageInventoryScreen manageInventoryScreen = new ManageInventoryScreen();
-            manageInventoryScreen.updateStock(medData, newStock);
+            manageInventoryScreen.updateStock(medData, newStock, currentUser);
 
             updateRequestStatus(request, "approved");
             request.setStatus("approved");

@@ -190,7 +190,8 @@ public class ManageInventoryScreen implements Screen {
         updateInventoryInExcel(medicine, name);
     }
 
-    public void updateStock(Medicine medicine, int stock) {
+    public void updateStock(Medicine medicine, int stock, User user) {
+        currentUser = user;
         medicine.setStock(stock);
         updateInventoryInExcel(medicine, medicine.getName());
     }
@@ -268,7 +269,7 @@ public class ManageInventoryScreen implements Screen {
                     try (FileOutputStream fos = new FileOutputStream(filePath)) {
                         workbook.write(fos);
                     }
-                     String logMsg = "User " + currentUser.getName() + " (ID: " + currentUser.getHospitalID() + ") " +
+                    String logMsg = "User " + currentUser.getName() + " (ID: " + currentUser.getHospitalID() + ") " +
                              "updated inventory for medicine: " + medicine.getName() +
                              " from stock: " + prevStock + " to updated stock: " + medicine.getStock() +
                              " with low stock alert from: " + prevStockAlert + " to: " + medicine.getLowStockAlert() + ".";
