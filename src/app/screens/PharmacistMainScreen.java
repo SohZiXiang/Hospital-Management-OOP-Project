@@ -33,33 +33,31 @@ public class PharmacistMainScreen {
                     case 2:
                         //updatePrescriptionStatus(pharmacist, scanner);
                         break;
-                    case 3://viewAllMedicineStock
+                    case 3:
                         System.out.println("\nViewing all medicine stock...");
                         pharmacist.viewAllMedicineStock(medicineStock);
                         break;
-                    case 4://viewSpecificMedicineStock
+                    case 4:
                         System.out.println("\nEnter medicine name to view current stock: ");
-                        String medicineName = scanner.nextLine().trim();
-                        pharmacist.viewSpecificMedicineStock(medicineStock, medicineName);
+                        String viewMedName = scanner.nextLine().trim();
+                        pharmacist.viewSpecificMedicineStock(medicineStock, viewMedName);
                         break;
-                    case 5://submitReplenishmentRequest
-                        System.out.println("\nEnter Medicine Name to request replenishment: ");
+                    case 5:
+                        System.out.println("\nEnter Medicine Name to request replenishment for: ");
                         String reqMedName = scanner.nextLine().trim();
-
                         System.out.println("Enter the amount of " + reqMedName + " you want to request: ");
                         int reqAmount;
                         try {
                             reqAmount = Integer.parseInt(scanner.nextLine());
                         } catch (NumberFormatException e) {
-                            System.out.println("Invalid input. Please enter a valid number for the requested amount.");
+                            System.out.println("Invalid input. Enter a valid number");
                             return;
                         }
-
                         pharmacist.submitReplenishmentRequest(reqMedName, reqAmount, scanner);
                         break;
                     case 6:
-                        System.out.println("Logging out...");
-                        return; // STILL WORKING ON THIS
+                        System.out.println("See you, "+pharmacist.getName()+"\nYou have logged out");
+                        return;
                     default:
                         System.out.println("Invalid choice, please try again.");
                 }

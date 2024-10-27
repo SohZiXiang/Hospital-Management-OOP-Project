@@ -23,7 +23,6 @@ public class ReplenishmentRequestManager {
                 workbook = new XSSFWorkbook();
                 sheet = workbook.createSheet("Requests");
 
-                // Create header row
                 Row headerRow = sheet.createRow(0);
                 headerRow.createCell(0).setCellValue("Request ID");
                 headerRow.createCell(1).setCellValue("Hospital ID");
@@ -54,7 +53,7 @@ public class ReplenishmentRequestManager {
             int newRequestId = highestRequestId + 1;
             request = new ReplenishmentRequest(newRequestId, request.getHospitalId(), request.getRequesterName(), request.getMedicineName(), request.getRequestedAmount());
 
-            // Add the new request
+            // Add new request
             Row row = sheet.createRow(++rowCount);
             row.createCell(0).setCellValue(request.getRequestId());
             row.createCell(1).setCellValue(request.getHospitalId());
@@ -64,7 +63,7 @@ public class ReplenishmentRequestManager {
             row.createCell(5).setCellValue(request.getStatus());
             row.createCell(6).setCellValue(request.getRequestDate().toString());
 
-            // Write changes to the file
+            // Write changes back to file
             FileOutputStream fos = new FileOutputStream(FILE_PATH);
             workbook.write(fos);
             fos.close();
@@ -75,7 +74,7 @@ public class ReplenishmentRequestManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return request;  // Return the updated request with the correct ID
+        return request;  // Return request with the updated ID
     }
 
 
