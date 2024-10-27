@@ -13,13 +13,8 @@ public class DoctorMainScreen implements Screen{
     @Override
     public void display(Scanner scanner, User user) {
         while (true) {
-            System.out.println(" _____            _             ");
-            System.out.println("|  __ \\          | |            ");
-            System.out.println("| |  | | ___  ___| | _____ _ __ ");
-            System.out.println("| |  | |/ _ \\/ __| |/ / _ \\ '__|");
-            System.out.println("| |__| |  __/ (__|   <  __/ |   ");
-            System.out.println("|_____/ \\___|\\___|_|\\_\\___|_|   ");
-            System.out.println("\n--- Doctor Menu ---");
+            System.out.printf("Welcome, %s: %s\n", user.getRole(), user.getName());
+            System.out.println("What would you like you to do?");
             System.out.println("1. View/Update Patient Medical Records");
             System.out.println("2. Manage your appointments");
             System.out.println("3. Record Appointment Outcome");
