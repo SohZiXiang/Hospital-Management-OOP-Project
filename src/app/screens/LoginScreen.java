@@ -5,7 +5,6 @@ import interfaces.*;
 import models.entities.*;
 import models.enums.FilePaths;
 import utils.*;
-import java.io.Console;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,9 +21,8 @@ public class LoginScreen implements BaseScreen {
                 Main.displayMain(scanner);
                 break;
             }
-            Console console = System.console();
-            char[] pwArray = console.readPassword("Enter your password: ");
-            String password = new String(pwArray);
+            System.out.print("Enter password: \n");
+            String password = scanner.nextLine();
 
             User user = authenticateUser(hospitalId, password);
             if (user != null) {
@@ -32,29 +30,29 @@ public class LoginScreen implements BaseScreen {
                     System.out.println("Your password is the default. Please change your password.");
                     changePassword(user);
                 }
-                String logMsg = "User " + user.getName() + " (ID: " + hospitalId + ") has logged in.";
-                ActivityLogUtil.logActivity(logMsg, user);
                 System.out.println("Login successful! Welcome " + user.getName());
                 switch (user.getRole()) {
                     case PATIENT:
-//                        PatientScreen patientScreen = new PatientScreen();
-//                        patientScreen.display(scanner, user);
+                          PatientScreen patientScreen = new PatientScreen();
+                          patientScreen.display(scanner, user);
+                        break;
                     case DOCTOR:
                         DoctorMainScreen doctorScreen = new DoctorMainScreen();
                         doctorScreen.display(scanner, user);
                         break;
                     case PHARMACIST:
-                        PharmacistMainScreen pharmacistScreen = new PharmacistMainScreen();
-                        pharmacistScreen.display(scanner, user);
+//                        PharmacistScreen pharmacistScreen = new PharmacistScreen();
+//                        pharmacistScreen.display(scanner, user);
                         break;
                     case ADMINISTRATOR:
                         AdminMainScreen adminScreen = new AdminMainScreen();
                         adminScreen.display(scanner,user);
+                        break;
                     default:
                         System.out.println("Error: Unknown role. Redirecting to main menu...");
-                        Main.displayMain(scanner);
+                        Main.displayMain(scanner); // Redirect to the main menu or home screen
                         break;
-                } break;//here
+                }
             } else {
                 System.out.println("Invalid hospital ID or password. Please try again.");
             }
@@ -84,7 +82,6 @@ public class LoginScreen implements BaseScreen {
         String staffPath = FilePaths.STAFF_DATA.getPath();
         String patientPath = FilePaths.PATIENT_DATA.getPath();
 
-
         AuthLoader authLoader = new AuthLoader(authDataPath);
         Map<String, String[]> authData = authLoader.loadAuthData();
 
@@ -106,19 +103,19 @@ public class LoginScreen implements BaseScreen {
                 return null;
             }
             if (hashedPassword.equals(storedPassword)) {{
-                for (Staff staff : staffList) {
-                    if (staff.getStaffId().equals(hospitalId)) {
-                        return staff;
+                    for (Staff staff : staffList) {
+                        if (staff.getStaffId().equals(hospitalId)) {
+                            return staff;
+                        }
                     }
                 }
-            }
                 for (Patient patient : patientList) {
-                    if (patient.getPatientID().equals(hospitalId)) {
-                        return patient;
+                        if (patient.getPatientID().equals(hospitalId)) {
+                            return patient;
+                        }
                     }
                 }
             }
-        }
         return null;
     }
 }
