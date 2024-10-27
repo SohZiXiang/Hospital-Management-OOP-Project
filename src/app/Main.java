@@ -47,6 +47,7 @@ public class Main {
                         break;
                     case 3:
                         System.out.println("Thank you for using the system!");
+                        System.exit(0);
                         break;
                     default:
                         System.out.println("Invalid choice, please try again.");

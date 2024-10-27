@@ -5,6 +5,7 @@ import interfaces.*;
 import models.entities.*;
 import models.enums.FilePaths;
 import utils.*;
+import java.io.Console;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,8 +22,9 @@ public class LoginScreen implements BaseScreen {
                 Main.displayMain(scanner);
                 break;
             }
-            System.out.print("Enter password: \n");
-            String password = scanner.nextLine();
+            Console console = System.console();
+            char[] pwArray = console.readPassword("Enter your password: ");
+            String password = new String(pwArray);
 
             User user = authenticateUser(hospitalId, password);
             if (user != null) {
@@ -30,6 +32,8 @@ public class LoginScreen implements BaseScreen {
                     System.out.println("Your password is the default. Please change your password.");
                     changePassword(user);
                 }
+                String logMsg = "User " + user.getName() + " (ID: " + hospitalId + ") has logged in.";
+                ActivityLogUtil.logActivity(logMsg, user);
                 System.out.println("Login successful! Welcome " + user.getName());
                 switch (user.getRole()) {
                     case PATIENT:
@@ -47,7 +51,7 @@ public class LoginScreen implements BaseScreen {
                         adminScreen.display(scanner,user);
                     default:
                         System.out.println("Error: Unknown role. Redirecting to main menu...");
-                        Main.displayMain(scanner); // Redirect to the main menu or home screen
+                        Main.displayMain(scanner);
                         break;
                 }
             } else {

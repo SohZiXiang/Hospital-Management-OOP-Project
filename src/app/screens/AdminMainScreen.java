@@ -4,6 +4,7 @@ import app.Main;
 import app.screens.admin.*;
 import interfaces.*;
 import models.entities.*;
+import utils.ActivityLogUtil;
 
 import java.util.*;
 
@@ -35,9 +36,8 @@ public class AdminMainScreen implements Screen{
                         manageStaffScreen.display(scanner, user);
                         break;
                     case 2:
-                        // Navigate to View Appointments Screen
-//                        ViewAppointmentsScreen viewAppointmentsScreen = new ViewAppointmentsScreen();
-//                        viewAppointmentsScreen.display(scanner, user);
+                        ViewAppointmentsScreen viewAppointmentsScreen = new ViewAppointmentsScreen();
+                        viewAppointmentsScreen.display(scanner, user);
                         break;
                     case 3:
                         ManageInventoryScreen manageInventoryScreen = new ManageInventoryScreen();
@@ -48,8 +48,7 @@ public class AdminMainScreen implements Screen{
                         approveReplenishmentScreen.display(scanner, user);
                         break;
                     case 5:
-                        System.out.println("Logging out...");
-                        Main.displayMain(scanner);
+                        ActivityLogUtil.logout(scanner, user);
                     default:
                         System.out.println("Invalid choice, please try again.");
                 }

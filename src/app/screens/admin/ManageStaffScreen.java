@@ -5,6 +5,7 @@ import app.screens.*;
 import interfaces.*;
 import models.entities.*;
 import models.enums.*;
+import utils.ActivityLogUtil;
 import utils.StringFormatUtil;
 
 import javax.xml.crypto.Data;
@@ -26,9 +27,11 @@ import static models.enums.Gender.*;
 
 public class ManageStaffScreen implements Screen {
     private List<Staff> staffList;
+    private User currentUser;
 
     @Override
     public void display(Scanner scanner, User user) {
+        currentUser = user;
         staffList = loadStaffList();
         while (true) {
             System.out.println("\n--- Manage Hospital Staff ---");
@@ -68,138 +71,154 @@ public class ManageStaffScreen implements Screen {
 
     private void viewStaffList(Scanner scanner) {
         staffList = loadStaffList();
-        System.out.println("\n--- View Staff List ---");
-        System.out.println("Filter by: ");
-        System.out.println("1. Role");
-        System.out.println("2. Gender");
-        System.out.println("3. Age Range");
-        System.out.println("4. No Filter (View All)");
-        System.out.print("Enter your choice: ");
+        String logMsg = "User " + currentUser.getName() + " (ID: " + currentUser.getHospitalID() + ") viewed staff list.";
+        ActivityLogUtil.logActivity(logMsg, currentUser);
+        while (true) {
+            System.out.println("\n--- View Staff List ---");
+            System.out.println("Filter by: ");
+            System.out.println("1. Role");
+            System.out.println("2. Gender");
+            System.out.println("3. Age Range");
+            System.out.println("4. No Filter (View All)");
+            System.out.print("Enter your choice: ");
 
-        String filterChoice = scanner.nextLine();
-        switch (filterChoice) {
-            case "1":
-                System.out.println("\nSelect role:");
-                System.out.println("1. Doctor");
-                System.out.println("2. Pharmacist");
-                System.out.print("Enter your choice (1 or 2): ");
-                int role = Integer.parseInt(scanner.nextLine());
+            String filterChoice = scanner.nextLine();
+            switch (filterChoice) {
+                case "1":
+                    System.out.println("\nSelect role:");
+                    System.out.println("1. Doctor");
+                    System.out.println("2. Pharmacist");
+                    System.out.print("Enter your choice (1 or 2): ");
+                    int role = Integer.parseInt(scanner.nextLine());
 
-                switch (role) {
-                    case 1:
-                        displayStaffDetailsHeader();
+                    switch (role) {
+                        case 1:
+                            displayStaffDetailsHeader();
                             staffList.stream()
                                     .filter(staff -> staff.getRole().toString().toLowerCase().equals("doctor"))
                                     .forEach(staff -> displayStaffDetails(staff));
                             break;
-                    case 2:
-                        displayStaffDetailsHeader();
-                        staffList.stream()
-                                .filter(staff -> staff.getRole().toString().toLowerCase().equals("pharmacist"))
-                                .forEach(staff -> displayStaffDetails(staff));
-                        break;
-                    default:
-                        System.out.println("Invalid role entered. Staff member not added.");
-                        return;
-                }
-                break;
-            case "2":
-                System.out.println("\nSelect gender:");
-                System.out.println("1. Male");
-                System.out.println("2. Female");
-                System.out.print("Enter your choice (1 or 2): ");
-                int genderChoice = Integer.parseInt(scanner.nextLine());
-                switch (genderChoice) {
-                    case 1:
-                        displayStaffDetailsHeader();
-                        staffList.stream()
-                                .filter(staff -> staff.getGender() == MALE)
-                                .forEach(staff -> displayStaffDetails(staff));
-                        break;
-                    case 2:
-                        displayStaffDetailsHeader();
-                        staffList.stream()
-                                .filter(staff -> staff.getGender() == FEMALE)
-                                .forEach(staff -> displayStaffDetails(staff));
-                        break;
-                    default:
-                        System.out.println("Invalid gender choice. Defaulting to Male.");
-                        staffList.stream()
-                                .filter(staff -> staff.getGender() == MALE)
-                                .forEach(staff -> displayStaffDetails(staff));
-
-                }
-                break;
-            case "3":
-                System.out.print("\nEnter minimum age: ");
-                int minAge = Integer.parseInt(scanner.nextLine());
-                System.out.print("Enter maximum age: ");
-                int maxAge = Integer.parseInt(scanner.nextLine());
-                displayStaffDetailsHeader();
-                staffList.stream()
-                        .filter(staff -> staff.getAge() >= minAge && staff.getAge() <= maxAge)
-                        .forEach(staff -> displayStaffDetails(staff));
-                break;
-            case "4":
-                displayStaffDetailsHeader();
-                staffList.forEach(this::displayStaffDetails);
-                break;
-            default:
-                System.out.println("Invalid choice.");
+                        case 2:
+                            displayStaffDetailsHeader();
+                            staffList.stream()
+                                    .filter(staff -> staff.getRole().toString().toLowerCase().equals("pharmacist"))
+                                    .forEach(staff -> displayStaffDetails(staff));
+                            break;
+                        default:
+                            System.out.println("Invalid role entered. Staff member not added.");
+                            continue;
+                    }
+                    break;
+                case "2":
+                    System.out.println("\nSelect gender:");
+                    System.out.println("1. Male");
+                    System.out.println("2. Female");
+                    System.out.print("Enter your choice (1 or 2): ");
+                    int genderChoice = Integer.parseInt(scanner.nextLine());
+                    switch (genderChoice) {
+                        case 1:
+                            displayStaffDetailsHeader();
+                            staffList.stream()
+                                    .filter(staff -> staff.getGender() == MALE)
+                                    .forEach(staff -> displayStaffDetails(staff));
+                            break;
+                        case 2:
+                            displayStaffDetailsHeader();
+                            staffList.stream()
+                                    .filter(staff -> staff.getGender() == FEMALE)
+                                    .forEach(staff -> displayStaffDetails(staff));
+                            break;
+                        default:
+                            System.out.println("Invalid gender choice. Defaulting to Male.");
+                            staffList.stream()
+                                    .filter(staff -> staff.getGender() == MALE)
+                                    .forEach(staff -> displayStaffDetails(staff));
+                    }
+                    break;
+                case "3":
+                    System.out.print("\nEnter minimum age: ");
+                    int minAge = Integer.parseInt(scanner.nextLine());
+                    System.out.print("Enter maximum age: ");
+                    int maxAge = Integer.parseInt(scanner.nextLine());
+                    displayStaffDetailsHeader();
+                    staffList.stream()
+                            .filter(staff -> staff.getAge() >= minAge && staff.getAge() <= maxAge)
+                            .forEach(staff -> displayStaffDetails(staff));
+                    break;
+                case "4":
+                    displayStaffDetailsHeader();
+                    staffList.forEach(this::displayStaffDetails);
+                    break;
+                default:
+                    System.out.println("Invalid choice.");
+                    continue;
+            }
+            break;
         }
     }
 
     private void addStaff(Scanner scanner) {
-        System.out.println("\n--- Add Staff Member ---");
-        System.out.print("Enter staff ID: ");
-        String staffId = scanner.nextLine();
-        if (findStaffById(staffId) != null) {
-            System.out.println("Error: Staff ID already exists. Please use a different ID.");
-            return;
-        }
-
-        System.out.print("Enter name: ");
-        String name = scanner.nextLine();
-
-        System.out.print("Enter age: ");
-        int age = Integer.parseInt(scanner.nextLine());
-
-        System.out.println("Select gender:");
-        System.out.println("1. Male");
-        System.out.println("2. Female");
-        System.out.print("Enter your choice (1 or 2): ");
-        int genderChoice = Integer.parseInt(scanner.nextLine());
-        Gender gender = null;
-
-        switch (genderChoice) {
-            case 1:
-                 gender = MALE;
-                 break;
-            case 2:
-                gender = Gender.FEMALE;
-                break;
-            default:
-                System.out.println("Invalid gender choice. Defaulting to Male.");
-                gender = MALE;
-        }
-
-        System.out.println("Select role:");
-        System.out.println("1. Doctor");
-        System.out.println("2. Pharmacist");
-        System.out.print("Enter your choice (1 or 2): ");
-        int role = Integer.parseInt(scanner.nextLine());
-
         Staff newStaff = null;
-        switch (role) {
-            case 1:
-                newStaff = new Doctor(staffId, name, gender, age);
-                break;
-            case 2:
-                newStaff = new Pharmacist(staffId, name, gender, age);
-                break;
-            default:
-                System.out.println("Invalid role entered. Staff member not added.");
-                return;
+        while (true) {
+            System.out.println("\n--- Add Staff Member ---");
+            System.out.print("Enter staff ID: ");
+            String staffId = scanner.nextLine();
+            boolean validID = false;
+            if (staffId.matches("^[PD]\\d+$")) {
+                validID = true;
+                System.out.println("Valid staff ID entered: " + staffId);
+            } else {
+                System.out.println("Invalid input. Please enter a valid staff ID");
+                continue;
+            }
+            if (findStaffById(staffId) != null) {
+                System.out.println("Error: Staff ID already exists. Please use a different ID.");
+                continue;
+            }
+
+            System.out.print("Enter name: ");
+            String name = scanner.nextLine();
+
+            System.out.print("Enter age: ");
+            int age = Integer.parseInt(scanner.nextLine());
+
+            System.out.println("Select gender:");
+            System.out.println("1. Male");
+            System.out.println("2. Female");
+            System.out.print("Enter your choice (1 or 2): ");
+            int genderChoice = Integer.parseInt(scanner.nextLine());
+            Gender gender = null;
+
+            switch (genderChoice) {
+                case 1:
+                    gender = MALE;
+                    break;
+                case 2:
+                    gender = Gender.FEMALE;
+                    break;
+                default:
+                    System.out.println("Invalid gender choice.");
+                    continue;
+            }
+
+            System.out.println("Select role:");
+            System.out.println("1. Doctor");
+            System.out.println("2. Pharmacist");
+            System.out.print("Enter your choice (1 or 2): ");
+            int role = Integer.parseInt(scanner.nextLine());
+
+            switch (role) {
+                case 1:
+                    newStaff = new Doctor(staffId, name, gender, age);
+                    break;
+                case 2:
+                    newStaff = new Pharmacist(staffId, name, gender, age);
+                    break;
+                default:
+                    System.out.println("Invalid role entered. Staff member not added.");
+                    continue;
+            }
+            break;
         }
 
         staffList.add(newStaff);
@@ -210,64 +229,76 @@ public class ManageStaffScreen implements Screen {
 
     private void updateStaff(Scanner scanner) {
         staffList = loadStaffList();
-        System.out.println("\n--- Update Staff Member ---");
-        System.out.print("Enter the staff ID of the member to update: ");
-        String staffId = scanner.nextLine();
+        Staff staff = null;
+        while (true) {
+            System.out.println("\n--- Update Staff Member ---");
+            System.out.print("Enter the staff ID of the member to update: ");
+            String staffId = scanner.nextLine();
+            boolean validID = false;
+            if (staffId.matches("^[PD]\\d+$")) {
+                validID = true;
+                System.out.println("Valid staff ID entered: " + staffId);
+            } else {
+                System.out.println("Invalid input. Please enter a valid staff ID");
+                continue;
+            }
 
-        Staff staff = findStaffById(staffId);
-        if (staff == null) {
-            System.out.println("Staff member not found.");
-            return;
-        }
+            staff = findStaffById(staffId);
+            if (staff == null) {
+                System.out.println("Staff member not found.");
+                continue;
+            }
 
-        System.out.print("Update name (current: " + staff.getName() + "): ");
-        String name = scanner.nextLine();
-        if (!name.isEmpty()) {
-            staff.setName(name);
-        }
+            System.out.print("Update name (current: " + staff.getName() + "): ");
+            String name = scanner.nextLine();
+            if (!name.isEmpty()) {
+                staff.setName(name);
+            }
 
-        System.out.println("\nSelect gender:");
-        System.out.println("1. Male");
-        System.out.println("2. Female");
-        System.out.print("Enter your choice (1 or 2): ");
-        int genderChoice = Integer.parseInt(scanner.nextLine());
-        switch (genderChoice) {
-            case 1:
-                staff.setGender(Gender.MALE);
-                break;
-            case 2:
-                staff.setGender(Gender.FEMALE);
-                break;
-            default:
-                System.out.println("Invalid gender choice. Defaulting to Male.");
+            System.out.println("\nSelect gender:");
+            System.out.println("1. Male");
+            System.out.println("2. Female");
+            System.out.print("Enter your choice (1 or 2): ");
+            int genderChoice = Integer.parseInt(scanner.nextLine());
+            switch (genderChoice) {
+                case 1:
+                    staff.setGender(Gender.MALE);
+                    break;
+                case 2:
+                    staff.setGender(Gender.FEMALE);
+                    break;
+                default:
+                    System.out.println("Invalid gender choice. Please try again.");
+                    continue;
+            }
+            System.out.print("Update age (current: " + staff.getAge() + "): ");
+            String ageInput = scanner.nextLine();
+            if (!ageInput.isEmpty()) {
+                int age = Integer.parseInt(ageInput);
+                staff.setAge(age);
+            }
+            System.out.println("\nSelect role:");
+            System.out.println("1. Doctor");
+            System.out.println("2. Pharmacist");
+            System.out.print("Enter your choice (1 or 2): ");
+            int role = Integer.parseInt(scanner.nextLine());
+            switch (role) {
+                case 1:
+                    if (!(staff instanceof Doctor)) {
+                        staff = new Doctor(staff.getStaffId(), staff.getName(), staff.getGender(), staff.getAge());
+                    }
+                    break;
+                case 2:
+                    if (!(staff instanceof Pharmacist)) {
+                        staff = new Pharmacist(staff.getStaffId(), staff.getName(), staff.getGender(), staff.getAge());
+                    }
+                    break;
+                default:
+                    System.out.println("Invalid role entered. Staff member not added.");
+                    continue;
+            }
+            break;
         }
-        System.out.print("Update age (current: " + staff.getAge() + "): ");
-        String ageInput = scanner.nextLine();
-        if (!ageInput.isEmpty()) {
-            int age = Integer.parseInt(ageInput);
-            staff.setAge(age);
-        }
-        System.out.println("\nSelect role:");
-        System.out.println("1. Doctor");
-        System.out.println("2. Pharmacist");
-        System.out.print("Enter your choice (1 or 2): ");
-        int role = Integer.parseInt(scanner.nextLine());
-        switch (role) {
-            case 1:
-                if (!(staff instanceof Doctor)) {
-                    staff = new Doctor(staff.getStaffId(), staff.getName(), staff.getGender(), staff.getAge());
-                }
-                break;
-            case 2:
-                if (!(staff instanceof Pharmacist)) {
-                    staff = new Pharmacist(staff.getStaffId(), staff.getName(), staff.getGender(), staff.getAge());
-                }
-                break;
-            default:
-                System.out.println("Invalid role entered. Staff member not added.");
-                return;
-        }
-
        updateStaffInExcel(staff);
     }
 
@@ -361,7 +392,9 @@ public class ManageStaffScreen implements Screen {
             }
 
             System.out.println("Staff member added successfully.");
-
+            String logMsg = "User " + currentUser.getName() + " (ID: " + currentUser.getHospitalID() + ") " +
+                    "added staff " + staff.getName() + " (ID: " + staff.getHospitalID() + "). " ;
+            ActivityLogUtil.logActivity(logMsg, currentUser);
         } catch (IOException e) {
             System.err.println("Error storing new staff data: " + e.getMessage());
         } finally {
@@ -444,6 +477,9 @@ public class ManageStaffScreen implements Screen {
                     }
                 }
             }
+            String logMsg = "User " + currentUser.getName() + " (ID: " + currentUser.getHospitalID() + ") " +
+                    "updated staff " + staff.getName() + " (ID: " + staff.getHospitalID()+ "). " ;
+            ActivityLogUtil.logActivity(logMsg, currentUser);
         } catch (IOException | InvalidFormatException e) {
             System.err.println("Error updating staff in Excel: " + e.getMessage());
         }
@@ -451,6 +487,7 @@ public class ManageStaffScreen implements Screen {
 
     private void removeStaffFromExcel(String staffId) {
         String staffPath = FilePaths.STAFF_DATA.getPath();
+        String staffName  = null;
         try (FileInputStream fis = new FileInputStream(staffPath);
              Workbook workbook = WorkbookFactory.create(fis)) {
             Sheet sheet = workbook.getSheetAt(0);
@@ -459,6 +496,7 @@ public class ManageStaffScreen implements Screen {
             for (int i = 0; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
                 if (row != null && row.getCell(0).getStringCellValue().equals(staffId)) {
+                    staffName = row.getCell(1).getStringCellValue();
                     rowToRemove = i;
                     break;
                 }
@@ -477,6 +515,9 @@ public class ManageStaffScreen implements Screen {
             try (FileOutputStream fos = new FileOutputStream(staffPath)) {
                 workbook.write(fos);
             }
+            String logMsg = "User " + currentUser.getName() + " (ID: " + currentUser.getHospitalID() + ") " +
+                    "updated staff " + staffName + " (ID: " + staffId + "). " ;
+            ActivityLogUtil.logActivity(logMsg, currentUser);
         } catch (IOException | InvalidFormatException e) {
             System.err.println("Error removing staff from storage: " + e.getMessage());
         }

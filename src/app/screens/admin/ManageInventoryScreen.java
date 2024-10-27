@@ -8,6 +8,7 @@ import models.enums.*;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import utils.ActivityLogUtil;
 import utils.StringFormatUtil;
 
 import java.io.File;
@@ -19,8 +20,10 @@ import java.util.*;
 
 public class ManageInventoryScreen implements Screen {
     private List<Medicine> inventory;
+    private User currentUser = null;
     @Override
     public void display(Scanner scanner, User user) {
+        currentUser = user;
         inventory = loadInventory();
         while (true) {
             System.out.println("\n--- Manage Inventory---");
@@ -71,6 +74,8 @@ public class ManageInventoryScreen implements Screen {
 
     public void viewInventory(Scanner scanner) {
         inventory = loadInventory();
+        String logMsg = "User " + currentUser.getName() + " (ID: " + currentUser.getHospitalID() + ") viewed Inventory List.";
+        ActivityLogUtil.logActivity(logMsg, currentUser);
         System.out.println("\n--- Current Inventory ---");
         displayMedicineDetailsHeader();
         inventory.stream()
@@ -233,6 +238,9 @@ public class ManageInventoryScreen implements Screen {
             try (FileOutputStream fos = new FileOutputStream(staffPath)) {
                 workbook.write(fos);
             }
+            String logMsg = "User " + currentUser.getName() + " (ID: " + currentUser.getHospitalID() + ") " +
+                    "removed Inventory stock: " + name + "." ;
+            ActivityLogUtil.logActivity(logMsg, currentUser);
             System.out.println("Stock removed successfully.");
         } catch (IOException | InvalidFormatException e) {
             System.err.println("Error removing stock from storage: " + e.getMessage());
@@ -242,6 +250,8 @@ public class ManageInventoryScreen implements Screen {
 
     public void updateInventoryInExcel(Medicine medicine, String oldName) {
         String filePath = FilePaths.INV_DATA.getPath();
+        int prevStock = 0;
+        int prevStockAlert = 0;
         try (FileInputStream fis = new FileInputStream(filePath);
              Workbook workbook = WorkbookFactory.create(fis)) {
              Sheet sheet = workbook.getSheetAt(0);
@@ -249,6 +259,8 @@ public class ManageInventoryScreen implements Screen {
                  Cell medicineNameCell = row.getCell(0);
                  if (medicineNameCell != null && medicineNameCell.getStringCellValue().toLowerCase()
                         .equals(oldName.toLowerCase())) {
+                     prevStock = (int)row.getCell(1).getNumericCellValue();
+                     prevStockAlert =(int) row.getCell(2).getNumericCellValue();
                      row.getCell(0).setCellValue(medicine.getName());
                      row.getCell(1).setCellValue(medicine.getStock());
                      row.getCell(2).setCellValue(medicine.getLowStockAlert());
@@ -256,6 +268,11 @@ public class ManageInventoryScreen implements Screen {
                     try (FileOutputStream fos = new FileOutputStream(filePath)) {
                         workbook.write(fos);
                     }
+                     String logMsg = "User " + currentUser.getName() + " (ID: " + currentUser.getHospitalID() + ") " +
+                             "updated inventory for medicine: " + medicine.getName() +
+                             " from stock: " + prevStock + " to updated stock: " + medicine.getStock() +
+                             " with low stock alert from: " + prevStockAlert + " to: " + medicine.getLowStockAlert() + ".";
+                     ActivityLogUtil.logActivity(logMsg, currentUser);
                     System.out.println("Stock updated successfully.");
                 }
             }
@@ -294,6 +311,9 @@ public class ManageInventoryScreen implements Screen {
                 workbook.write(fos);
             }
 
+            String logMsg = "User " + currentUser.getName() + " (ID: " + currentUser.getHospitalID() + ") " +
+                    "Added Inventory stock: " + medicine.getName() + "." ;
+            ActivityLogUtil.logActivity(logMsg, currentUser);
             System.out.println("Stock added successfully.");
 
         } catch (IOException e) {

@@ -7,6 +7,7 @@ import models.records.*;
 import models.enums.FilePaths;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
+import utils.ActivityLogUtil;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -19,10 +20,55 @@ public class ApproveReplenishmentScreen implements Screen {
     List<Medicine> inventory = ManageInventoryScreen.loadInventory();
     String repReqPath = FilePaths.REPLENISH_REQ_DATA.getPath();
     List<ReplenishmentRequest> repReqList = new ArrayList<>();
+    User currentUser = null;
 
     @Override
     public void display(Scanner scanner, User user) {
+        currentUser = user;
         processRequests(scanner);
+    }
+
+    private void processRequests(Scanner scanner) {
+        boolean showAllRequests = false;
+
+        while (true) {
+            loadReplenishmentRequests();
+            displayRequests(showAllRequests);
+            System.out.print("\nSelect a request number to approve/reject (0 to exit, -1 to view all requests): ");
+            int choice = scanner.nextInt();
+
+            if (choice == 0) break;
+            if (choice == -1) {
+                showAllRequests = true;
+                continue;
+            }
+
+            if (choice > 0 && choice <= repReqList.size()) {
+                ReplenishmentRequest request = repReqList.get(choice - 1);
+
+                if ("approved".equalsIgnoreCase(request.getStatus()) || "rejected".equalsIgnoreCase(request.getStatus())) {
+                    System.out.println("This request has already been " + request.getStatus() + ". Please select another request.");
+                    continue;
+                }
+
+                System.out.print("Do you want to (A)pprove or (R)eject this request? ");
+                String decision = scanner.next().trim().toUpperCase();
+                String logMsg = null;
+
+                if (decision.equals("A")) {
+                    approveRequest(choice - 1);
+                    logMsg = "User " + currentUser.getName() + " (ID: " + currentUser.getHospitalID() + ") approved request form " + repReqList.get(choice-1).getRequestId();
+                } else if (decision.equals("R")) {
+                    rejectRequest(choice - 1);
+                    logMsg = "User " + currentUser.getName() + " (ID: " + currentUser.getHospitalID() + ") rejected request form " + repReqList.get(choice-1).getRequestId();
+                } else {
+                    System.out.println("Invalid choice. Please enter A or R.");
+                }
+                ActivityLogUtil.logActivity(logMsg, currentUser);
+            } else {
+                System.out.println("Invalid request number. Please try again.");
+            }
+        }
     }
 
     private void loadReplenishmentRequests() {
@@ -64,8 +110,8 @@ public class ApproveReplenishmentScreen implements Screen {
         requestsToDisplay.sort(Comparator.comparing(ReplenishmentRequest::getRequestDate).reversed());
 
         System.out.println("\n--- Replenishment Requests ---");
-        System.out.printf("%-5s %-12s %-20s %-25s %-10s %-10s %-15s%n",
-                "No", "Hospital ID", "Requester Name", "Medicine Name", "Amount", "Status", "Request Date");
+        System.out.printf("%-12s %-12s %-20s %-25s %-10s %-10s %-15s%n",
+                "Request ID", "Hospital ID", "Requester Name", "Medicine Name", "Amount", "Status", "Request Date");
         System.out.println("-----------------------------------------------------------------------------------------------------------");
 
         if (requestsToDisplay.isEmpty()) {
@@ -73,53 +119,14 @@ public class ApproveReplenishmentScreen implements Screen {
         } else {
             for (int i = 0; i < requestsToDisplay.size(); i++) {
                 ReplenishmentRequest request = requestsToDisplay.get(i);
-                System.out.printf("%-5d %-12s %-20s %-25s %-10d %-10s %-15s%n",
-                        i + 1,
+                System.out.printf("%-12d %-12s %-20s %-25s %-10d %-10s %-15s%n",
+                        request.getRequestId(),
                         request.getHospitalId(),
                         request.getRequesterName(),
                         request.getMedicineName(),
                         request.getRequestedAmount(),
                         request.getStatus(),
                         request.getRequestDate());
-            }
-        }
-    }
-
-    private void processRequests(Scanner scanner) {
-        boolean showAllRequests = false;
-
-        while (true) {
-            loadReplenishmentRequests();
-            displayRequests(showAllRequests);
-            System.out.print("\nSelect a request number to approve/reject (0 to exit, -1 to view all requests): ");
-            int choice = scanner.nextInt();
-
-            if (choice == 0) break;
-            if (choice == -1) {
-                showAllRequests = true;
-                continue;
-            }
-
-            if (choice > 0 && choice <= repReqList.size()) {
-                ReplenishmentRequest request = repReqList.get(choice - 1);
-
-                if ("approved".equalsIgnoreCase(request.getStatus()) || "rejected".equalsIgnoreCase(request.getStatus())) {
-                    System.out.println("This request has already been " + request.getStatus() + ". Please select another request.");
-                    continue;
-                }
-
-                System.out.print("Do you want to (A)pprove or (R)eject this request? ");
-                String decision = scanner.next().trim().toUpperCase();
-
-                if (decision.equals("A")) {
-                    approveRequest(choice - 1);
-                } else if (decision.equals("R")) {
-                    rejectRequest(choice - 1);
-                } else {
-                    System.out.println("Invalid choice. Please enter A or R.");
-                }
-            } else {
-                System.out.println("Invalid request number. Please try again.");
             }
         }
     }
@@ -136,6 +143,7 @@ public class ApproveReplenishmentScreen implements Screen {
             manageInventoryScreen.updateStock(medData, newStock);
 
             updateRequestStatus(request, "approved");
+            request.setStatus("approved");
             System.out.println("Request for " + request.getRequestedAmount() + " of " + request.getMedicineName() + " approved.");
         } else {
             System.out.println("Medicine not found for request: " + request.getMedicineName());
@@ -145,6 +153,7 @@ public class ApproveReplenishmentScreen implements Screen {
     private void rejectRequest(int index) {
         ReplenishmentRequest request = repReqList.get(index);
         updateRequestStatus(request, "rejected");
+        request.setStatus("rejected");
 
         System.out.println("Request for " + request.getRequestedAmount() + " of " + request.getMedicineName() + " rejected.");
     }

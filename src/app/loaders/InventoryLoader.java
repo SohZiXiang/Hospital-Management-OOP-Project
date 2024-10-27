@@ -8,9 +8,6 @@ import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-
-
-
 public class InventoryLoader implements DataLoader {
 
     @Override
