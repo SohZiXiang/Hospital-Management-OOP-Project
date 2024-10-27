@@ -1,6 +1,7 @@
 package app.screens.patient;
 
-import app.loaders.AppointmentLoader;
+//import app.loaders.AppointmentLoader;
+import app.loaders.ApptAvailLoader;
 import app.loaders.StaffLoader;
 import interfaces.DataLoader;
 import interfaces.Screen;
@@ -19,12 +20,12 @@ import java.util.Scanner;
 
 public class ViewPatientAppointmentScreen implements Screen {
 
-    AppointmentLoader appointmentLoader = new AppointmentLoader();
+    ApptAvailLoader appointmentLoader = new ApptAvailLoader();
     List<Appointment> appointmentList = new ArrayList<>();
     String appointmentPath = FilePaths.APPT_DATA.getPath();
 
     String availabilityFilePath = FilePaths.DOCAVAIL_DATA.getPath();
-    Map<String, List<Availability>> availabilityMap = appointmentLoader.loadAvailability(availabilityFilePath);
+    Map<String, List<Availability>> availabilityMap = appointmentLoader.loadAvailData(availabilityFilePath);
 
     DataLoader staffLoader = new StaffLoader();
     List<Staff> staffList = new ArrayList<>();

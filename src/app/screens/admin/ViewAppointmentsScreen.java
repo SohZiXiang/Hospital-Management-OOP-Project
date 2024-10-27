@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class ViewAppointmentsScreen implements Screen {
-    private AppointmentLoader apptLoader = new AppointmentLoader();
+    private ApptAvailLoader apptLoader = new ApptAvailLoader();
     private String filePath = FilePaths.APPT_DATA.getPath();
 
     @Override
