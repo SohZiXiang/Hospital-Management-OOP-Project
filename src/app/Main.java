@@ -1,13 +1,14 @@
-
 package app;
 import app.screens.*;
 import interfaces.*;
 import app.loaders.*;
 import models.entities.*;
+import utils.EmailUtil;
 
 import java.util.*;
 
 public class Main {
+    public static boolean emailAlert = false;
     private static final Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) {
@@ -16,6 +17,10 @@ public class Main {
 
     public static void displayMain(Scanner scanner){
         while (true) {
+            if(!emailAlert) {
+                EmailUtil.checkInventoryAndNotify("phclerk00@outlook.com");
+                emailAlert = true;
+            }
             String blue = "\u001B[34m";
             String reset = "\u001B[0m";
 
@@ -53,7 +58,7 @@ public class Main {
                         System.out.println("Invalid choice, please try again.");
                 }
             }catch (NumberFormatException e) {
-                System.out.println("Invalid input. Please enter a number (1 or 2).");
+                System.out.println("Invalid input. Please enter a number.");
             }
         }
     }

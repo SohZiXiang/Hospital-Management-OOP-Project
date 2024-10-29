@@ -9,6 +9,7 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import utils.ActivityLogUtil;
+import utils.EmailUtil;
 import utils.StringFormatUtil;
 
 import java.io.File;
@@ -186,8 +187,8 @@ public class ManageInventoryScreen implements Screen {
                 System.out.println("Invalid choice.");
                 return;
         }
-
         updateInventoryInExcel(medicine, name);
+        EmailUtil.checkInventoryAndNotify("phclerk00@outlook.com");
     }
 
     public void updateStock(Medicine medicine, int stock, User user) {
