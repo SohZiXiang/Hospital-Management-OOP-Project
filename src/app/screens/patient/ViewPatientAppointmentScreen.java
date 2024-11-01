@@ -45,6 +45,50 @@ public class ViewPatientAppointmentScreen implements Screen {
     SimpleDateFormat formatter = new SimpleDateFormat("EEE dd/MM/yyyy");
     int slotCount = 0;
 
+    public String genAppID(){
+        List<Integer> existingID = new ArrayList<Integer>();
+        Integer uniqueID = 1;
+
+        try {
+            appointmentList = appointmentLoader.loadData(appointmentPath);
+        }
+        catch (Exception e) {
+            System.err.println("Error loading data: " + e.getMessage());
+        }
+
+        try {
+            for (Appointment appointment : appointmentList) {
+                String id = appointment.getAppointmentId();
+                String numericValue = id.replaceAll("[^0-9]", "");
+
+                if (!numericValue.isEmpty()) {
+                    int numericValueToInt = Integer.parseInt(numericValue);
+                    existingID.add(numericValueToInt);
+                }
+            }
+
+            while(true){
+                if(!existingID.contains(uniqueID)){
+                    int length = String.valueOf(uniqueID).length();
+                    if(length == 1){
+                        return "A00" + uniqueID;
+                    }else if(length == 2){
+                        return "A0" + uniqueID;
+                    }else{
+                        return "A" + uniqueID;
+                    }
+                }
+                uniqueID++;
+            }
+
+        }
+        catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+
+        return "";
+    }
+
     public void loadData(User user){
         System.out.println();
         System.out.println("--------- Displaying Appointments for patient: " + user.getName() + " ---------");
@@ -192,7 +236,7 @@ public class ViewPatientAppointmentScreen implements Screen {
 
                     ++slotCount;
                     if(slotCount == option){
-                        Appointment newAppointment = new Appointment("test", user.getHospitalID(),
+                        Appointment newAppointment = new Appointment(genAppID(), user.getHospitalID(),
                                 availability.getDoctorId(), availability.getAvailableDate(), availability.getStartTime());
                         writeAppointmentToExcel(user, newAppointment);
                     }
@@ -212,7 +256,7 @@ public class ViewPatientAppointmentScreen implements Screen {
 
         while(!exit){
             System.out.println();
-            System.out.println("Please Select the following options");
+            System.out.println("What would you like to do?");
             System.out.println("1: Return To Menu");
             System.out.println("2: Schedule An Appointment");
             System.out.println("3: Reschedule An Appointment");
@@ -232,7 +276,7 @@ public class ViewPatientAppointmentScreen implements Screen {
                         createAppointment(user, option);
                         break;
                     case 3:
-
+                        genAppID();
                         break;
                     case 4:
 
