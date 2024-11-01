@@ -293,10 +293,10 @@ public class ViewPatientAppointmentScreen implements Screen {
                                 availability.getDoctorId(), availability.getAvailableDate(), availability.getStartTime());
                         writeAppointmentToExcel(user, newAppointment);
                     }
-
                 }
             }
         }
+
     }
 
     private void cancelAppointment(User user, String appointmentID) {
@@ -309,22 +309,22 @@ public class ViewPatientAppointmentScreen implements Screen {
             System.err.println("Error loading data: " + e.getMessage());
         }
 
-        try {
-            for (Appointment appointment : appointmentList) {
-                if (appointment.getAppointmentId().equals(appointmentID) && appointment.getPatientId().equals(user.getHospitalID())) {
-                    for (Staff staff : staffList) {
-                        if (staff.getStaffId().equals(appointment.getDoctorId())) {
-                            Doctor doctor = new Doctor(staff.getStaffId(), staff.getName(), staff.getGender(), staff.getAge());
-                            doctor.addAvail(LocalDate.ofInstant(appointment.getAppointmentDate().toInstant(), ZoneId.systemDefault()),
-                                    appointment.getAppointmentTime(), addOneHour(appointment.getAppointmentTime()), DoctorAvailability.AVAILABLE);
-                            break;
-                        }
-                    }
-                }
-            }
-        }catch (Exception e) {
-            System.err.println(e.getMessage());
-        }
+//        try {
+//            for (Appointment appointment : appointmentList) {
+//                if (appointment.getAppointmentId().equals(appointmentID) && appointment.getPatientId().equals(user.getHospitalID())) {
+//                    for (Staff staff : staffList) {
+//                        if (staff.getStaffId().equals(appointment.getDoctorId())) {
+//                            Doctor doctor = new Doctor(staff.getStaffId(), staff.getName(), staff.getGender(), staff.getAge());
+//                            doctor.addAvail(LocalDate.ofInstant(appointment.getAppointmentDate().toInstant(), ZoneId.systemDefault()),
+//                                    appointment.getAppointmentTime(), addOneHour(appointment.getAppointmentTime()), DoctorAvailability.AVAILABLE);
+//                            break;
+//                        }
+//                    }
+//                }
+//            }
+//        }catch (Exception e) {
+//            System.err.println(e.getMessage());
+//        }
 
         removeAppointmentInExcel(user, appointmentID);
 
@@ -353,7 +353,7 @@ public class ViewPatientAppointmentScreen implements Screen {
                         exit = true;
                         break;
                     case 2:
-                        System.out.println("Select A Option For Your Prefer Slot, example 1");
+                        System.out.println("Select A Option For Your Prefer Slot, example: 1");
                         String appointmentOption = scanner.nextLine();
                         int option = Integer.parseInt(appointmentOption);
                         createAppointment(user, option);
