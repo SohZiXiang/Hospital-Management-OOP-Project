@@ -5,10 +5,7 @@ import app.loaders.ApptAvailLoader;
 import app.loaders.StaffLoader;
 import interfaces.DataLoader;
 import interfaces.Screen;
-import models.entities.Appointment;
-import models.entities.Availability;
-import models.entities.Staff;
-import models.entities.User;
+import models.entities.*;
 import models.enums.AppointmentStatus;
 import models.enums.DoctorAvailability;
 import models.enums.FilePaths;
@@ -26,10 +23,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 public class ViewPatientAppointmentScreen implements Screen {
 
@@ -91,7 +90,16 @@ public class ViewPatientAppointmentScreen implements Screen {
         return "";
     }
 
+    public static String addOneHour(String time) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm a");
+        LocalTime localTime = LocalTime.parse(time, formatter);
+        LocalTime newTime = localTime.plus(1, ChronoUnit.HOURS);
+
+        return newTime.format(formatter);
+    }
+
     private void loadData(User user){
+        int slotCount = 0;
         System.out.println();
         System.out.println("--------- Displaying Appointments for patient: " + user.getName() + " ---------");
         System.out.println();
@@ -289,6 +297,36 @@ public class ViewPatientAppointmentScreen implements Screen {
                 }
             }
         }
+    }
+
+    private void cancelAppointment(User user, String appointmentID) {
+
+        try {
+            appointmentList = appointmentLoader.loadData(appointmentPath);
+            staffList = staffLoader.loadData(staffPath);
+        }
+        catch (Exception e) {
+            System.err.println("Error loading data: " + e.getMessage());
+        }
+
+        try {
+            for (Appointment appointment : appointmentList) {
+                if (appointment.getAppointmentId().equals(appointmentID) && appointment.getPatientId().equals(user.getHospitalID())) {
+                    for (Staff staff : staffList) {
+                        if (staff.getStaffId().equals(appointment.getDoctorId())) {
+                            Doctor doctor = new Doctor(staff.getStaffId(), staff.getName(), staff.getGender(), staff.getAge());
+                            doctor.addAvail(LocalDate.ofInstant(appointment.getAppointmentDate().toInstant(), ZoneId.systemDefault()),
+                                    appointment.getAppointmentTime(), addOneHour(appointment.getAppointmentTime()), DoctorAvailability.AVAILABLE);
+                            break;
+                        }
+                    }
+                }
+            }
+        }catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+
+        removeAppointmentInExcel(user, appointmentID);
 
     }
 
@@ -326,7 +364,7 @@ public class ViewPatientAppointmentScreen implements Screen {
                     case 4:
                         System.out.println("Select an Appointment ID to cancel, example: A001");
                         String appointmentID = scanner.nextLine();
-                        removeAppointmentInExcel(user, appointmentID);
+                        cancelAppointment(user, appointmentID);
                         break;
                     default:
                         System.out.println("Invalid choice, please try again.");
