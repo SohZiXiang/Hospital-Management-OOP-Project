@@ -9,9 +9,20 @@ import models.entities.Appointment;
 import models.entities.Availability;
 import models.entities.Staff;
 import models.entities.User;
+import models.enums.AppointmentStatus;
 import models.enums.DoctorAvailability;
 import models.enums.FilePaths;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import utils.ActivityLogUtil;
+import utils.StringFormatUtil;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,9 +45,7 @@ public class ViewPatientAppointmentScreen implements Screen {
     SimpleDateFormat formatter = new SimpleDateFormat("EEE dd/MM/yyyy");
     int slotCount = 0;
 
-    @Override
-    public void display(Scanner scanner, User user) {
-
+    public void loadData(User user){
         System.out.println();
         System.out.println("--------- Displaying Appointments for patient: " + user.getName() + " ---------");
         System.out.println();
@@ -105,7 +114,99 @@ public class ViewPatientAppointmentScreen implements Screen {
                 }
             }
         }
+    }
 
+    private void writeAppointmentToExcel(User currentUser, Appointment appointment) {
+        String filePath = FilePaths.APPT_DATA.getPath();
+        FileInputStream fis = null;
+        Workbook workbook = null;
+
+        try {
+            File file = new File(filePath);
+            if (!file.exists()) {
+                workbook = new XSSFWorkbook();
+                Sheet sheet = workbook.createSheet("Sheet1");
+                Row headerRow = sheet.createRow(0);
+                headerRow.createCell(0).setCellValue("Appointment ID");
+                headerRow.createCell(1).setCellValue("Patient ID");
+                headerRow.createCell(2).setCellValue("Doctor ID");
+                headerRow.createCell(3).setCellValue("Status");
+                headerRow.createCell(4).setCellValue("Appointment Date");
+                headerRow.createCell(5).setCellValue("Appointment Time");
+                headerRow.createCell(6).setCellValue("Outcome Record");
+            } else {
+                fis = new FileInputStream(file);
+                workbook = new XSSFWorkbook(fis);
+            }
+
+            Sheet sheet = workbook.getSheet("Sheet1");
+            int lastRowNum = sheet.getLastRowNum();
+            Row newRow = sheet.createRow(lastRowNum + 1);
+            newRow.createCell(0).setCellValue(appointment.getAppointmentId());
+            newRow.createCell(1).setCellValue(appointment.getPatientId());
+            newRow.createCell(2).setCellValue(appointment.getDoctorId());
+            newRow.createCell(3).setCellValue("SCHEDULED");
+            newRow.createCell(4).setCellValue(appointment.getAppointmentDate());
+            newRow.createCell(5).setCellValue(appointment.getAppointmentTime());
+            newRow.createCell(6).setCellValue("");
+
+            try (FileOutputStream fos = new FileOutputStream(filePath)) {
+                workbook.write(fos);
+            }
+
+            System.out.println("Appointment added successfully.");
+            loadData(currentUser);
+
+            String logMsg = "User " + currentUser.getName() + " (ID: " + currentUser.getHospitalID() + ") " +
+                    "create appointment " + appointment.getAppointmentId() + ". ";
+            ActivityLogUtil.logActivity(logMsg, currentUser);
+        } catch (IOException e) {
+            System.err.println("Error storing new appointment data: " + e.getMessage());
+        } finally {
+            try {
+                if (workbook != null) {
+                    workbook.close();
+                }
+                if (fis != null) {
+                    fis.close();
+                }
+            } catch (IOException e) {
+                System.err.println("Error closing resources: " + e.getMessage());
+            }
+        }
+    }
+
+    public void createAppointment(User user, int option) {
+        int slotCount = 0;
+
+        try {
+            appointmentList = appointmentLoader.loadData(appointmentPath);
+        }
+        catch (Exception e) {
+            System.err.println("Error loading data: " + e.getMessage());
+        }
+
+        for (List<Availability> availabilityList : availabilityMap.values()) {
+            for (Availability availability : availabilityList) {
+                if (availability.getStatus() == DoctorAvailability.AVAILABLE) {
+
+                    ++slotCount;
+                    if(slotCount == option){
+                        Appointment newAppointment = new Appointment("test", user.getHospitalID(),
+                                availability.getDoctorId(), availability.getAvailableDate(), availability.getStartTime());
+                        writeAppointmentToExcel(user, newAppointment);
+                    }
+
+                }
+            }
+        }
+
+    }
+
+    @Override
+    public void display(Scanner scanner, User user) {
+
+        loadData(user);
 
         Boolean exit = false;
 
@@ -126,8 +227,9 @@ public class ViewPatientAppointmentScreen implements Screen {
                         break;
                     case 2:
                         System.out.println("Select A Option For Your Prefer Slot, example 1");
-                        String option = scanner.nextLine();
-
+                        String appointmentOption = scanner.nextLine();
+                        int option = Integer.parseInt(appointmentOption);
+                        createAppointment(user, option);
                         break;
                     case 3:
 
