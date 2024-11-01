@@ -12,9 +12,11 @@ import models.entities.User;
 import models.enums.AppointmentStatus;
 import models.enums.DoctorAvailability;
 import models.enums.FilePaths;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import utils.ActivityLogUtil;
 import utils.StringFormatUtil;
@@ -45,7 +47,7 @@ public class ViewPatientAppointmentScreen implements Screen {
     SimpleDateFormat formatter = new SimpleDateFormat("EEE dd/MM/yyyy");
     int slotCount = 0;
 
-    public String genAppID(){
+    private String genAppID(){
         List<Integer> existingID = new ArrayList<Integer>();
         Integer uniqueID = 1;
 
@@ -89,7 +91,7 @@ public class ViewPatientAppointmentScreen implements Screen {
         return "";
     }
 
-    public void loadData(User user){
+    private void loadData(User user){
         System.out.println();
         System.out.println("--------- Displaying Appointments for patient: " + user.getName() + " ---------");
         System.out.println();
@@ -198,12 +200,14 @@ public class ViewPatientAppointmentScreen implements Screen {
                 workbook.write(fos);
             }
 
-            System.out.println("Appointment added successfully.");
-            loadData(currentUser);
-
             String logMsg = "User " + currentUser.getName() + " (ID: " + currentUser.getHospitalID() + ") " +
                     "create appointment " + appointment.getAppointmentId() + ". ";
             ActivityLogUtil.logActivity(logMsg, currentUser);
+
+            loadData(currentUser);
+            System.out.println();
+            System.out.println("Appointment added successfully.");
+
         } catch (IOException e) {
             System.err.println("Error storing new appointment data: " + e.getMessage());
         } finally {
@@ -220,7 +224,48 @@ public class ViewPatientAppointmentScreen implements Screen {
         }
     }
 
-    public void createAppointment(User user, int option) {
+    private void removeAppointmentInExcel(User currentUser, String appointmentID) {
+        String appt_path = FilePaths.APPT_DATA.getPath();
+        try (FileInputStream fis = new FileInputStream(appt_path);
+             Workbook workbook = WorkbookFactory.create(fis)) {
+            Sheet sheet = workbook.getSheetAt(0);
+            int rowToRemove = -1;
+
+            for (int i = 0; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row != null && row.getCell(0).getStringCellValue().equals(appointmentID)) {
+                    rowToRemove = i;
+                    break;
+                }
+            }
+
+            if (rowToRemove == -1) {
+                System.out.println("Appointment ID not found!");
+                return;
+            }
+            sheet.removeRow(sheet.getRow(rowToRemove));
+            int lastRowIndex = sheet.getLastRowNum();
+            if (rowToRemove < lastRowIndex) {
+                sheet.shiftRows(rowToRemove + 1, lastRowIndex, -1);
+            }
+
+            try (FileOutputStream fos = new FileOutputStream(appt_path)) {
+                workbook.write(fos);
+            }
+            String logMsg = "User " + currentUser.getName() + " (ID: " + currentUser.getHospitalID() + ") " +
+                    "cancelled appointment: " + appointmentID + "." ;
+            ActivityLogUtil.logActivity(logMsg, currentUser);
+
+            loadData(currentUser);
+            System.out.println();
+            System.out.println("Appointment cancelled successfully.");
+
+        } catch (IOException | InvalidFormatException e) {
+            System.err.println("Error cancelling appointment: " + e.getMessage());
+        }
+    }
+
+    private void createAppointment(User user, int option) {
         int slotCount = 0;
 
         try {
@@ -276,10 +321,12 @@ public class ViewPatientAppointmentScreen implements Screen {
                         createAppointment(user, option);
                         break;
                     case 3:
-                        genAppID();
+
                         break;
                     case 4:
-
+                        System.out.println("Select an Appointment ID to cancel, example: A001");
+                        String appointmentID = scanner.nextLine();
+                        removeAppointmentInExcel(user, appointmentID);
                         break;
                     default:
                         System.out.println("Invalid choice, please try again.");
