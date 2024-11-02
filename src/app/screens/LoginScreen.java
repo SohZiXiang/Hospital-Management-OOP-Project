@@ -41,8 +41,8 @@ public class LoginScreen implements BaseScreen {
                         doctorScreen.display(scanner, user);
                         break;
                     case PHARMACIST:
-//                        PharmacistScreen pharmacistScreen = new PharmacistScreen();
-//                        pharmacistScreen.display(scanner, user);
+                        PharmacistMainScreen pharmacistMainScreen = new PharmacistMainScreen();
+                        pharmacistMainScreen.display(scanner, user);
                         break;
                     case ADMINISTRATOR:
                         AdminMainScreen adminScreen = new AdminMainScreen();

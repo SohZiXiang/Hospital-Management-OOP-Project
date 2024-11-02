@@ -83,9 +83,10 @@ public class Pharmacist extends Staff {
         // Check for existing req (same name)
         ReplenishmentRequestManager requestManager = new ReplenishmentRequestManager();
         List<ReplenishmentRequest> existingRequests = requestManager.getAllRequests();
+
         for (ReplenishmentRequest request : existingRequests) {
-            if (request.getMedicineName().equalsIgnoreCase(medicineName) && request.getHospitalId().equals(getHospitalID())) {
-                System.out.println("A replenishment request for " + medicineName + " has already been made by you.");
+            if (request.getMedicineName().equalsIgnoreCase(medicineName)) {
+                System.out.println("A replenishment request for " + medicineName + " has already been made previously.");
                 System.out.println("Do you still want to submit this request? (yes/no): ");
                 String reconfirmation = scanner.nextLine().trim().toLowerCase();
 
