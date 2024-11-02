@@ -84,7 +84,7 @@ public class ReplenishmentRequestManager {
         try {
             File file = new File(FILE_PATH);
             if (!file.exists()) {
-                System.out.println("No requests available.");
+                //System.out.println("Requests file not available, creating request file.");
                 return requests;
             }
 

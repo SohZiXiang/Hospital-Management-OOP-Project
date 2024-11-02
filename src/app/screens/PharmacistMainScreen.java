@@ -10,6 +10,17 @@ public class PharmacistMainScreen {
     public void display(Scanner scanner, User user) {
         Pharmacist pharmacist = (Pharmacist) user;
         while (true) {
+            System.out.println(
+                    "  _____  _                                     _     _   \n" +
+                            " |  __ \\| |                                   (_)   | |  \n" +
+                            " | |__) | |__   __ _ _ __ _ __ ___   __ _  ___ _ ___| |_ \n" +
+                            " |  ___/| '_ \\ / _` | '__| '_ ` _ \\ / _` |/ __| / __| __|\n" +
+                            " | |    | | | | (_| | |  | | | | | | (_| | (__| \\__ \\ |_ \n" +
+                            " |_|    |_| |_|\\__,_|_|  |_| |_| |_|\\__,_|\\___|_|___/\\__|\n" +
+                            "                                                         \n" +
+                            "                                                         \n"
+            );
+
             System.out.println("\nWelcome, Pharmacist: " + pharmacist.getName());
             System.out.println("What would you like to do?");
             System.out.println("1. View Existing Prescription Records");

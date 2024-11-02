@@ -30,8 +30,6 @@ public class LoginScreen implements BaseScreen {
                     System.out.println("Your password is the default. Please change your password.");
                     changePassword(user);
                 }
-                String logMsg = "User " + user.getName() + " (ID: " + hospitalId + ") has logged in.";
-                ActivityLogUtil.logActivity(logMsg, user);
                 System.out.println("Login successful! Welcome " + user.getName());
                 switch (user.getRole()) {
                     case PATIENT:
@@ -43,8 +41,8 @@ public class LoginScreen implements BaseScreen {
                         doctorScreen.display(scanner, user);
                         break;
                     case PHARMACIST:
-                        PharmacistMainScreen pharmacistScreen = new PharmacistMainScreen();
-                        pharmacistScreen.display(scanner, user);
+                        PharmacistMainScreen pharmacistMainScreen = new PharmacistMainScreen();
+                        pharmacistMainScreen.display(scanner, user);
                         break;
                     case ADMINISTRATOR:
                         AdminMainScreen adminScreen = new AdminMainScreen();
