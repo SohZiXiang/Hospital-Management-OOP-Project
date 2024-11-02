@@ -1,6 +1,7 @@
 package app.screens;
 import app.Main;
 import app.screens.patient.UpdatePersonalInformationScreen;
+import app.screens.patient.ViewAppointmentOutcomeScreen;
 import app.screens.patient.ViewMedicalRecord;
 import app.screens.patient.ViewPatientAppointmentScreen;
 import interfaces.Screen;
@@ -18,7 +19,8 @@ public class PatientScreen implements Screen {
                     "  \\ \\  \\___|\\ \\  \\ \\  \\   \\ \\  \\ \\ \\  \\ \\  \\_|\\ \\ \\  \\\\ \\  \\   \\ \\  \\ \n" +
                     "   \\ \\__\\    \\ \\__\\ \\__\\   \\ \\__\\ \\ \\__\\ \\_______\\ \\__\\\\ \\__\\   \\ \\__\\\n" +
                     "    \\|__|     \\|__|\\|__|    \\|__|  \\|__|\\|_______|\\|__| \\|__|    \\|__|");
-            System.out.println("\n--- Patient Menu---");
+            System.out.println("Welcome, Patient " + user.getName());
+            System.out.println("What would you like to do?");
             System.out.println("1. Manage Medical Records");
             System.out.println("2. Update Personal Information");
             System.out.println("3. Manage Appointment");
@@ -42,7 +44,8 @@ public class PatientScreen implements Screen {
                         viewPatientAppointmentScreen.display(scanner,user);
                         break;
                     case 4:
-
+                        ViewAppointmentOutcomeScreen viewAppointmentOutcomeScreen = new ViewAppointmentOutcomeScreen();
+                        viewAppointmentOutcomeScreen.display(scanner,user);
                         break;
                     case 5:
                         System.out.println("Logging out...");
