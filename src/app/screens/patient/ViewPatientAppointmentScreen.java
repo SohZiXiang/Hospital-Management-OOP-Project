@@ -273,7 +273,7 @@ public class ViewPatientAppointmentScreen implements Screen {
         }
     }
 
-    private void createAppointment(User user, int option) {
+    private void createAppointment(User user, int option, String appointmentID) {
         int slotCount = 0;
 
         try {
@@ -289,7 +289,7 @@ public class ViewPatientAppointmentScreen implements Screen {
 
                     ++slotCount;
                     if(slotCount == option){
-                        Appointment newAppointment = new Appointment(genAppID(), user.getHospitalID(),
+                        Appointment newAppointment = new Appointment(appointmentID, user.getHospitalID(),
                                 availability.getDoctorId(), availability.getAvailableDate(), availability.getStartTime());
                         writeAppointmentToExcel(user, newAppointment);
                     }
@@ -330,6 +330,17 @@ public class ViewPatientAppointmentScreen implements Screen {
 
     }
 
+    private void rescheduleAppointment(User user, int option, String appointmentID) {
+        try {
+            cancelAppointment(user, appointmentID);
+            createAppointment(user, option, appointmentID);
+            System.out.println("Appointment rescheduled successfully.");
+            loadData(user);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     public void display(Scanner scanner, User user) {
 
@@ -356,10 +367,16 @@ public class ViewPatientAppointmentScreen implements Screen {
                         System.out.println("Select A Option For Your Prefer Slot, example: 1");
                         String appointmentOption = scanner.nextLine();
                         int option = Integer.parseInt(appointmentOption);
-                        createAppointment(user, option);
+                        createAppointment(user, option, genAppID());
                         break;
                     case 3:
+                        System.out.println("Select an Appointment ID to cancel, example: A001");
+                        String selectAppointmentID = scanner.nextLine();
 
+                        System.out.println("Select A Option For Your Prefer Slot, example: 1");
+                        String newAppointmentOption = scanner.nextLine();
+                        int newOption = Integer.parseInt(newAppointmentOption);
+                        rescheduleAppointment(user, newOption, selectAppointmentID);
                         break;
                     case 4:
                         System.out.println("Select an Appointment ID to cancel, example: A001");
