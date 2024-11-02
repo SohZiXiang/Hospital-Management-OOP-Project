@@ -20,15 +20,19 @@ import java.util.ArrayList;
     public static class PrescribedMedication {
         private Medicine medicine;
         private PrescriptionStatus status;
+        private int quantityOfMed;
 
-        public PrescribedMedication(Medicine medicine) {
+        public PrescribedMedication(Medicine medicine, int quantity) {
             this.medicine = medicine;
             this.status = PrescriptionStatus.PENDING;
+            this.quantityOfMed = quantity;
         }
 
-        public PrescribedMedication(Medicine medicine, PrescriptionStatus status) {
+        public PrescribedMedication(Medicine medicine, PrescriptionStatus status, int quantity) {
             this.medicine = medicine;
             this.status = status;
+            this.quantityOfMed = quantity;
+
         }
 
         public Medicine getMedicine() {
@@ -42,19 +46,18 @@ import java.util.ArrayList;
         public void setStatus(PrescriptionStatus status) {
             this.status = status;
         }
+
+        public int getQuantityOfMed() { return quantityOfMed; }
     }
 
     public AppointmentOutcomeRecord(Appointment appt, Date appointmentDate, String serviceType,
-                                    List<Medicine> medicines,
+                                    List<PrescribedMedication> medicines,
                                     String consultationNotes, String outcomeStatus) {
         this.appt = appt;
         this.appointmentDate = appointmentDate;
         this.serviceType = serviceType;
+        this.prescriptions = medicines;
         this.consultationNotes = consultationNotes;
-        this.prescriptions = new ArrayList<>();
-        for (Medicine medicine : medicines) {
-            this.prescriptions.add(new PrescribedMedication(medicine));
-        }
         this.apptStatus = outcomeStatus;
 
     }
@@ -82,16 +85,16 @@ import java.util.ArrayList;
         return prescriptions;
     }
 
-    public void setPrescriptions(List<Medicine> medicines) {
-        this.prescriptions.clear();
-        for (Medicine medicine : medicines) {
-            this.prescriptions.add(new PrescribedMedication(medicine));
-        }
-    }
+//    public void setPrescriptions(List<Medicine> medicines) {
+//        this.prescriptions.clear();
+//        for (Medicine medicine : medicines) {
+//            this.prescriptions.add(new PrescribedMedication(medicine));
+//        }
+//    }
 
-     public void addPrescription(Medicine medicine) {
-         this.prescriptions.add(new PrescribedMedication(medicine));
-     }
+//     public void addPrescription(Medicine medicine) {
+//         this.prescriptions.add(new PrescribedMedication(medicine));
+//     }
 
      public void changePrescriptionStatus(String medicineName, PrescriptionStatus newStatus) {
          for (PrescribedMedication prescribedMedication : prescriptions) {
