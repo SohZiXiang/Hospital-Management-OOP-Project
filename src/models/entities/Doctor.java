@@ -2,8 +2,6 @@ package models.entities;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.text.SimpleDateFormat;
-import java.text.ParseException;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 
@@ -12,12 +10,15 @@ import interfaces.DataLoader;
 import models.enums.*;
 import models.records.*;
 
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 import java.util.*;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.IOException;
+import java.util.stream.Collectors;
 
 public class Doctor extends Staff{
     private List<Appointment> apptList;
@@ -41,9 +42,28 @@ public class Doctor extends Staff{
         this.patientsUnderCare = new ArrayList<>();
     }
 
-    public void updateMedicalRecord(Patient patient, String newDiagnosis, String newTreatment) {
-        patient.addDiagnosis(newDiagnosis);
-        patient.addTreatment(newTreatment);
+
+    /* START OF METHODS TO LOAD DATA */
+
+    public void getPatientList() {
+        if (!patientsLoaded) {
+            loadPatientList();
+            patientsLoaded = true;
+        }
+    }
+
+    public void getAvailList() {
+        if (!availLoaded) {
+            loadAvailData();
+            availLoaded = true;
+        }
+    }
+
+    public void getApptList() {
+        if (!apptsLoaded) {
+            loadApptData();
+            apptsLoaded = true;
+        }
     }
 
     private void loadPatientList() {
@@ -56,14 +76,68 @@ public class Doctor extends Staff{
         }
     }
 
-    public void getPatientList() {
-        if (!patientsLoaded) {
-            loadPatientList();
-            patientsLoaded = true;
+    private void loadApptData() {
+        ApptAvailLoader apptLoader = new ApptAvailLoader();
+        String path = FilePaths.APPT_DATA.getPath();
+        List<Appointment> apptsList = apptLoader.loadData(path);
+
+        for (Appointment oneAppt : apptsList) {
+            if (oneAppt.getDoctorId().equals(this.getStaffId())) {
+                apptList.add(oneAppt);
+            }
         }
     }
 
-    public void showAllRecords() {
+    private void loadAvailData() {
+        ApptAvailLoader availLoader = new ApptAvailLoader();
+        String path = FilePaths.DOCAVAIL_DATA.getPath();
+        Map<String, List<Availability>> map = availLoader.loadAvailData(path);
+
+        if (map.containsKey(this.getStaffId())) {
+            availList.addAll(map.get(this.getStaffId()));
+        }
+    }
+
+    /* END OF METHODS TO LOAD DATA */
+
+    /* START OF METHODS TO UPDATE/RESET DATA ONCE NEW RECORD ADDED/USER LOGOUTS */
+
+    public void resetData(String type) {
+        if (type.equalsIgnoreCase("appt")) {
+            apptsLoaded = false;
+        } else if (type.equalsIgnoreCase("avail")) {
+            availLoaded = false;
+        } else if (type.equalsIgnoreCase("both")){
+            apptsLoaded = false;
+            availLoaded = false;
+        } else {
+            System.out.println("Invalid list type specified. Please use 'appt' or 'avail'.");
+        }
+    }
+
+    public void updateData(String type) {
+        if (type.equalsIgnoreCase("appt")) {
+            if (apptList != null) {
+                apptList.clear();
+            }
+            resetData("appt");
+            getApptList();
+        } else if (type.equalsIgnoreCase("avail")) {
+            if (availList != null) {
+                availList.clear();
+            }
+            resetData("avail");
+            getAvailList();
+        } else {
+            System.out.println("Invalid list type specified. Please use 'appt' or 'avail'.");
+        }
+    }
+
+    /* END OF METHODS TO UPDATE/RESET DATA ONCE NEW RECORD ADDED/USER LOGOUTS */
+
+    /* START OF METHODS TO DO WITH PATIENT DATA */
+
+    public void showAllPatientsRecords() {
         if (patientsUnderCare.isEmpty()) {
             System.out.println("No patient records available.");
             return;
@@ -146,6 +220,12 @@ public class Doctor extends Staff{
         return forThisPatient;
     }
 
+    public void updateMedicalRecord(Patient patient, String newDiagnosis, String newTreatment) {
+        patient.addDiagnosis(newDiagnosis);
+        patient.addTreatment(newTreatment);
+        updatePatientRecords(patient.getPatientID(), newDiagnosis, newTreatment);
+    }
+
     public void updatePatientRecords(String patientID, String indDiagnosis, String indTreatment) {
         String path = FilePaths.PATIENT_DATA.getPath();
 
@@ -174,11 +254,9 @@ public class Doctor extends Staff{
                 header.createCell(treatmentClm).setCellValue("Treatment Plan");
             }
 
-            // Find the patient row and update diagnosis and treatment
             for (Row indRow : indSheet) {
-                Cell patientIDCell = indRow.getCell(0); // Assuming Patient ID is in the first column
+                Cell patientIDCell = indRow.getCell(0);
                 if (patientIDCell != null && patientIDCell.getStringCellValue().equals(patientID)) {
-                    // Get existing diagnoses and treatments if they exist
                     String existingDiagnoses = indRow.getCell(diagnosisClm) != null ? indRow.getCell(diagnosisClm).getStringCellValue() : "";
                     String existingTreatments = indRow.getCell(treatmentClm) != null ? indRow.getCell(treatmentClm).getStringCellValue() : "";
 
@@ -190,18 +268,15 @@ public class Doctor extends Staff{
                     if (!indDiagnosis.isEmpty()) addedDiagnoses.add(indDiagnosis);
                     if (!indTreatment.isEmpty()) addedTreatments.add(indTreatment);
 
-                    // Convert the lists back to comma-separated strings
                     String formatDiagnosis = String.join(", ", addedDiagnoses);
                     String formatTreatment = String.join(", ", addedTreatments);
 
-                    // Update the cells in the Excel row
                     indRow.createCell(diagnosisClm).setCellValue(formatDiagnosis);
                     indRow.createCell(treatmentClm).setCellValue(formatTreatment);
                     break;
                 }
             }
 
-            // Write changes to the file
             wkBook.write(outputFile);
 
         } catch (IOException e) {
@@ -209,7 +284,9 @@ public class Doctor extends Staff{
         }
     }
 
+    /* END OF METHODS TO DO WITH PATIENT DATA */
 
+    /* START OF MANAGEMENT OF DOCTOR APPOINTMENTS/AVAILABILITY METHODS */
 
     public void viewDoctorSchedule() {
         LocalDate todayDate = LocalDate.now();
@@ -218,10 +295,8 @@ public class Doctor extends Staff{
         YearMonth currentYrMth = YearMonth.of(year, month);
         int noOfDays = currentYrMth.lengthOfMonth();
 
-        // Define a formatter for the appointment date
         DateTimeFormatter desiredDateFormat = DateTimeFormatter.ofPattern("dd MMM yyyy");
 
-        // Collect days with appointments in a set for quick lookup
         Set<Integer> onlyConfirmedDates = new HashSet<>();
         for (Appointment oneApt : apptList) {
             LocalDate apptDate = oneApt.getAppointmentDate().toInstant()
@@ -233,32 +308,26 @@ public class Doctor extends Staff{
             }
         }
 
-        // Print the month and year
         System.out.printf("%n%s %d%n", currentYrMth.getMonth(), year);
         System.out.println("Mon Tue Wed Thu Fri Sat Sun");
 
-        // Determine the starting day of the week for the 1st of the month
         LocalDate firstDay = LocalDate.of(year, month, 1);
-        int whichDayOfWk = firstDay.getDayOfWeek().getValue(); // 1 (Mon) to 7 (Sun)
+        int whichDayOfWk = firstDay.getDayOfWeek().getValue();
 
-        // Print leading spaces for the first row alignment (each day takes up 3 spaces, including the marker space)
         for (int i = 1; i < whichDayOfWk; i++) {
             System.out.print("   ");
         }
 
-        // Print each day of the month with the marker beside the date if it has an appointment
         for (int day = 1; day <= noOfDays; day++) {
             String crossApptDate = onlyConfirmedDates.contains(day) ? "X" : " ";
             System.out.printf("%2d%s ", day, crossApptDate);
 
-            // Move to a new line after Sunday (accounting for Monday as the start of the week)
             if ((day + whichDayOfWk - 1) % 7 == 0) {
                 System.out.println();
             }
         }
-        System.out.println(); // Final newline after calendar output
+        System.out.println();
 
-        // Print the details of each appointment after the calendar
         System.out.println("\nAppointment Details:");
         for (Appointment oneApt : apptList) {
             LocalDate apptDate = oneApt.getAppointmentDate().toInstant()
@@ -276,110 +345,166 @@ public class Doctor extends Staff{
         }
     }
 
-    private void loadApptData() {
-        ApptAvailLoader apptLoader = new ApptAvailLoader();
-        String path = FilePaths.APPT_DATA.getPath();
-        List<Appointment> apptsList = apptLoader.loadData(path);
-
-        // Filter appointments relevant to this doctor
-        for (Appointment oneAppt : apptsList) {
-            if (oneAppt.getDoctorId().equals(this.getStaffId())) {
-                apptList.add(oneAppt);
-            }
-        }
-    }
-
-    // Method to load availability data
-    private void loadAvailData() {
-        ApptAvailLoader availLoader = new ApptAvailLoader();
-        String path = FilePaths.DOCAVAIL_DATA.getPath();
-        Map<String, List<Availability>> map = availLoader.loadAvailData(path);
-
-        // Load this doctor’s availability from the map
-        if (map.containsKey(this.getStaffId())) {
-            availList.addAll(map.get(this.getStaffId()));
-        }
-    }
-
-    // Method to reset flags if data changes, ensuring reload on next access - // Change variableName
-    public void resetData() {
-        apptsLoaded = false;
-        availLoaded = false;
-    }
-
-
-    //Helper method to check if the time format is valid
-    private boolean checkValidTimeFormat(String time, SimpleDateFormat timeFormat) {
+    public void viewAllAvail() {
         try {
-            timeFormat.parse(time);
-            return true;
-        } catch (ParseException e) {
-            return false;
+            DateTimeFormatter formatTheDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            DateTimeFormatter formatTheTime = new DateTimeFormatterBuilder()
+                    .parseCaseInsensitive()
+                    .appendPattern("h:mm a")
+                    .toFormatter();
+
+            Map<LocalDate, List<Availability>> allAvail = availList.stream()
+                    .collect(Collectors.groupingBy(
+                            avail -> avail.getAvailableDate().toInstant()
+                                    .atZone(ZoneId.systemDefault()).toLocalDate(),
+                            TreeMap::new,
+                            Collectors.toList()
+                    ));
+
+            System.out.println("Doctor ID: " + this.getStaffId());
+            System.out.println("\n-- All Dates: --");
+
+            for (LocalDate oneDate: allAvail.keySet()) {
+                System.out.printf("Date: %s\n", oneDate.format(formatTheDate));
+
+                List<Availability> filterByDate = allAvail.get(oneDate);
+                filterByDate.sort(Comparator.comparing(oneAvail -> LocalTime.parse(oneAvail.getStartTime(),
+                        formatTheTime)));
+
+                LocalTime startTiming = null;
+                LocalTime endTiming = null;
+                DoctorAvailability docStatus = null;
+
+                for (Availability oneAvail : filterByDate) {
+                    LocalTime slotStartTime = LocalTime.parse(oneAvail.getStartTime(), formatTheTime);
+                    LocalTime slotEndTime = LocalTime.parse(oneAvail.getEndTime(), formatTheTime);
+
+                    // If starting a new period or status changes, print the previous period
+                    if (docStatus == null || docStatus != oneAvail.getStatus() || !slotStartTime.equals(endTiming)) {
+                        if (docStatus != null) {
+                            System.out.printf("   - %s from %s to %s%n", docStatus, startTiming.format(formatTheTime), endTiming.format(formatTheTime));
+                        }
+                        startTiming = slotStartTime;
+                        docStatus = oneAvail.getStatus();
+                    }
+
+                    endTiming = slotEndTime;
+                }
+
+                if (docStatus != null) {
+                    System.out.printf("   - %s from %s to %s%n", docStatus, startTiming.format(formatTheTime), endTiming.format(formatTheTime));
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
-    // Helper method to check if availability is already set for a specific date
-    public boolean compareDate(LocalDate addedDate) {
-        return availList.stream().anyMatch(availability ->
-                availability.getAvailableDate().toInstant()
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDate()
-                        .equals(addedDate)
-        );
+    private LocalTime checkValidTimeFormat(String checkedTime) {
+        DateTimeFormatter formatTheTime = new DateTimeFormatterBuilder()
+                .parseCaseInsensitive()
+                .appendPattern("h[:mm][ ]a")
+                .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
+                .toFormatter();
+
+        try {
+            return LocalTime.parse(checkedTime, formatTheTime);
+        } catch (Exception e) {
+            System.out.println("Please enter a valid time, for example \"10 am/AM etc.\"");
+            return null;
+        }
     }
 
     public void addAvail(LocalDate date, String startTime, String endTime,
                          DoctorAvailability status) {
-        SimpleDateFormat desiredTimeFormat = new SimpleDateFormat("hh:mm a");
-        desiredTimeFormat.setLenient(false);
-
-        if (!checkValidTimeFormat(startTime, desiredTimeFormat)) {
-            System.out.println("Invalid start time format. Please enter start time as hh:mm AM/PM");
-            return;
-        }
-
-        if (!checkValidTimeFormat(endTime, desiredTimeFormat)) {
-            System.out.println("Invalid end time format. Please enter end time as hh:mm AM/PM");
-            return;
-        }
-
-        if (compareDate(date)) {
-            System.out.println("Availability already set for this date. Please edit the existing entry if needed.");
-            return;
-        }
 
         Date formattedNewDate = Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
 
-        Availability newAvail = new Availability(this.getStaffId(), formattedNewDate, startTime, endTime, status);
+        LocalTime formatStartTime = checkValidTimeFormat(startTime);
+        if (formatStartTime == null) {
+            return;
+        }
 
-        // Write the availability to the Excel file
-        uploadAvail(newAvail);
+        LocalTime formatEndTime = checkValidTimeFormat(endTime);
+        if (formatEndTime == null) {
+            return;
+        }
+
+        DateTimeFormatter formatTheTime = new DateTimeFormatterBuilder()
+                .parseCaseInsensitive()
+                .appendPattern("h:mm a")
+                .toFormatter();
+
+        List<Availability> currentSlots = availList.stream()
+                .filter(avail -> avail.getAvailableDate().toInstant()
+                        .atZone(ZoneId.systemDefault()).toLocalDate().equals(date))
+                .collect(Collectors.toList());
+
+        for (Availability oneSlot : currentSlots) {
+            LocalTime currentStart = LocalTime.parse(oneSlot.getStartTime(), formatTheTime);
+            LocalTime currentEnd = LocalTime.parse(oneSlot.getEndTime(), formatTheTime);
+
+            if (formatStartTime.isBefore(currentEnd) && formatEndTime.isAfter(currentStart)) {
+                System.out.println("Time conflict: The new availability overlaps with an existing time slot.");
+                return;
+            }
+        }
+
+        List<Availability> allSlots = separateIntoConsulationSlots(formattedNewDate, formatStartTime, formatEndTime, status);
+        for (Availability oneSlot : allSlots) {
+            uploadAvail(oneSlot);
+        }
         System.out.println("Availability saved for " + date);
+        updateData("avail");
     }
 
-    public void uploadAvail(Availability newAvailability) {
+    private List<Availability> separateIntoConsulationSlots(Date desiredDate, LocalTime startTiming,
+                                                            LocalTime endTiming,
+                                                            DoctorAvailability docStatus) {
+        List<Availability> allSlots = new ArrayList<>();
+        LocalTime currentTiming = startTiming;
+
+        while (currentTiming.isBefore(endTiming)) {
+            LocalTime nextHour = currentTiming.plusHours(1);
+
+            if (nextHour.isAfter(endTiming)) {
+                nextHour = endTiming;
+            }
+
+            Availability newSlot = new Availability(
+                    this.getStaffId(),
+                    desiredDate,
+                    currentTiming.format(DateTimeFormatter.ofPattern("hh:mm a")),
+                    nextHour.format(DateTimeFormatter.ofPattern("hh:mm a")),
+                    docStatus
+            );
+
+            allSlots.add(newSlot);
+            currentTiming = nextHour;
+        }
+        return allSlots;
+    }
+
+    private void uploadAvail(Availability newAvailability) {
         String path = FilePaths.DOCAVAIL_DATA.getPath();
 
         try (FileInputStream input = new FileInputStream(path);
              Workbook wkbook = new XSSFWorkbook(input)) {
 
-            // Check if the workbook has at least one sheet; if not, create a new sheet
             Sheet sheet = wkbook.getNumberOfSheets() > 0 ? wkbook.getSheetAt(0) : wkbook.createSheet("Availability");
 
             int latestRow = sheet.getLastRowNum() + 1;
             Row newRow = sheet.createRow(latestRow);
 
-            // Populate the newRow with the new availability data
             newRow.createCell(0).setCellValue(newAvailability.getDoctorId());
 
             Cell dateCell = newRow.createCell(1);
             dateCell.setCellValue(newAvailability.getAvailableDate());
 
-            // Create a date format style with "dd/MM/yy"
             CellStyle desiredStyle = wkbook.createCellStyle();
             CreationHelper crHelper = wkbook.getCreationHelper();
             desiredStyle.setDataFormat(crHelper.createDataFormat().getFormat("dd/MM/yy"));
-            dateCell.setCellStyle(desiredStyle);  // Apply the custom date format style
+            dateCell.setCellStyle(desiredStyle);
 
             newRow.createCell(2).setCellValue(newAvailability.getStartTime());
             newRow.createCell(3).setCellValue(newAvailability.getEndTime());
@@ -387,24 +512,9 @@ public class Doctor extends Staff{
 
             try (FileOutputStream newEntry = new FileOutputStream(path)) {
                 wkbook.write(newEntry);
-                System.out.println("Availability saved to file.");
             }
         } catch (IOException e) {
             System.err.println("Error saving availability to file: " + e.getMessage());
-        }
-    }
-
-    public void getAvailList() {
-        if (!availLoaded) {
-            loadAvailData();
-            availLoaded = true;
-        }
-    }
-
-    public void getApptList() {
-        if (!apptsLoaded) {
-            loadApptData();
-            apptsLoaded = true;
         }
     }
 
@@ -416,16 +526,84 @@ public class Doctor extends Staff{
         return apptList;
     }
 
+    /* END OF MANAGEMENT OF DOCTOR APPOINTMENTS/AVAILABILITY METHODS */
 
-    public void recordAppointmentOutcome(Appointment appointment, String serviceType, List<Medicine> prescriptions, String consultationNotes) {
+    /* START OF RECORDING APPT OUTCOME METHODS */
+
+    public Appointment findApptByID(String apptID) {
+        for (Appointment oneAppt : apptList) {
+            if (oneAppt.getAppointmentId().equals(apptID)) {
+                return oneAppt;
+            }
+        }
+        return null;
+    }
+
+    public void recordAppointmentOutcome(Appointment appointment, String serviceType, List<Medicine> prescriptions,
+                                         String consultationNotes, String outcomeSts) {
         AppointmentOutcomeRecord outcomeRecord = new AppointmentOutcomeRecord(
+                appointment,
                 new Date(), // Current date as appointment date
                 serviceType,
                 prescriptions,
-                consultationNotes
+                consultationNotes,
+                outcomeSts
         );
+        uploadNewApptRecord(outcomeRecord);
     }
 
+    private void uploadNewApptRecord(AppointmentOutcomeRecord record) {
+        String outcomePath = FilePaths.APPTOUTCOME.getPath();
+
+        try (FileInputStream input = new FileInputStream(outcomePath);
+             Workbook wkBook = new XSSFWorkbook(input);
+             FileOutputStream outputStream = new FileOutputStream(outcomePath)) {
+
+            Sheet desiredSheet = wkBook.getSheetAt(0);
+            int lastRow = desiredSheet.getLastRowNum();
+
+            Row newRow = desiredSheet.createRow(++lastRow);
+
+            newRow.createCell(0).setCellValue(record.getAppt().getAppointmentId());
+
+            Cell dateCell = newRow.createCell(1);
+            dateCell.setCellValue(record.getAppt().getAppointmentDate());
+
+            CellStyle desiredStyle = wkBook.createCellStyle();
+            CreationHelper crHelper = wkBook.getCreationHelper();
+            desiredStyle.setDataFormat(crHelper.createDataFormat().getFormat("dd/MM/yy"));
+            dateCell.setCellStyle(desiredStyle);
+
+            newRow.createCell(2).setCellValue(record.getAppt().getDoctorId());
+            newRow.createCell(3).setCellValue(record.getAppt().getPatientId());
+            newRow.createCell(4).setCellValue(record.getServiceType());
+            newRow.createCell(5).setCellValue(record.getConsultationNotes());
+
+            StringBuilder names = new StringBuilder();
+            StringBuilder statusOfDispersion = new StringBuilder();
+            for (AppointmentOutcomeRecord.PrescribedMedication oneMedicine : record.getPrescriptions()) {
+                if (names.length() > 0) {
+                    names.append(", ");
+                    statusOfDispersion.append(", ");
+                }
+                names.append(oneMedicine.getMedicine().getName());
+                statusOfDispersion.append(oneMedicine.getStatus());
+            }
+
+            newRow.createCell(6).setCellValue(names.toString());
+            newRow.createCell(7).setCellValue(statusOfDispersion.toString());
+            newRow.createCell(8).setCellValue(record.getApptStatus());
+
+            wkBook.write(outputStream);
+
+        } catch (IOException e) {
+            System.err.println("Error writing appointment outcome to file: " + e.getMessage());
+        }
+    }
+
+    /* END OF RECORDING APPT OUTCOME METHODS */
+
+    // NOT IMPLEMENTED YET
     public void addPatientUnderCare(Patient patient) {
         patientsUnderCare.add(patient);
     }

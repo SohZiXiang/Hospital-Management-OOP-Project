@@ -1,4 +1,4 @@
-package app.screens.DoctorScreens;
+package app.screens.doctor;
 
 import interfaces.*;
 import models.entities.*;
@@ -30,11 +30,19 @@ public class ManageAppointmentsScreen implements Screen {
 
                 switch (choice) {
                     case 1 -> doc.viewDoctorSchedule();
-                    case 2 -> manageAvailability(scanner, doc);
-                    // case 3 -> acceptDeclineAppointments(scanner, user);
+                    case 2 -> {
+                        System.out.println("\n--- Manage your Availability ---");
+                        doc.viewAllAvail();
+                        System.out.println("\nWould you like to edit or add a new record?");
+                        if (scanner.nextLine().equalsIgnoreCase("add")) addAvailability(scanner, doc);
+                        else if (scanner.nextLine().equalsIgnoreCase("edit")) editAvailability(scanner, doc); // NOT
+                        // IMPLEMENTED
+                        else System.out.println("Please enter 'add' or 'edit' only");
+                    }
+                    // case 3 -> acceptDeclineAppointments(scanner, user); // NOT IMPLEMENTED
                     case 4 -> {
                         System.out.println("Returning to Main Menu...");
-                        doc.resetData();
+                        doc.resetData("both");
                         return;
                     }
                     default -> System.out.println("Invalid choice, please try again.");
@@ -45,9 +53,7 @@ public class ManageAppointmentsScreen implements Screen {
         }
     }
 
-    public void manageAvailability(Scanner scanner, Doctor doc) {
-        System.out.println("\n--- Manage your Availability ---");
-
+    public void addAvailability(Scanner scanner, Doctor doc) {
         System.out.print("Enter year for availability (e.g., 2024): ");
         int chosenYr = Integer.parseInt(scanner.nextLine());
 
@@ -78,6 +84,10 @@ public class ManageAppointmentsScreen implements Screen {
 
             doc.addAvail(combinedDate, start, end, docAvail);
         }
+    }
+
+    public void editAvailability(Scanner scanner, User doc) {
+
     }
 
 }

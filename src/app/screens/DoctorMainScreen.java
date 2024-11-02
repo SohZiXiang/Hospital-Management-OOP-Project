@@ -3,17 +3,25 @@ package app.screens;
 import app.Main;
 import interfaces.*;
 import models.entities.*;
-import app.screens.DoctorScreens.*;
+import app.screens.doctor.*;
 
-import java.text.NumberFormat;
 import java.util.*;
 
 public class DoctorMainScreen implements Screen{
 
     @Override
     public void display(Scanner scanner, User user) {
+        String roleName =
+                user.getRole().name().substring(0, 1).toUpperCase() + user.getRole().name().substring(1).toLowerCase();
+
         while (true) {
-            System.out.printf("Welcome, %s: %s\n", user.getRole(), user.getName());
+            System.out.println(" ____             _             ");
+            System.out.println("|  _ \\  ___   ___| |_ ___  _ __ ");
+            System.out.println("| | | |/ _ \\ / __| __/ _ \\| '__|");
+            System.out.println("| |_| | (_) | (__| || (_) | |   ");
+            System.out.println("|____/ \\___/ \\___|\\__\\___/|_|   ");
+            System.out.println("\n");
+            System.out.printf("Welcome, %s: %s\n", roleName, user.getName());
             System.out.println("What would you like you to do?");
             System.out.println("1. View/Update Patient Medical Records");
             System.out.println("2. Manage your appointments");
@@ -34,7 +42,8 @@ public class DoctorMainScreen implements Screen{
                         manageAppt.display(scanner, user);
                     }
                     case 3 -> {
-
+                        AppointmentOutcomeScreen recordOutcome = new AppointmentOutcomeScreen();
+                        recordOutcome.display(scanner, user);
                     }
                     case 4 -> {
                         System.out.println("Logging out...");

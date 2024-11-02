@@ -1,27 +1,32 @@
 package models.records;
 
+import com.twilio.rest.microvisor.v1.App;
+import models.entities.Appointment;
 import models.entities.Medicine;
+import models.enums.*;
 
 import java.util.*;
 import java.util.ArrayList;
 
  public class AppointmentOutcomeRecord {
+    private Appointment appt;
     private Date appointmentDate;
     private String serviceType;
     private List<PrescribedMedication> prescriptions;
     private String consultationNotes;
+    private String apptStatus;
 
     // wrapper class to keep track of prescribed medication for pharmacist and doctor
     public static class PrescribedMedication {
         private Medicine medicine;
-        private String status;
+        private PrescriptionStatus status;
 
         public PrescribedMedication(Medicine medicine) {
             this.medicine = medicine;
-            this.status = "pending";
+            this.status = PrescriptionStatus.PENDING;
         }
 
-        public PrescribedMedication(Medicine medicine, String status) {
+        public PrescribedMedication(Medicine medicine, PrescriptionStatus status) {
             this.medicine = medicine;
             this.status = status;
         }
@@ -30,16 +35,19 @@ import java.util.ArrayList;
             return medicine;
         }
 
-        public String getStatus() {
+        public PrescriptionStatus getStatus() {
             return status;
         }
 
-        public void setStatus(String status) {
+        public void setStatus(PrescriptionStatus status) {
             this.status = status;
         }
     }
 
-    public AppointmentOutcomeRecord(Date appointmentDate, String serviceType, List<Medicine> medicines, String consultationNotes) {
+    public AppointmentOutcomeRecord(Appointment appt, Date appointmentDate, String serviceType,
+                                    List<Medicine> medicines,
+                                    String consultationNotes, String outcomeStatus) {
+        this.appt = appt;
         this.appointmentDate = appointmentDate;
         this.serviceType = serviceType;
         this.consultationNotes = consultationNotes;
@@ -47,7 +55,11 @@ import java.util.ArrayList;
         for (Medicine medicine : medicines) {
             this.prescriptions.add(new PrescribedMedication(medicine));
         }
+        this.apptStatus = outcomeStatus;
+
     }
+
+    public Appointment getAppt() { return appt; }
 
     public Date getAppointmentDate() {
         return appointmentDate;
@@ -81,7 +93,7 @@ import java.util.ArrayList;
          this.prescriptions.add(new PrescribedMedication(medicine));
      }
 
-     public void changePrescriptionStatus(String medicineName, String newStatus) {
+     public void changePrescriptionStatus(String medicineName, PrescriptionStatus newStatus) {
          for (PrescribedMedication prescribedMedication : prescriptions) {
              if (prescribedMedication.getMedicine().getName().equals(medicineName)) {
                  prescribedMedication.setStatus(newStatus);
@@ -97,4 +109,10 @@ import java.util.ArrayList;
     public void setConsultationNotes(String consultationNotes) {
         this.consultationNotes = consultationNotes;
     }
+
+    public String getApptStatus() { return apptStatus; }
+
+     public void setApptStatus(String apptStatus) {
+        this.apptStatus = apptStatus;
+     }
 }
