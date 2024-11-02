@@ -1,6 +1,7 @@
 package app.screens;
 import app.Main;
 import app.screens.patient.UpdatePersonalInformationScreen;
+import app.screens.patient.ViewAppointmentOutcomeScreen;
 import app.screens.patient.ViewMedicalRecord;
 import app.screens.patient.ViewPatientAppointmentScreen;
 import interfaces.Screen;
@@ -43,7 +44,8 @@ public class PatientScreen implements Screen {
                         viewPatientAppointmentScreen.display(scanner,user);
                         break;
                     case 4:
-
+                        ViewAppointmentOutcomeScreen viewAppointmentOutcomeScreen = new ViewAppointmentOutcomeScreen();
+                        viewAppointmentOutcomeScreen.display(scanner,user);
                         break;
                     case 5:
                         System.out.println("Logging out...");

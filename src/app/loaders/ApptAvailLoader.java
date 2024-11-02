@@ -35,8 +35,10 @@ public class ApptAvailLoader implements DataLoader {
                     Date apptDate = newRow.getCell(4).getDateCellValue();
                     String apptTime = desiredDateFormat.formatCellValue(newRow.getCell(5));
 
+                    String outcomeRecord = newRow.getCell(6, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).getStringCellValue();
+
                     // Create a new Appointment object
-                    Appointment newAppt = new Appointment(apptID, patientID, doctorID, apptDate, apptTime);
+                    Appointment newAppt = new Appointment(apptID, patientID, doctorID, apptDate, apptTime, outcomeRecord);
                     newAppt.setStatus(aptStatus);
 
                     // Add to appointments list

@@ -123,7 +123,7 @@ public class ViewPatientAppointmentScreen implements Screen {
         System.out.println("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
 
         for (Appointment appointment : appointmentList) {
-            if (appointment.getPatientId().equals(user.getHospitalID())) {
+            if (appointment.getPatientId().equals(user.getHospitalID()) && appointment.getStatus() != AppointmentStatus.COMPLETED) {
                 String doctorName = "N/A";
 
                 for (Staff staff : staffList) {
@@ -199,7 +199,7 @@ public class ViewPatientAppointmentScreen implements Screen {
             newRow.createCell(0).setCellValue(appointment.getAppointmentId());
             newRow.createCell(1).setCellValue(appointment.getPatientId());
             newRow.createCell(2).setCellValue(appointment.getDoctorId());
-            newRow.createCell(3).setCellValue("SCHEDULED");
+            newRow.createCell(3).setCellValue(AppointmentStatus.SCHEDULED.toString());
             newRow.createCell(4).setCellValue(appointment.getAppointmentDate());
             newRow.createCell(5).setCellValue(appointment.getAppointmentTime());
             newRow.createCell(6).setCellValue("");
@@ -290,7 +290,7 @@ public class ViewPatientAppointmentScreen implements Screen {
                     ++slotCount;
                     if(slotCount == option){
                         Appointment newAppointment = new Appointment(appointmentID, user.getHospitalID(),
-                                availability.getDoctorId(), availability.getAvailableDate(), availability.getStartTime());
+                                availability.getDoctorId(), availability.getAvailableDate(), availability.getStartTime(), "");
                         writeAppointmentToExcel(user, newAppointment);
                     }
                 }
