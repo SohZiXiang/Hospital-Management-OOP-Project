@@ -1,4 +1,4 @@
-package app.screens.DoctorScreens;
+package app.screens.doctor;
 
 import interfaces.*;
 import models.entities.*;
@@ -24,7 +24,7 @@ public class PatientRecordsScreen implements Screen {
                 int choice = Integer.parseInt(input);
 
                 switch (choice) {
-                    case 1 -> doc.showAllRecords();
+                    case 1 -> doc.showAllPatientsRecords();
                     case 2 -> {
                         System.out.print("Enter Patient ID to view record: ");
                         String patientID = scanner.nextLine();
@@ -55,10 +55,8 @@ public class PatientRecordsScreen implements Screen {
             System.out.print("Enter treatment plan: ");
             String indTreatment = scanner.nextLine();
 
-            isValidPatient.addDiagnosis(indDiagnosis);
-            isValidPatient.addTreatment(indTreatment);
+            doc.updateMedicalRecord(isValidPatient, indDiagnosis, indTreatment);
 
-            doc.updatePatientRecords(patientID, indDiagnosis, indTreatment);
             System.out.println("Patient record updated successfully.");
         } else {
             System.out.println("Patient record not found.");

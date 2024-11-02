@@ -8,6 +8,7 @@ public enum FilePaths {
     REPLENISH_REQ_DATA("data/ReplenishmentRequests.xlsx"),
     APPT_DATA("data/Appointment_List.xlsx"),
     DOCAVAIL_DATA("data/Availability_List.xlsx"),
+    APPTOUTCOME("data/Outcome_Record.xlsx"),
     ACTIVITY_LOG("data/Activity_Logs.xlsx");
 
     private final String path;
