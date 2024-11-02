@@ -37,7 +37,7 @@ public class Patient extends User {
     //Changed this part
     public Patient(String hospitalID,
                    String patientID, String name, LocalDate dateOfBirth, Gender gender,
-                   String email, BloodType bloodType, List<String> pastDiagnoses, List<String> pastTreatments) {
+                   String email, BloodType bloodType, List<String> pastDiagnoses, List<String> pastTreatments, String phoneNumber) {
         super(hospitalID = patientID, name,"P@ssw0rd123", gender);
         this.patientID = patientID;
         this.dateOfBirth = dateOfBirth;
@@ -45,6 +45,7 @@ public class Patient extends User {
         this.bloodType = bloodType;
         this.pastDiagnoses = (pastDiagnoses != null) ? new ArrayList<>(pastDiagnoses) : new ArrayList<>();
         this.pastTreatments = (pastTreatments != null) ? new ArrayList<>(pastTreatments) : new ArrayList<>();
+        this.phoneNumber = phoneNumber;
     }
 
 

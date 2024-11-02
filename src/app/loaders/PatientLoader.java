@@ -36,13 +36,17 @@ public class PatientLoader implements DataLoader {
                     BloodType bloodType = BloodType.fromString(row.getCell(4).getStringCellValue().toUpperCase());
                     String contactInfo = row.getCell(5).getStringCellValue();
 
+                    DataFormatter formatter = new DataFormatter();
+                    Cell phoneNumberCell = row.getCell(8);
+                    String phoneNumber = formatter.formatCellValue(phoneNumberCell);
+
                     // Added the below 2 lines
                     // Parse comma-separated diagnosis and treatment into lists
                     List<String> pastDiagnoses = splitCommaSeparatedString(row.getCell(6));
                     List<String> pastTreatments = splitCommaSeparatedString(row.getCell(7));
 
                     // changed the constructor values, pastdiagnosis and pasttreatments
-                    Patient patient = new Patient("H000", patientId, name, dob, gender, contactInfo, bloodType, pastDiagnoses, pastTreatments);
+                    Patient patient = new Patient("H000", patientId, name, dob, gender, contactInfo, bloodType, pastDiagnoses, pastTreatments, phoneNumber);
                     patientList.add(patient);
                 }
             }
