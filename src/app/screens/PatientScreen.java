@@ -13,12 +13,12 @@ public class PatientScreen implements Screen {
 
         while (true) {
             System.out.println();
-            System.out.println("|\\   __  \\|\\   __  \\|\\___   ___\\\\  \\|\\  ___ \\ |\\   ___  \\|\\___   ___\\ \n" +
-                    "\\ \\  \\|\\  \\ \\  \\|\\  \\|___ \\  \\_\\ \\  \\ \\   __/|\\ \\  \\\\ \\  \\|___ \\  \\_| \n" +
-                    " \\ \\   ____\\ \\   __  \\   \\ \\  \\ \\ \\  \\ \\  \\_|/_\\ \\  \\\\ \\  \\   \\ \\  \\  \n" +
-                    "  \\ \\  \\___|\\ \\  \\ \\  \\   \\ \\  \\ \\ \\  \\ \\  \\_|\\ \\ \\  \\\\ \\  \\   \\ \\  \\ \n" +
-                    "   \\ \\__\\    \\ \\__\\ \\__\\   \\ \\__\\ \\ \\__\\ \\_______\\ \\__\\\\ \\__\\   \\ \\__\\\n" +
-                    "    \\|__|     \\|__|\\|__|    \\|__|  \\|__|\\|_______|\\|__| \\|__|    \\|__|");
+            System.out.println(" ____       _   _            _   ");
+            System.out.println("|  _ \\ __ _| |_(_) ___ _ __ | |_ ");
+            System.out.println("| |_) / _` | __| |/ _ \\ '_ \\| __|");
+            System.out.println("|  __/ (_| | |_| |  __/ | | | |_ ");
+            System.out.println("|_|   \\__,_|\\__|_|\\___|_| |_|\\__|");
+            System.out.println();
             System.out.println("Welcome, Patient " + user.getName());
             System.out.println("What would you like to do?");
             System.out.println("1. Manage Medical Records");
