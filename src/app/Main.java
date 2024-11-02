@@ -18,7 +18,7 @@ public class Main {
     public static void displayMain(Scanner scanner){
         while (true) {
             if(!emailAlert) {
-                EmailUtil.checkInventoryAndNotify("phclerk00@outlook.com");
+                //EmailUtil.checkInventoryAndNotify("phclerk00@outlook.com");
                 emailAlert = true;
             }
             String blue = "\u001B[34m";
