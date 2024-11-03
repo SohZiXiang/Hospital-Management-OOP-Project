@@ -1,11 +1,11 @@
 package app.screens;
-import app.Main;
-import app.screens.patient.UpdatePersonalInformationScreen;
 import app.screens.patient.ViewAppointmentOutcomeScreen;
 import app.screens.patient.ViewMedicalRecord;
 import app.screens.patient.ViewPatientAppointmentScreen;
 import interfaces.Screen;
 import models.entities.User;
+import utils.ActivityLogUtil;
+
 import java.util.Scanner;
 
 public class PatientScreen implements Screen {
@@ -22,10 +22,9 @@ public class PatientScreen implements Screen {
             System.out.println("Welcome, Patient " + user.getName());
             System.out.println("What would you like to do?");
             System.out.println("1. Manage Medical Records");
-            System.out.println("2. Update Personal Information");
-            System.out.println("3. Manage Appointment");
-            System.out.println("4. View Past Appointment Outcome Records");
-            System.out.println("5. Logout");
+            System.out.println("2. Manage Appointment");
+            System.out.println("3. View Past Appointment Outcome Records");
+            System.out.println("4. Logout");
             System.out.print("Enter your choice: ");
             String input = scanner.nextLine();
             try {
@@ -36,34 +35,16 @@ public class PatientScreen implements Screen {
                         viewMedicalRecord.display(scanner,user);
                         break;
                     case 2:
-                        UpdatePersonalInformationScreen updatePersonalInformationScreen = new UpdatePersonalInformationScreen();
-                        updatePersonalInformationScreen.display(scanner,user);
-                        break;
-                    case 3:
                         ViewPatientAppointmentScreen viewPatientAppointmentScreen = new ViewPatientAppointmentScreen();
                         viewPatientAppointmentScreen.display(scanner,user);
                         break;
-                    case 4:
+                    case 3:
                         ViewAppointmentOutcomeScreen viewAppointmentOutcomeScreen = new ViewAppointmentOutcomeScreen();
                         viewAppointmentOutcomeScreen.display(scanner,user);
                         break;
-                    case 5:
-                        System.out.println("Logging out...");
-                        Main.displayMain(scanner);
+                    case 4:
+                        ActivityLogUtil.logout(scanner, user);
                         break;
-                    case 6:
-
-                        break;
-                    case 7:
-
-                        break;
-                    case 8:
-
-                        break;
-                    case 9:
-
-                        break;
-
                     default:
                         System.out.println("Invalid choice, please try again.");
                 }
