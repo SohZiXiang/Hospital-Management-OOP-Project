@@ -27,7 +27,8 @@ public class AdminMainScreen implements Screen{
             System.out.println("3. View and Manage Medication Inventory");
             System.out.println("4. Approve Replenishment Requests");
             System.out.println("5. View Activity Logs");
-            System.out.println("6. Logout");
+            System.out.println("6. View and Manage Hospital Patient");
+            System.out.println("7. Logout");
             System.out.print("Enter your choice: ");
 
             String input = scanner.nextLine();
@@ -55,6 +56,10 @@ public class AdminMainScreen implements Screen{
                         ViewActivityLogScreen logScreen = new ViewActivityLogScreen();
                         logScreen.display(scanner, user);
                     case 6:
+                        ManagePatientScreen managePatientScreen = new ManagePatientScreen();
+                        managePatientScreen.display(scanner, user);
+                        break;
+                    case 7:
                         ActivityLogUtil.logout(scanner, user);
                     default:
                         System.out.println("Invalid choice, please try again.");

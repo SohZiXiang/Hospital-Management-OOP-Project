@@ -16,6 +16,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import utils.ActivityLogUtil;
+import utils.SMSUtil;
 import utils.StringFormatUtil;
 
 import java.io.File;
@@ -292,6 +293,7 @@ public class ViewPatientAppointmentScreen implements Screen {
                         Appointment newAppointment = new Appointment(appointmentID, user.getHospitalID(),
                                 availability.getDoctorId(), availability.getAvailableDate(), availability.getStartTime(), "");
                         writeAppointmentToExcel(user, newAppointment);
+                        //SMSUtil.sendSms("82849085", "HMS SYSTEM", "Your appointment is scheduled.");
                     }
                 }
             }
