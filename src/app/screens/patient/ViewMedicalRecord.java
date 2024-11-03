@@ -98,7 +98,8 @@ public class ViewMedicalRecord implements Screen {
 
     @Override
     public void display(Scanner scanner, User user) {
-
+        String logMsg = "Patient " + user.getName() + " (ID: " + user.getHospitalID() + ") viewed medical record.";
+        ActivityLogUtil.logActivity(logMsg, user);
         loadData(user);
 
         Boolean exit = false;

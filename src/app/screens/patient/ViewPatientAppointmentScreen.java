@@ -208,7 +208,7 @@ public class ViewPatientAppointmentScreen implements Screen {
                 workbook.write(fos);
             }
 
-            String logMsg = "User " + currentUser.getName() + " (ID: " + currentUser.getHospitalID() + ") " +
+            String logMsg = "Patient " + currentUser.getName() + " (ID: " + currentUser.getHospitalID() + ") " +
                     "create appointment " + appointment.getAppointmentId() + ". ";
             ActivityLogUtil.logActivity(logMsg, currentUser);
 
@@ -260,7 +260,7 @@ public class ViewPatientAppointmentScreen implements Screen {
             try (FileOutputStream fos = new FileOutputStream(appt_path)) {
                 workbook.write(fos);
             }
-            String logMsg = "User " + currentUser.getName() + " (ID: " + currentUser.getHospitalID() + ") " +
+            String logMsg = "Patient " + currentUser.getName() + " (ID: " + currentUser.getHospitalID() + ") " +
                     "cancelled appointment: " + appointmentID + "." ;
             ActivityLogUtil.logActivity(logMsg, currentUser);
 
@@ -335,6 +335,8 @@ public class ViewPatientAppointmentScreen implements Screen {
             cancelAppointment(user, appointmentID);
             createAppointment(user, option, appointmentID);
             System.out.println("Appointment rescheduled successfully.");
+            String logMsg = "Patient " + user.getName() + " (ID: " + user.getHospitalID() + ") rescheduled appointment for ." + appointmentID;
+            ActivityLogUtil.logActivity(logMsg, user);
             loadData(user);
         } catch (Exception e) {
             throw new RuntimeException(e);
