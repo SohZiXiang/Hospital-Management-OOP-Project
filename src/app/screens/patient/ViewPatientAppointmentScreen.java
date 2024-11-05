@@ -1,13 +1,9 @@
 package app.screens.patient;
 
-import app.loaders.ApptAvailLoader;
-import app.loaders.StaffLoader;
-import interfaces.DataLoader;
 import interfaces.Screen;
 import models.entities.*;
-import models.enums.FilePaths;
 import utils.GenerateIdUtil;
-import java.text.SimpleDateFormat;
+
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -27,7 +23,7 @@ public class ViewPatientAppointmentScreen implements Screen {
     public void display(Scanner scanner, User user) {
 
         Patient patient = (Patient) user;
-        patient.loadData(user);
+        patient.loadAppointmentData(user);
 
         Boolean exit = false;
 

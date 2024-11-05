@@ -29,6 +29,19 @@ public class Patient extends User {
     private List<String> pastDiagnoses;
     private List<String> pastTreatments;
 
+    ApptAvailLoader appointmentLoader = new ApptAvailLoader();
+    List<Appointment> appointmentList = new ArrayList<>();
+    String appointmentPath = FilePaths.APPT_DATA.getPath();
+
+    String availabilityFilePath = FilePaths.DOCAVAIL_DATA.getPath();
+    Map<String, List<Availability>> availabilityMap = appointmentLoader.loadAvailData(availabilityFilePath);
+
+    DataLoader staffLoader = new StaffLoader();
+    List<Staff> staffList = new ArrayList<>();
+    String staffPath = FilePaths.STAFF_DATA.getPath();
+
+    SimpleDateFormat formatter = new SimpleDateFormat("EEE dd/MM/yyyy");
+
 
     public Patient(String hospitalID) {
         super(hospitalID);
@@ -121,13 +134,6 @@ public class Patient extends User {
 
     public void createAppointment(User user, int option, String appointmentID) {
 
-        ApptAvailLoader appointmentLoader = new ApptAvailLoader();
-        List<Appointment> appointmentList = new ArrayList<>();
-        String appointmentPath = FilePaths.APPT_DATA.getPath();
-
-        String availabilityFilePath = FilePaths.DOCAVAIL_DATA.getPath();
-        Map<String, List<Availability>> availabilityMap = appointmentLoader.loadAvailData(availabilityFilePath);
-
         int slotCount = 0;
 
         try {
@@ -195,7 +201,7 @@ public class Patient extends User {
                     "create appointment " + appointment.getAppointmentId() + ". ";
             ActivityLogUtil.logActivity(logMsg, currentUser);
 
-            loadData(currentUser);
+            loadAppointmentData(currentUser);
             System.out.println();
             System.out.println("Appointment added successfully.");
 
@@ -215,20 +221,7 @@ public class Patient extends User {
         }
     }
 
-    public void loadData(User user){
-
-        ApptAvailLoader appointmentLoader = new ApptAvailLoader();
-        List<Appointment> appointmentList = new ArrayList<>();
-        String appointmentPath = FilePaths.APPT_DATA.getPath();
-
-        String availabilityFilePath = FilePaths.DOCAVAIL_DATA.getPath();
-        Map<String, List<Availability>> availabilityMap = appointmentLoader.loadAvailData(availabilityFilePath);
-
-        DataLoader staffLoader = new StaffLoader();
-        List<Staff> staffList = new ArrayList<>();
-        String staffPath = FilePaths.STAFF_DATA.getPath();
-
-        SimpleDateFormat formatter = new SimpleDateFormat("EEE dd/MM/yyyy");
+    public void loadAppointmentData(User user){
 
         int slotCount = 0;
         System.out.println();
@@ -303,10 +296,6 @@ public class Patient extends User {
 
     public void cancelAppointment(User user, String appointmentID) {
 
-        ApptAvailLoader appointmentLoader = new ApptAvailLoader();
-        List<Appointment> appointmentList = new ArrayList<>();
-        String appointmentPath = FilePaths.APPT_DATA.getPath();
-
         Boolean removeAppointment = false;
 
         try {
@@ -363,7 +352,7 @@ public class Patient extends User {
                     "cancelled appointment: " + appointmentID + "." ;
             ActivityLogUtil.logActivity(logMsg, currentUser);
 
-            loadData(currentUser);
+            loadAppointmentData(currentUser);
             System.out.println();
             System.out.println("Appointment cancelled successfully.");
 
@@ -379,9 +368,51 @@ public class Patient extends User {
             System.out.println("Appointment rescheduled successfully.");
             String logMsg = "Patient " + user.getName() + " (ID: " + user.getHospitalID() + ") rescheduled appointment for ." + appointmentID;
             ActivityLogUtil.logActivity(logMsg, user);
-            loadData(user);
+            loadAppointmentData(user);
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public void loadOutcomeData(User user){
+        System.out.println();
+        System.out.println("--------- Displaying Past Appointments Outcome for patient: " + user.getName() + " ---------");
+        System.out.println();
+
+        try {
+            appointmentList = appointmentLoader.loadData(appointmentPath);
+        }
+        catch (Exception e) {
+            System.err.println("Error loading data: " + e.getMessage());
+        }
+
+        try {
+            staffList = staffLoader.loadData(staffPath);
+        }
+        catch (Exception e) {
+            System.err.println("Error loading data: " + e.getMessage());
+        }
+
+        System.out.printf("%-20s %-35s %-30s %-30s %-35s%n",
+                "Appointment ID", "Doctor", "Date", "Time", "Outcome");
+        System.out.println("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+
+        for (Appointment appointment : appointmentList) {
+            if (appointment.getPatientId().equals(user.getHospitalID()) && appointment.getStatus() == AppointmentStatus.COMPLETED) {
+                String doctorName = "N/A";
+
+                for (Staff staff : staffList) {
+                    if (staff.getStaffId().equals(appointment.getDoctorId())) {
+                        doctorName = "Dr " + staff.getName();
+                        break;
+                    }
+                }
+
+                System.out.printf("%-20s %-35s %-30s %-30s %-35s%n",
+                        appointment.getAppointmentId(), doctorName,
+                        formatter.format(appointment.getAppointmentDate()),
+                        appointment.getAppointmentTime(), appointment.getOutcomeRecord());
+            }
         }
     }
 
