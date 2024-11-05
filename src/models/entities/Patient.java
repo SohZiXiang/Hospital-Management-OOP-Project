@@ -9,6 +9,7 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import utils.ActivityLogUtil;
+import utils.SMSUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -155,7 +156,8 @@ public class Patient extends User {
                         Appointment newAppointment = new Appointment(appointmentID, getPatientID(),
                                 availability.getDoctorId(), availability.getAvailableDate(), availability.getStartTime(), "");
                         writeAppointmentToExcel(user, newAppointment);
-                        //SMSUtil.sendSms("82849085", "HMS SYSTEM", "Your appointment is scheduled.");
+                        SMSUtil.sendSms("Your appointment is scheduled for " + appointmentID +
+                                " at " + availability.getStartTime());
                     }
                 }
             }

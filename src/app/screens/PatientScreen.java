@@ -5,6 +5,7 @@ import app.screens.patient.ViewPatientAppointmentScreen;
 import interfaces.Screen;
 import models.entities.User;
 import utils.ActivityLogUtil;
+import utils.SMSUtil;
 
 import java.util.Scanner;
 
