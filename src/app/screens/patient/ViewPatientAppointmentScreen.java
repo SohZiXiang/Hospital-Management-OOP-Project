@@ -16,6 +16,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import utils.ActivityLogUtil;
+import utils.GenerateIdUtil;
 import utils.SMSUtil;
 import utils.StringFormatUtil;
 
@@ -46,50 +47,6 @@ public class ViewPatientAppointmentScreen implements Screen {
 
     SimpleDateFormat formatter = new SimpleDateFormat("EEE dd/MM/yyyy");
     int slotCount = 0;
-
-    private String genAppID(){
-        List<Integer> existingID = new ArrayList<Integer>();
-        Integer uniqueID = 1;
-
-        try {
-            appointmentList = appointmentLoader.loadData(appointmentPath);
-        }
-        catch (Exception e) {
-            System.err.println("Error loading data: " + e.getMessage());
-        }
-
-        try {
-            for (Appointment appointment : appointmentList) {
-                String id = appointment.getAppointmentId();
-                String numericValue = id.replaceAll("[^0-9]", "");
-
-                if (!numericValue.isEmpty()) {
-                    int numericValueToInt = Integer.parseInt(numericValue);
-                    existingID.add(numericValueToInt);
-                }
-            }
-
-            while(true){
-                if(!existingID.contains(uniqueID)){
-                    int length = String.valueOf(uniqueID).length();
-                    if(length == 1){
-                        return "A00" + uniqueID;
-                    }else if(length == 2){
-                        return "A0" + uniqueID;
-                    }else{
-                        return "A" + uniqueID;
-                    }
-                }
-                uniqueID++;
-            }
-
-        }
-        catch (Exception e) {
-            System.err.println(e.getMessage());
-        }
-
-        return "";
-    }
 
     public static String addOneHour(String time) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm a");
@@ -311,23 +268,6 @@ public class ViewPatientAppointmentScreen implements Screen {
             System.err.println("Error loading data: " + e.getMessage());
         }
 
-//        try {
-//            for (Appointment appointment : appointmentList) {
-//                if (appointment.getAppointmentId().equals(appointmentID) && appointment.getPatientId().equals(user.getHospitalID())) {
-//                    for (Staff staff : staffList) {
-//                        if (staff.getStaffId().equals(appointment.getDoctorId())) {
-//                            Doctor doctor = new Doctor(staff.getStaffId(), staff.getName(), staff.getGender(), staff.getAge());
-//                            doctor.addAvail(LocalDate.ofInstant(appointment.getAppointmentDate().toInstant(), ZoneId.systemDefault()),
-//                                    appointment.getAppointmentTime(), addOneHour(appointment.getAppointmentTime()), DoctorAvailability.AVAILABLE);
-//                            break;
-//                        }
-//                    }
-//                }
-//            }
-//        }catch (Exception e) {
-//            System.err.println(e.getMessage());
-//        }
-
         removeAppointmentInExcel(user, appointmentID);
 
     }
@@ -371,7 +311,7 @@ public class ViewPatientAppointmentScreen implements Screen {
                         System.out.println("Select A Option For Your Prefer Slot, example: 1");
                         String appointmentOption = scanner.nextLine();
                         int option = Integer.parseInt(appointmentOption);
-                        createAppointment(user, option, genAppID());
+                        createAppointment(user, option, GenerateIdUtil.genAppointmentID());
                         break;
                     case 3:
                         System.out.println("Select an Appointment ID to cancel, example: A001");
