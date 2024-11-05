@@ -2,6 +2,7 @@ package app.screens;
 
 import app.loaders.InventoryLoader;
 import models.entities.*;
+import utils.ActivityLogUtil;
 
 import java.util.*;
 
@@ -67,7 +68,7 @@ public class PharmacistMainScreen {
                         pharmacist.submitReplenishmentRequest(reqMedName, reqAmount, scanner);
                         break;
                     case 6:
-                        System.out.println("See you, "+pharmacist.getName()+"\nYou have logged out");
+                        ActivityLogUtil.logout(scanner, user);
                         return;
                     default:
                         System.out.println("Invalid choice, please try again.");

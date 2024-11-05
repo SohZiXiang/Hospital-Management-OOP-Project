@@ -1,9 +1,33 @@
 package models.enums;
 
+/**
+ * Enum representing the various statuses of an appointment.
+ * Each constant represents a different state an appointment can be in.
+ */
 public enum AppointmentStatus {
-    SCHEDULED,     // appointment booked but not confirmed
-    CONFIRMED,     // appointment confirmed by both patient and doctor
-    CANCELED,      // appointment cancelled
-    COMPLETED,      // appointment has taken place
-    DECLINED        // appointment request has been declined by the doctor
+
+    /**
+     * Appointment is booked but not confirmed by the doctor.
+     */
+    SCHEDULED,
+
+    /**
+     * Appointment has been confirmed by both the patient and the doctor.
+     */
+    CONFIRMED,
+
+    /**
+     * Appointment has been cancelled by the patient or the doctor.
+     */
+    CANCELED,
+
+    /**
+     * Appointment has taken place successfully.
+     */
+    COMPLETED,
+
+    /**
+     * Appointment request has been declined by the doctor.
+     */
+    DECLINED
 }

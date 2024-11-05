@@ -16,21 +16,36 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * This screen provides functionality for administrators to approve or reject replenishment requests.
+ * It loads, displays, and allows actions on requests using commands from the administrator.
+ */
 public class ApproveReplenishmentScreen implements Screen {
-    List<Medicine> inventory = ManageInventoryScreen.loadInventory();
     String repReqPath = FilePaths.REPLENISH_REQ_DATA.getPath();
     List<ReplenishmentRequest> repReqList = new ArrayList<>();
-    User currentUser = null;
 
+    /**
+     * Displays the replenishment approval screen, allowing administrators to approve or reject requests.
+     *
+     * @param scanner Scanner instance for reading user input.
+     * @param user    The currently logged-in user; only works if user is an Administrator.
+     */
     @Override
     public void display(Scanner scanner, User user) {
-        currentUser = user;
-        processRequests(scanner);
+        if (user instanceof Administrator) {
+            Administrator admin = (Administrator) user;
+            processRequests(scanner, admin);
+        }
     }
 
-    private void processRequests(Scanner scanner) {
+    /**
+     * Processes the administrator's inputs to approve or reject replenishment requests.
+     *
+     * @param scanner Scanner instance for reading user input.
+     * @param admin   The administrator handling the replenishment requests.
+     */
+    private void processRequests(Scanner scanner, Administrator admin) {
         boolean showAllRequests = false;
-
         while (true) {
             loadReplenishmentRequests();
             displayRequests(showAllRequests);
@@ -56,21 +71,25 @@ public class ApproveReplenishmentScreen implements Screen {
                 String logMsg = null;
 
                 if (decision.equals("A")) {
-                    approveRequest(choice - 1);
-                    logMsg = "User " + currentUser.getName() + " (ID: " + currentUser.getHospitalID() + ") approved request form " + repReqList.get(choice-1).getRequestId();
+                    admin.approveRequest(choice - 1, admin, request);
+                    logMsg = "User " + admin.getName() + " (ID: " + admin.getHospitalID() + ") approved request form " + repReqList.get(choice-1).getRequestId();
                 } else if (decision.equals("R")) {
-                    rejectRequest(choice - 1);
-                    logMsg = "User " + currentUser.getName() + " (ID: " + currentUser.getHospitalID() + ") rejected request form " + repReqList.get(choice-1).getRequestId();
+                    admin.rejectRequest(choice - 1, request);
+                    logMsg = "User " + admin.getName() + " (ID: " + admin.getHospitalID() + ") rejected request form " + repReqList.get(choice-1).getRequestId();
                 } else {
                     System.out.println("Invalid choice. Please enter A or R.");
                 }
-                ActivityLogUtil.logActivity(logMsg, currentUser);
+                ActivityLogUtil.logActivity(logMsg, admin);
             } else {
                 System.out.println("Invalid request number. Please try again.");
             }
         }
     }
 
+    /**
+     * Loads replenishment requests from the specified Excel file path.
+     * Populates the list of requests for display and processing.
+     */
     private void loadReplenishmentRequests() {
         repReqList.clear();
         try (FileInputStream fis = new FileInputStream(repReqPath);
@@ -97,6 +116,11 @@ public class ApproveReplenishmentScreen implements Screen {
         }
     }
 
+    /**
+     * Displays the list of replenishment requests, administrator can approve or reject these requests here.
+     *
+     * @param showAll If true, displays all requests; if false, displays only pending requests.
+     */
     private void displayRequests(boolean showAll) {
         List<ReplenishmentRequest> requestsToDisplay;
         if (showAll) {
@@ -129,58 +153,5 @@ public class ApproveReplenishmentScreen implements Screen {
                         request.getRequestDate());
             }
         }
-    }
-
-    private void approveRequest(int index) {
-        ReplenishmentRequest request = repReqList.get(index);
-        Medicine medData = findMedicine(request.getMedicineName());
-        if (medData != null) {
-            int addedStock = request.getRequestedAmount();
-            int initialStock = medData.getStock();
-            int newStock = addedStock + initialStock;
-
-            ManageInventoryScreen manageInventoryScreen = new ManageInventoryScreen();
-            manageInventoryScreen.updateStock(medData, newStock, currentUser);
-
-            updateRequestStatus(request, "approved");
-            request.setStatus("approved");
-            System.out.println("Request for " + request.getRequestedAmount() + " of " + request.getMedicineName() + " approved.");
-        } else {
-            System.out.println("Medicine not found for request: " + request.getMedicineName());
-        }
-    }
-
-    private void rejectRequest(int index) {
-        ReplenishmentRequest request = repReqList.get(index);
-        updateRequestStatus(request, "rejected");
-        request.setStatus("rejected");
-
-        System.out.println("Request for " + request.getRequestedAmount() + " of " + request.getMedicineName() + " rejected.");
-    }
-
-    private void updateRequestStatus(ReplenishmentRequest request, String status) {
-        try (FileInputStream fis = new FileInputStream(repReqPath);
-             Workbook workbook = WorkbookFactory.create(fis);
-             FileOutputStream fos = new FileOutputStream(repReqPath)) {
-            Sheet sheet = workbook.getSheetAt(0);
-
-            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
-                Row row = sheet.getRow(i);
-                if (row != null && (int) row.getCell(0).getNumericCellValue() == request.getRequestId()) {
-                    row.getCell(5).setCellValue(status);
-                    break;
-                }
-            }
-            workbook.write(fos);
-        } catch (IOException | InvalidFormatException e) {
-            System.err.println("Error updating request status: " + e.getMessage());
-        }
-    }
-
-    private Medicine findMedicine(String medName) {
-        return inventory.stream()
-                .filter(medicine -> medicine.getName().equals(medName))
-                .findFirst()
-                .orElse(null);
     }
 }

@@ -9,10 +9,22 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * Manages the reading and writing of replenishment requests to and from an Excel file.
+ * This class provides methods to add new requests and retrieve all existing requests.
+ */
 public class ReplenishmentRequestManager {
     private static final String FILE_PATH = "data/ReplenishmentRequests.xlsx";
 
-    // Write req to excel
+    /**
+     * Adds a new replenishment request to the Excel file.
+     * If the file does not exist, it creates the file and adds headers.
+     * It assigns a unique request ID to each new request.
+     *
+     * @param request The ReplenishmentRequest object containing request details.
+     * @return The updated ReplenishmentRequest object with the assigned request ID.
+     */
     public ReplenishmentRequest addRequest(ReplenishmentRequest request) {
         try {
             File file = new File(FILE_PATH);
@@ -38,7 +50,6 @@ public class ReplenishmentRequestManager {
                 fis.close();
             }
 
-            // Find the highest request ID
             int rowCount = sheet.getLastRowNum();
             int highestRequestId = 0;
             for (int i = 1; i <= rowCount; i++) {
@@ -49,11 +60,9 @@ public class ReplenishmentRequestManager {
                 }
             }
 
-            // Increment request ID for the new request
             int newRequestId = highestRequestId + 1;
             request = new ReplenishmentRequest(newRequestId, request.getHospitalId(), request.getRequesterName(), request.getMedicineName(), request.getRequestedAmount());
 
-            // Add new request
             Row row = sheet.createRow(++rowCount);
             row.createCell(0).setCellValue(request.getRequestId());
             row.createCell(1).setCellValue(request.getHospitalId());
@@ -74,11 +83,16 @@ public class ReplenishmentRequestManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return request;  // Return request with the updated ID
+        return request;
     }
 
 
-    //Read req from excel
+    /**
+     * Retrieves all replenishment requests from the Excel file.
+     * If the file does not exist, an empty list is returned.
+     *
+     * @return A list of ReplenishmentRequest objects, representing all requests.
+     */
     public List<ReplenishmentRequest> getAllRequests() {
         List<ReplenishmentRequest> requests = new ArrayList<>();
         try {

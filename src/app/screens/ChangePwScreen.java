@@ -5,9 +5,18 @@ import models.entities.Patient;
 import models.entities.Staff;
 import models.entities.User;
 import java.util.*;
-import app.loaders.*;
 
+/**
+ * This class represents the screen for changing a user's password.
+ * It prompts the user to enter their hospital ID, verifies their existence,
+ * and allows them to set a new password if the ID is valid.
+ */
 public class ChangePwScreen {
+    /**
+     * Displays the password change screen and handles user input for changing the password.
+     *
+     * @param scanner The scanner instance used for reading user input.
+     */
     public void display(Scanner scanner) {
         DataLoader staffLoader = new StaffLoader();
         DataLoader patientLoader = new PatientLoader();
@@ -18,7 +27,7 @@ public class ChangePwScreen {
         String hospitalId = scanner.nextLine();
 
         AuthLoader authLoader = new AuthLoader("data/Auth_Data.xlsx");
-        Map<String, String[]> authData = authLoader.loadAuthData();
+        Map<String, String[]> authData = authLoader.loadData();
 
         if (!authData.containsKey(hospitalId)) {
             System.out.println("User not found. Please check your hospital ID.");

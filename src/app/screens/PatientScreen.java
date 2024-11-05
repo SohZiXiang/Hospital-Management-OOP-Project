@@ -6,6 +6,8 @@ import app.screens.patient.ViewMedicalRecord;
 import app.screens.patient.ViewPatientAppointmentScreen;
 import interfaces.Screen;
 import models.entities.User;
+import utils.ActivityLogUtil;
+
 import java.util.Scanner;
 
 public class PatientScreen implements Screen {
@@ -49,8 +51,8 @@ public class PatientScreen implements Screen {
                         break;
                     case 5:
                         System.out.println("Logging out...");
-                        Main.displayMain(scanner);
-                        break;
+                        ActivityLogUtil.logout(scanner, user);
+                        return;
                     case 6:
 
                         break;
