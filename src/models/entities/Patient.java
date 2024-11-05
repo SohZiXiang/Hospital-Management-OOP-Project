@@ -1,14 +1,12 @@
 package models.entities;
 
 import app.loaders.ApptAvailLoader;
+import app.loaders.PatientLoader;
 import app.loaders.StaffLoader;
 import interfaces.DataLoader;
 import models.enums.*;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import utils.ActivityLogUtil;
 
@@ -19,6 +17,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class Patient extends User {
     private String patientID;
@@ -41,6 +40,10 @@ public class Patient extends User {
     String staffPath = FilePaths.STAFF_DATA.getPath();
 
     SimpleDateFormat formatter = new SimpleDateFormat("EEE dd/MM/yyyy");
+
+    DataLoader patientLoader = new PatientLoader();
+    List<Patient> patientList = new ArrayList<>();
+    String patientPath = FilePaths.PATIENT_DATA.getPath();
 
 
     public Patient(String hospitalID) {
@@ -413,6 +416,71 @@ public class Patient extends User {
                         formatter.format(appointment.getAppointmentDate()),
                         appointment.getAppointmentTime(), appointment.getOutcomeRecord());
             }
+        }
+    }
+
+    public void loadMedicalRecordData(User user) {
+        Patient currentPatient = (Patient) user;
+        try {
+            patientList = patientLoader.loadData(patientPath);
+        }
+        catch (Exception e) {
+            System.err.println("Error loading data: " + e.getMessage());
+        }
+
+        for (Patient patient : patientList) {
+            if (patient.getPatientID().equals(user.getHospitalID())) {
+                currentPatient = patient;
+            }
+        }
+
+        System.out.println("----- Displaying Medical Record for " + user.getHospitalID() + " -----");
+        System.out.println();
+        System.out.printf("%-30s %-30s%n", "Attribute", "Details");
+        System.out.println("----------------------------------------------------------------------------------------------------------------------------");
+
+        System.out.printf("%-30s %-30s%n", "Name:", currentPatient.getName());
+        System.out.printf("%-30s %-30s%n", "DOB:", currentPatient.getDateOfBirth());
+        System.out.printf("%-30s %-30s%n", "Gender:", currentPatient.getGender());
+        System.out.printf("%-30s %-30s%n", "Blood Type:", currentPatient.getBloodType());
+        System.out.printf("%-30s %-30s%n", "Phone Number:", currentPatient.getPhoneNumber());
+        System.out.printf("%-30s %-30s%n", "Email:", currentPatient.getEmail());
+
+        System.out.println();
+    }
+
+    public void updateContact(User user, Patient patient, boolean email) {
+        String type = "";
+        String changeValue = "";
+
+        try (FileInputStream fis = new FileInputStream(patientPath);
+             Workbook workbook = WorkbookFactory.create(fis)) {
+            Sheet sheet = workbook.getSheetAt(0);
+            for (Row row : sheet) {
+                Cell patientIdCell = row.getCell(0);
+                if (patientIdCell != null && patientIdCell.getStringCellValue().equals(user.getHospitalID())) {
+                    if(email){
+                        row.getCell(5).setCellValue(patient.getEmail());
+                        type = "Email";
+                        changeValue = patient.getEmail();
+                    }
+                    else{
+                        row.getCell(8).setCellValue(patient.getPhoneNumber());
+                        type = "Phone Number";
+                        changeValue = patient.getPhoneNumber();
+                    }
+
+                    try (FileOutputStream fos = new FileOutputStream(patientPath)) {
+                        workbook.write(fos);
+                    }
+                }
+            }
+            String logMsg = "Patient " + patient.getName() + " (ID: " + patient.getHospitalID() + ") " +
+                    "changed " + type + " to " + changeValue + ". " ;
+            ActivityLogUtil.logActivity(logMsg, user);
+            System.out.println(type + " Successfully Updated To " + changeValue);
+        } catch (IOException | InvalidFormatException e) {
+            System.err.println("Error updating staff in Excel: " + e.getMessage());
         }
     }
 

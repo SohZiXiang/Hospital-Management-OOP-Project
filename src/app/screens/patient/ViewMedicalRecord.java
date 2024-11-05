@@ -6,14 +6,10 @@ import interfaces.Screen;
 import models.entities.Patient;
 import models.entities.User;
 import models.enums.FilePaths;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.*;
-import utils.ActivityLogUtil;
-import utils.StringFormatUtil;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import utils.ActivityLogUtil;
+
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -30,77 +26,16 @@ public class ViewMedicalRecord implements Screen {
     DataLoader patientLoader = new PatientLoader();
     List<Patient> patientList = new ArrayList<>();
     String patientPath = FilePaths.PATIENT_DATA.getPath();
-    Patient currentPatient;
 
-    private void loadData(User user) {
-        try {
-            patientList = patientLoader.loadData(patientPath);
-        }
-        catch (Exception e) {
-            System.err.println("Error loading data: " + e.getMessage());
-        }
-
-        for (Patient patient : patientList) {
-            if (patient.getPatientID().equals(user.getHospitalID())) {
-                currentPatient = patient;
-            }
-        }
-
-        System.out.println("----- Displaying Medical Record for " + user.getHospitalID() + " -----");
-        System.out.println();
-        System.out.printf("%-30s %-30s%n", "Attribute", "Details");
-        System.out.println("----------------------------------------------------------------------------------------------------------------------------");
-
-        System.out.printf("%-30s %-30s%n", "Name:", currentPatient.getName());
-        System.out.printf("%-30s %-30s%n", "DOB:", currentPatient.getDateOfBirth());
-        System.out.printf("%-30s %-30s%n", "Gender:", currentPatient.getGender());
-        System.out.printf("%-30s %-30s%n", "Blood Type:", currentPatient.getBloodType());
-        System.out.printf("%-30s %-30s%n", "Phone Number:", currentPatient.getPhoneNumber());
-        System.out.printf("%-30s %-30s%n", "Email:", currentPatient.getEmail());
-
-        System.out.println();
-    }
-
-    private void updateContact(User user, Patient patient, boolean email) {
-        String type = "";
-        String changeValue = "";
-
-        try (FileInputStream fis = new FileInputStream(patientPath);
-             Workbook workbook = WorkbookFactory.create(fis)) {
-            Sheet sheet = workbook.getSheetAt(0);
-            for (Row row : sheet) {
-                Cell patientIdCell = row.getCell(0);
-                if (patientIdCell != null && patientIdCell.getStringCellValue().equals(user.getHospitalID())) {
-                    if(email){
-                        row.getCell(5).setCellValue(patient.getEmail());
-                        type = "Email";
-                        changeValue = patient.getEmail();
-                    }
-                    else{
-                        row.getCell(8).setCellValue(patient.getPhoneNumber());
-                        type = "Phone Number";
-                        changeValue = patient.getPhoneNumber();
-                    }
-
-                    try (FileOutputStream fos = new FileOutputStream(patientPath)) {
-                        workbook.write(fos);
-                    }
-                }
-            }
-            String logMsg = "Patient " + patient.getName() + " (ID: " + patient.getHospitalID() + ") " +
-                    "changed " + type + " to " + changeValue + ". " ;
-            ActivityLogUtil.logActivity(logMsg, user);
-            System.out.println(type + " Successfully Updated To " + changeValue);
-        } catch (IOException | InvalidFormatException e) {
-            System.err.println("Error updating staff in Excel: " + e.getMessage());
-        }
-    }
 
     @Override
     public void display(Scanner scanner, User user) {
         String logMsg = "Patient " + user.getName() + " (ID: " + user.getHospitalID() + ") viewed medical record.";
         ActivityLogUtil.logActivity(logMsg, user);
-        loadData(user);
+
+        Patient currentPatient = (Patient) user;
+
+        currentPatient.loadMedicalRecordData(user);
 
         Boolean exit = false;
 
@@ -125,14 +60,14 @@ public class ViewMedicalRecord implements Screen {
 
                         if(matcherPhoneNumber.matches()){
                             currentPatient.setPhoneNumber(newNumber);
-                            updateContact(user, currentPatient, false);
+                            currentPatient.updateContact(user, currentPatient, false);
                         }
                         else{
                             System.out.println("Invalid Contact Format");
                             System.out.println("Valid Phone Example: 81234567");
                             System.out.println("Phone number not updated");
                         }
-                        loadData(user);
+                        currentPatient.loadMedicalRecordData(user);
                         break;
                     case 3:
                         System.out.println("Please Enter New Email");
@@ -141,14 +76,14 @@ public class ViewMedicalRecord implements Screen {
 
                         if(matcherEmail.matches()){
                             currentPatient.setEmail(newEmail);
-                            updateContact(user, currentPatient, true);
+                            currentPatient.updateContact(user, currentPatient, true);
                         }
                         else{
                             System.out.println("Invalid Email Format");
                             System.out.println("Valid Email Example: someone@example.com");
                             System.out.println("Email not updated");
                         }
-                        loadData(user);
+                        currentPatient.loadMedicalRecordData(user);
                         break;
                     default:
                         System.out.println("Invalid choice, please try again.");

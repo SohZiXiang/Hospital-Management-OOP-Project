@@ -16,16 +16,6 @@ import java.util.Scanner;
 
 public class ViewAppointmentOutcomeScreen implements Screen {
 
-    ApptAvailLoader appointmentLoader = new ApptAvailLoader();
-    List<Appointment> appointmentList = new ArrayList<>();
-    String appointmentPath = FilePaths.APPT_DATA.getPath();
-
-    DataLoader staffLoader = new StaffLoader();
-    List<Staff> staffList = new ArrayList<>();
-    String staffPath = FilePaths.STAFF_DATA.getPath();
-
-    SimpleDateFormat formatter = new SimpleDateFormat("EEE dd/MM/yyyy");
-
     @Override
     public void display(Scanner scanner, User user) {
         Patient patient = (Patient) user;
