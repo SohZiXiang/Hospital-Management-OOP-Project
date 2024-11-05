@@ -46,10 +46,10 @@ public class ViewPatientAppointmentScreen implements Screen {
                         System.out.println("Select A Option For Your Prefer Slot, example: 1");
                         String appointmentOption = scanner.nextLine();
                         int option = Integer.parseInt(appointmentOption);
-                        patient.createAppointment(user, option, GenerateIdUtil.genAppointmentID());
+                        patient.createAppointment(user, option, GenerateIdUtil.genAppointmentID(), true);
                         break;
                     case 3:
-                        System.out.println("Select an Appointment ID to cancel, example: A001");
+                        System.out.println("Select an Appointment ID to cancel, example: AP01");
                         String selectAppointmentID = scanner.nextLine();
 
                         System.out.println("Select A Option For Your Prefer Slot, example: 1");
@@ -58,9 +58,9 @@ public class ViewPatientAppointmentScreen implements Screen {
                         patient.rescheduleAppointment(user, newOption, selectAppointmentID);
                         break;
                     case 4:
-                        System.out.println("Select an Appointment ID to cancel, example: A001");
+                        System.out.println("Select an Appointment ID to cancel, example: AP01");
                         String appointmentID = scanner.nextLine();
-                        patient.cancelAppointment(user, appointmentID);
+                        patient.cancelAppointment(user, appointmentID, true);
                         break;
                     default:
                         System.out.println("Invalid choice, please try again.");

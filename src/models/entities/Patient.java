@@ -136,7 +136,7 @@ public class Patient extends User {
         return Role.PATIENT;
     }
 
-    public void createAppointment(User user, int option, String appointmentID) {
+    public void createAppointment(User user, int option, String appointmentID, boolean create) {
 
         int slotCount = 0;
 
@@ -155,16 +155,15 @@ public class Patient extends User {
                     if(slotCount == option){
                         Appointment newAppointment = new Appointment(appointmentID, getPatientID(),
                                 availability.getDoctorId(), availability.getAvailableDate(), availability.getStartTime(), "");
-                        writeAppointmentToExcel(user, newAppointment);
-                        SMSUtil.sendSms("Your appointment is scheduled for " + appointmentID +
-                                " at " + availability.getStartTime());
+                        writeAppointmentToExcel(user, newAppointment, create);
+
                     }
                 }
             }
         }
     }
 
-    private void writeAppointmentToExcel(User currentUser, Appointment appointment) {
+    private void writeAppointmentToExcel(User currentUser, Appointment appointment, boolean create) {
         String filePath = FilePaths.APPT_DATA.getPath();
         FileInputStream fis = null;
         Workbook workbook = null;
@@ -202,13 +201,29 @@ public class Patient extends User {
                 workbook.write(fos);
             }
 
-            String logMsg = "Patient " + currentUser.getName() + " (ID: " + currentUser.getHospitalID() + ") " +
-                    "create appointment " + appointment.getAppointmentId() + ". ";
-            ActivityLogUtil.logActivity(logMsg, currentUser);
 
             loadAppointmentData(currentUser);
             System.out.println();
-            System.out.println("Appointment added successfully.");
+
+            if(create){
+                String logMsg = "Patient " + currentUser.getName() + " (ID: " + currentUser.getHospitalID() + ") " +
+                        "create appointment " + appointment.getAppointmentId() + ". ";
+                ActivityLogUtil.logActivity(logMsg, currentUser);
+
+                System.out.println("Appointment added successfully.");
+
+                String doctorName = "N/A";
+
+                for (Staff staff : staffList) {
+                    if (staff.getStaffId().equals(appointment.getDoctorId())) {
+                        doctorName = "Dr " + staff.getName();
+                        break;
+                    }
+                }
+
+                SMSUtil.sendSms(SMSUtil.numberHX, "Your appointment is scheduled for Appointment ID: " +
+                        appointment.getAppointmentId() + " at " + appointment.getAppointmentTime() + " with " + doctorName);
+            }
 
         } catch (IOException e) {
             System.err.println("Error storing new appointment data: " + e.getMessage());
@@ -299,7 +314,7 @@ public class Patient extends User {
         }
     }
 
-    public void cancelAppointment(User user, String appointmentID) {
+    public void cancelAppointment(User user, String appointmentID, boolean cancel) {
 
         Boolean removeAppointment = false;
 
@@ -311,7 +326,7 @@ public class Patient extends User {
                         && appointment.getStatus() != AppointmentStatus.COMPLETED
                         && appointment.getAppointmentId().equals(appointmentID))
                 {
-                    removeAppointmentInExcel(user, appointmentID);
+                    removeAppointmentInExcel(user, appointmentID, cancel);
                     removeAppointment = true;
                 }
             }
@@ -325,7 +340,7 @@ public class Patient extends User {
         }
     }
 
-    private void removeAppointmentInExcel(User currentUser, String appointmentID) {
+    private void removeAppointmentInExcel(User currentUser, String appointmentID, boolean cancel) {
         String appt_path = FilePaths.APPT_DATA.getPath();
         try (FileInputStream fis = new FileInputStream(appt_path);
              Workbook workbook = WorkbookFactory.create(fis)) {
@@ -353,13 +368,21 @@ public class Patient extends User {
             try (FileOutputStream fos = new FileOutputStream(appt_path)) {
                 workbook.write(fos);
             }
-            String logMsg = "Patient " + currentUser.getName() + " (ID: " + currentUser.getHospitalID() + ") " +
-                    "cancelled appointment: " + appointmentID + "." ;
-            ActivityLogUtil.logActivity(logMsg, currentUser);
 
             loadAppointmentData(currentUser);
             System.out.println();
-            System.out.println("Appointment cancelled successfully.");
+
+            if(cancel){
+                System.out.println("Appointment cancelled successfully.");
+
+                String logMsg = "Patient " + currentUser.getName() + " (ID: " + currentUser.getHospitalID() + ") " +
+                        "cancelled appointment: " + appointmentID + "." ;
+                ActivityLogUtil.logActivity(logMsg, currentUser);
+
+                SMSUtil.sendSms(SMSUtil.numberHX, "Your Appointment: " + appointmentID + " is cancelled");
+
+            }
+
 
         } catch (IOException | InvalidFormatException e) {
             System.err.println("Error cancelling appointment: " + e.getMessage());
@@ -368,12 +391,13 @@ public class Patient extends User {
 
     public void rescheduleAppointment(User user, int option, String appointmentID) {
         try {
-            cancelAppointment(user, appointmentID);
-            createAppointment(user, option, appointmentID);
+            cancelAppointment(user, appointmentID, false);
+            createAppointment(user, option, appointmentID, false);
             System.out.println("Appointment rescheduled successfully.");
             String logMsg = "Patient " + user.getName() + " (ID: " + user.getHospitalID() + ") rescheduled appointment for ." + appointmentID;
             ActivityLogUtil.logActivity(logMsg, user);
             loadAppointmentData(user);
+            SMSUtil.sendSms(SMSUtil.numberHX, "Your Appointment: " + appointmentID + " is successfully rescheduled");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -465,11 +489,13 @@ public class Patient extends User {
                         row.getCell(5).setCellValue(patient.getEmail());
                         type = "Email";
                         changeValue = patient.getEmail();
+                        SMSUtil.sendSms(SMSUtil.numberHX, "Your Email is successfully changed to " + changeValue);
                     }
                     else{
                         row.getCell(8).setCellValue(patient.getPhoneNumber());
                         type = "Phone Number";
                         changeValue = patient.getPhoneNumber();
+                        SMSUtil.sendSms(SMSUtil.numberHX, "Your Phone Number is successfully changed to " + changeValue);
                     }
 
                     try (FileOutputStream fos = new FileOutputStream(patientPath)) {

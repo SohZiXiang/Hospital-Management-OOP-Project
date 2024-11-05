@@ -43,11 +43,9 @@ public class GenerateIdUtil {
                 if(!existingID.contains(uniqueID)){
                     int length = String.valueOf(uniqueID).length();
                     if(length == 1){
-                        return "A00" + uniqueID;
+                        return "AP0" + uniqueID;
                     }else if(length == 2){
-                        return "A0" + uniqueID;
-                    }else{
-                        return "A" + uniqueID;
+                        return "AP" + uniqueID;
                     }
                 }
                 uniqueID++;
@@ -72,7 +70,7 @@ public class GenerateIdUtil {
 
     public static void generate2FA(Scanner scanner){
         String otp = generateOTP(6);
-        SMSUtil.sendSms("Your OTP is: " + otp);
+        SMSUtil.sendSms(SMSUtil.numberHX, "Your OTP is: " + otp);
         String input = "";
         do{
             System.out.println("Enter the OTP that is send to your phone");
