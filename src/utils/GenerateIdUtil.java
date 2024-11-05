@@ -7,6 +7,9 @@ import models.enums.FilePaths;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.security.SecureRandom;
+import java.util.Scanner;
+
 public class GenerateIdUtil {
 
     public static String genAppointmentID(){
@@ -56,5 +59,24 @@ public class GenerateIdUtil {
         }
 
         return "";
+    }
+
+    private static String generateOTP(int length) {
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            sb.append(random.nextInt(10)); // Generates a random digit (0-9)
+        }
+        return sb.toString();
+    }
+
+    public static void generate2FA(Scanner scanner){
+        String otp = generateOTP(6);
+        SMSUtil.sendSms("Your OTP is: " + otp);
+        String input = "";
+        do{
+            System.out.println("Enter the OTP that is send to your phone");
+            input = scanner.nextLine();
+        }while(!input.equals(otp));
     }
 }
