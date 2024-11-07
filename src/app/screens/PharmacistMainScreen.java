@@ -2,6 +2,7 @@ package app.screens;
 
 import app.loaders.InventoryLoader;
 import models.entities.*;
+import utils.ActivityLogUtil;
 
 import java.util.*;
 
@@ -16,9 +17,7 @@ public class PharmacistMainScreen {
                             " | |__) | |__   __ _ _ __ _ __ ___   __ _  ___ _ ___| |_ \n" +
                             " |  ___/| '_ \\ / _` | '__| '_ ` _ \\ / _` |/ __| / __| __|\n" +
                             " | |    | | | | (_| | |  | | | | | | (_| | (__| \\__ \\ |_ \n" +
-                            " |_|    |_| |_|\\__,_|_|  |_| |_| |_|\\__,_|\\___|_|___/\\__|\n" +
-                            "                                                         \n" +
-                            "                                                         \n"
+                            " |_|    |_| |_|\\__,_|_|  |_| |_| |_|\\__,_|\\___|_|___/\\__|\n"
             );
 
             System.out.println("\nWelcome, Pharmacist: " + pharmacist.getName());
@@ -39,10 +38,30 @@ public class PharmacistMainScreen {
                 int choice = Integer.parseInt(input);
                 switch (choice) {
                     case 1:
-                        //viewPrescriptionRecords(pharmacist, scanner);
+                        System.out.println("\nViewing all prescription records...");
+                        pharmacist.viewPrescriptionRecords();
                         break;
                     case 2:
-                        //updatePrescriptionStatus(pharmacist, scanner);
+                        System.out.print("Enter Appointment ID: ");
+                        String apptId = scanner.nextLine().trim();
+
+                        // Check if the appointment ID is valid and if there are pending medicines
+                        if (!pharmacist.isAppointmentIdValid(apptId)) {
+                            System.out.println("No appointment found with ID: " + apptId);
+                            break;
+                        }
+
+                        if (!pharmacist.hasPendingMedicines(apptId)) {
+                            System.out.println("All medicines for Appointment ID " + apptId + " have already been dispensed or there were no medicines to dispense.");
+                            break;
+                        }
+
+                        // Only prompt for medicine name and status if there are pending medicines
+                        System.out.print("Enter Medicine Name: ");
+                        String medicineName = scanner.nextLine().trim();
+                        System.out.print("Enter new status (e.g., DISPENSED): ");
+                        String newStatus = scanner.nextLine().trim();
+                        pharmacist.updatePrescriptionStatus(apptId, medicineName, newStatus);
                         break;
                     case 3:
                         System.out.println("\nViewing all medicine stock...");
@@ -56,19 +75,33 @@ public class PharmacistMainScreen {
                     case 5:
                         System.out.println("\nEnter Medicine Name to request replenishment for: ");
                         String reqMedName = scanner.nextLine().trim();
+
+                        // Check if the entered medicine name exists in the stock
+                        boolean medicineExists = false;
+                        for (Medicine med : medicineStock) {
+                            if (med.getName().equalsIgnoreCase(reqMedName)) {
+                                medicineExists = true;
+                                break;
+                            }
+                        }
+
+                        if (!medicineExists) {
+                            System.out.println("Medicine " + reqMedName + " not found in inventory. Cannot request replenishment.");
+                            break;
+                        }
+
                         System.out.println("Enter the amount of " + reqMedName + " you want to request: ");
                         int reqAmount;
                         try {
                             reqAmount = Integer.parseInt(scanner.nextLine());
                         } catch (NumberFormatException e) {
-                            System.out.println("Invalid input. Enter a valid number");
-                            return;
+                            System.out.println("Invalid input. Enter a valid number.");
+                            break;
                         }
                         pharmacist.submitReplenishmentRequest(reqMedName, reqAmount, scanner);
                         break;
                     case 6:
-                        System.out.println("See you, "+pharmacist.getName()+"\nYou have logged out");
-                        return;
+                        ActivityLogUtil.logout(scanner, user);
                     default:
                         System.out.println("Invalid choice, please try again.");
                 }

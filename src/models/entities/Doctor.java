@@ -24,14 +24,17 @@ public class Doctor extends Staff{
     private List<Appointment> apptList;
     private List<Availability> availList;
     private List<Patient> patientsUnderCare;
+    private List<AppointmentOutcomeRecord> outcomeRecordsList;
     private boolean apptsLoaded = false;
     private boolean availLoaded = false;
     private boolean patientsLoaded = false;
+    private boolean outcomeRecordsLoaded = false;
 
     public Doctor(String hospitalID, String staffId, String name, Gender gender, int age) {
         super(hospitalID, staffId, name, gender, age);
         this.apptList = new ArrayList<>();
         this.availList = new ArrayList<>();
+        this.outcomeRecordsList = new ArrayList<>();
         this.patientsUnderCare = new ArrayList<>();
     }
 
@@ -39,6 +42,7 @@ public class Doctor extends Staff{
         super(staffId, staffId, name, gender, age);
         this.apptList = new ArrayList<>();
         this.availList = new ArrayList<>();
+        this.outcomeRecordsList = new ArrayList<>();
         this.patientsUnderCare = new ArrayList<>();
     }
 
@@ -63,6 +67,26 @@ public class Doctor extends Staff{
         if (!apptsLoaded) {
             loadApptData();
             apptsLoaded = true;
+        }
+    }
+
+    public void getAppointmentOutcomeRecords() {
+        if (!outcomeRecordsLoaded) {
+            loadAppointmentOutcomeRecords(); // Load the outcome records if they aren't loaded yet
+            outcomeRecordsLoaded = true;     // Set the flag to indicate records are now loaded
+        }
+    }
+
+    // Private method to load the appointment outcome records from the file
+    private void loadAppointmentOutcomeRecords() {
+        ApptOutcomeLoader outcomeLoader = new ApptOutcomeLoader(this.apptList); // Assuming apptList is already loaded
+        String path = FilePaths.APPTOUTCOME.getPath();
+        List<AppointmentOutcomeRecord> loadedOutcomeRecords = outcomeLoader.loadData(path);
+
+        for (AppointmentOutcomeRecord outcomeRecord : loadedOutcomeRecords) {
+            if (outcomeRecord.getAppt().getDoctorId().equals(this.getStaffId())) {
+                outcomeRecordsList.add(outcomeRecord);
+            }
         }
     }
 
@@ -539,7 +563,8 @@ public class Doctor extends Staff{
         return null;
     }
 
-    public void recordAppointmentOutcome(Appointment appointment, String serviceType, List<Medicine> prescriptions,
+    public void recordAppointmentOutcome(Appointment appointment, String serviceType,
+                                         List<AppointmentOutcomeRecord.PrescribedMedication> prescriptions,
                                          String consultationNotes, String outcomeSts) {
         AppointmentOutcomeRecord outcomeRecord = new AppointmentOutcomeRecord(
                 appointment,
@@ -598,6 +623,28 @@ public class Doctor extends Staff{
 
         } catch (IOException e) {
             System.err.println("Error writing appointment outcome to file: " + e.getMessage());
+        }
+    }
+
+    public void viewAllAppointmentOutcomes() {
+        System.out.println("Appointment Outcomes for Doctor ID: " + this.getStaffId());
+        for (AppointmentOutcomeRecord outcomeRecord : outcomeRecordsList) {
+            Appointment appointment = outcomeRecord.getAppt();
+
+            System.out.printf("Appointment ID: %s\n", appointment.getAppointmentId());
+            System.out.printf("Date: %s\n", outcomeRecord.getAppointmentDate());
+            System.out.printf("Service Type: %s\n", outcomeRecord.getServiceType());
+            System.out.printf("Consultation Notes: %s\n", outcomeRecord.getConsultationNotes());
+            System.out.printf("Outcome Status: %s\n", outcomeRecord.getApptStatus());
+
+            System.out.println("Prescribed Medications:");
+            for (AppointmentOutcomeRecord.PrescribedMedication prescription : outcomeRecord.getPrescriptions()) {
+                System.out.printf(" - Medicine: %s, Quantity: %d, Status: %s\n",
+                        prescription.getMedicine().getName(),
+                        prescription.getQuantityOfMed(),
+                        prescription.getStatus());
+            }
+            System.out.println("------------------------------------------------------");
         }
     }
 
