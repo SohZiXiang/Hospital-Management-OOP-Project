@@ -9,6 +9,7 @@ import models.entities.Patient;
 import models.entities.Staff;
 import models.entities.User;
 import models.enums.FilePaths;
+import models.enums.Gender;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +17,14 @@ import java.util.Scanner;
 
 public class ManagePatientScreen implements Screen {
     List<Patient> patientList = new ArrayList<>();
+
+    private boolean isLetters(String name) {
+        return name.matches("[a-zA-Z]+");
+    }
+
+    private boolean isDate(String date) {
+        return date.matches("\\d{2}-\\d{2}-\\d{4}");
+    }
 
     private void loadPatientList() {
         String patientPath = FilePaths.PATIENT_DATA.getPath();
@@ -65,6 +74,33 @@ public class ManagePatientScreen implements Screen {
                         loadPatient();
                         break;
                     case 2:
+                        String patientName = "";
+
+                        do{
+                            System.out.println("Enter Patient Name: (only letters allowed)");
+                            patientName = scanner.nextLine();
+                        }while(!isLetters(patientName));
+
+                        String patientDOB = "";
+
+                        do{
+                            System.out.println("Enter Patient DOB: (DD-MM-YYYY)");
+                            patientDOB = scanner.nextLine();
+                        }while(!isDate(patientDOB));
+
+                        String patientGender = "";
+
+                        do{
+                            System.out.println("Enter Patient Gender: (M/F)");
+                            patientGender = scanner.nextLine();
+                        }while(!patientGender.equals("M") || !patientGender.equals("F"));
+
+                        String patientBloodType = "";
+
+                        do{
+                            System.out.println("Enter Patient Blood Type: (M/F)");
+                            patientGender = scanner.nextLine();
+                        }while(!patientGender.equals("M") || !patientGender.equals("F"));
 
                         break;
                     case 3:

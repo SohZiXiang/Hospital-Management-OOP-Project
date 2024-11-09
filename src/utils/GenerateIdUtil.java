@@ -2,6 +2,7 @@ package utils;
 
 import app.loaders.ApptAvailLoader;
 import models.entities.Appointment;
+import models.entities.User;
 import models.enums.FilePaths;
 
 import java.util.ArrayList;
@@ -68,13 +69,18 @@ public class GenerateIdUtil {
         return sb.toString();
     }
 
-    public static void generate2FA(Scanner scanner){
+    public static void generate2FA(Scanner scanner, User user){
         String otp = generateOTP(6);
         SMSUtil.sendSms(SMSUtil.numberHX, "Your OTP is: " + otp);
         String input = "";
         do{
             System.out.println("Enter the OTP that is send to your phone");
+            System.out.println("Enter \"exit\" to exit");
             input = scanner.nextLine();
+            if(input.equals("exit")){
+                ActivityLogUtil.logout(scanner, user);
+                break;
+            }
         }while(!input.equals(otp));
     }
 }

@@ -5,6 +5,7 @@ import app.loaders.PatientLoader;
 import app.loaders.StaffLoader;
 import interfaces.DataLoader;
 import models.enums.*;
+import models.records.PatientOutcomeRecord;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -45,6 +46,9 @@ public class Patient extends User {
     DataLoader patientLoader = new PatientLoader();
     List<Patient> patientList = new ArrayList<>();
     String patientPath = FilePaths.PATIENT_DATA.getPath();
+    List<PatientOutcomeRecord> patientOutcomeRecordList = new ArrayList<>();
+
+    String patientOutcomePath = FilePaths.APPTOUTCOME.getPath();
 
 
     public Patient(String hospitalID) {
@@ -222,7 +226,8 @@ public class Patient extends User {
                 }
 
                 SMSUtil.sendSms(SMSUtil.numberHX, "Your appointment is scheduled for Appointment ID: " +
-                        appointment.getAppointmentId() + " at " + appointment.getAppointmentTime() + " with " + doctorName);
+                        appointment.getAppointmentId() + " on " + formatter.format(appointment.getAppointmentDate())
+                        + " at " + appointment.getAppointmentTime() + " with " + doctorName);
             }
 
         } catch (IOException e) {
@@ -403,6 +408,42 @@ public class Patient extends User {
         }
     }
 
+    private List<PatientOutcomeRecord> loadPatientOutcomeData(String path) {
+        List<PatientOutcomeRecord> outcomeRecordList = new ArrayList<>();
+
+        try (FileInputStream fis = new FileInputStream(new File(path));
+             Workbook workbook = new XSSFWorkbook(fis)) {
+
+            Sheet sheet = workbook.getSheetAt(0);
+
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row != null) {
+                    // Appointment ID
+                    String appointmentID = row.getCell(0, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).getStringCellValue();
+
+                    String serviceType = row.getCell(4, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).getStringCellValue();
+
+                    String consultationNotes = row.getCell(5, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).getStringCellValue();
+
+                    String medicine = row.getCell(6, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).getStringCellValue();
+
+                    String medicineStatus = row.getCell(7, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).getStringCellValue();
+
+                    String outcomeStatus = row.getCell(8, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).getStringCellValue();
+
+                    PatientOutcomeRecord patientOutcomeRecord = new PatientOutcomeRecord(appointmentID, serviceType, consultationNotes, medicine, medicineStatus, outcomeStatus);
+
+                    outcomeRecordList.add(patientOutcomeRecord);
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Error loading patient outcome data: " + e.getMessage());
+        }
+
+        return outcomeRecordList;
+    }
+
     public void loadOutcomeData(User user){
         System.out.println();
         System.out.println("--------- Displaying Past Appointments Outcome for patient: " + user.getName() + " ---------");
@@ -410,6 +451,7 @@ public class Patient extends User {
 
         try {
             appointmentList = appointmentLoader.loadData(appointmentPath);
+            patientOutcomeRecordList = loadPatientOutcomeData(patientOutcomePath);
         }
         catch (Exception e) {
             System.err.println("Error loading data: " + e.getMessage());
@@ -422,13 +464,18 @@ public class Patient extends User {
             System.err.println("Error loading data: " + e.getMessage());
         }
 
-        System.out.printf("%-20s %-35s %-30s %-30s %-35s%n",
-                "Appointment ID", "Doctor", "Date", "Time", "Outcome");
-        System.out.println("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+        System.out.printf("%-15s %-20s %-20s %-20s %-30s %-30s %-30s %-30s %-30s%n",
+                "Appointment ID", "Doctor", "Date", "Time", "Consultation Notes", "Service", "Medicine", "Medicine Status", "Outcome");
+        System.out.println("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
 
         for (Appointment appointment : appointmentList) {
             if (appointment.getPatientId().equals(user.getHospitalID()) && appointment.getStatus() == AppointmentStatus.COMPLETED) {
                 String doctorName = "N/A";
+                String serviceType = "N/A";
+                String consultationNotes = "N/A";
+                String medicine = "N/A";
+                String medicineStatus = "N/A";
+                String outcomeStatus = "N/A";
 
                 for (Staff staff : staffList) {
                     if (staff.getStaffId().equals(appointment.getDoctorId())) {
@@ -437,10 +484,23 @@ public class Patient extends User {
                     }
                 }
 
-                System.out.printf("%-20s %-35s %-30s %-30s %-35s%n",
+                for (PatientOutcomeRecord record : patientOutcomeRecordList) {
+                    if (record.getAppointmentId().equals(appointment.getAppointmentId())) {
+                        serviceType = record.getServiceType();
+                        consultationNotes = record.getConsultationNote();
+                        medicine = record.getMedicine();
+                        medicineStatus = record.getMedicineStatus();
+                        outcomeStatus = record.getOutcomeStatus();
+                        break;
+                    }
+                }
+
+
+
+                System.out.printf("%-15s %-20s %-20s %-20s %-30s %-30s %-30s %-30s %-30s%n",
                         appointment.getAppointmentId(), doctorName,
                         formatter.format(appointment.getAppointmentDate()),
-                        appointment.getAppointmentTime(), appointment.getOutcomeRecord());
+                        appointment.getAppointmentTime(), serviceType, consultationNotes, medicine, medicineStatus, outcomeStatus);
             }
         }
     }
