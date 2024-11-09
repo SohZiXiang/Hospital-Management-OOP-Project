@@ -2,6 +2,8 @@ package models.entities;
 
 import models.enums.DoctorAvailability;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class Availability {
@@ -18,6 +20,11 @@ public class Availability {
         this.startTime = startTime;
         this.endTime = endTime;
         this.status = status;
+    }
+
+    public LocalTime getStartTimeAsLocalTime() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a");
+        return LocalTime.parse(this.startTime, formatter);
     }
 
     public String getDoctorId() {

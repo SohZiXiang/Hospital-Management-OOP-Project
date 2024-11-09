@@ -2,6 +2,8 @@ package app.screens.doctor;
 
 import interfaces.*;
 import models.entities.*;
+import utils.ActivityLogUtil;
+
 import java.util.*;
 
 public class PatientRecordsScreen implements Screen {
@@ -24,11 +26,19 @@ public class PatientRecordsScreen implements Screen {
                 int choice = Integer.parseInt(input);
 
                 switch (choice) {
-                    case 1 -> doc.showAllPatientsRecords();
+                    case 1 -> {
+                        doc.showAllPatientsRecords();
+                        String logMsg = "User " + doc.getName() + " (ID: " + doc.getHospitalID() + ") viewed all " +
+                                "patient records under their care";
+                        ActivityLogUtil.logActivity(logMsg, doc);
+                    }
                     case 2 -> {
                         System.out.print("Enter Patient ID to view record: ");
                         String patientID = scanner.nextLine();
                         doc.filterPatients(patientID);
+                        String logMsg = "User " + doc.getName() + " (ID: " + doc.getHospitalID() + ") viewed record " +
+                                "details for Patient: " + patientID;
+                        ActivityLogUtil.logActivity(logMsg, doc);
                     }
                     case 3 -> addConsulationNotes(scanner, doc);
                     case 4 -> {
@@ -58,6 +68,9 @@ public class PatientRecordsScreen implements Screen {
             doc.updateMedicalRecord(isValidPatient, indDiagnosis, indTreatment);
 
             System.out.println("Patient record updated successfully.");
+            String logMsg = "User " + doc.getName() + " (ID: " + doc.getHospitalID() + ") updated patient record " +
+                    "details for Patient: " + patientID;
+            ActivityLogUtil.logActivity(logMsg, doc);
         } else {
             System.out.println("Patient record not found.");
         }

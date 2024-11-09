@@ -3,20 +3,24 @@ package app.screens.doctor;
 import interfaces.*;
 import models.entities.*;
 import models.records.*;
+import utils.ActivityLogUtil;
 
 import java.util.*;
 
 public class AppointmentOutcomeScreen implements Screen {
-    private List<Medicine> medicationList = new ArrayList<>();
+    private List<AppointmentOutcomeRecord.PrescribedMedication> medicationList = new ArrayList<>();
 
     @Override
     public void display(Scanner scanner, User user) {
         Doctor doc = (Doctor) user;
         doc.getApptList();
+        doc.getOutcomeRecords();
+
         while (true) {
             System.out.println("\n--- Record Appointment Outcome ---");
             System.out.println("1. Add a new record");
-            System.out.println("2. Return to main menu");
+            System.out.println("2. View all outcome results");
+            System.out.println("3. Return to main menu");
             System.out.print("Enter your choice: ");
 
             String input = scanner.nextLine();
@@ -25,13 +29,19 @@ public class AppointmentOutcomeScreen implements Screen {
                 switch (choice) {
                     case 1 -> addOutcome(scanner, doc);
                     case 2 -> {
+                        doc.viewAllAppointmentOutcomes();
+                        String logMsg = "User " + doc.getName() + " (ID: " + doc.getHospitalID() + ") viewed all " +
+                                "outcome records added by the user";
+                        ActivityLogUtil.logActivity(logMsg, doc);
+                    }
+                    case 3 -> {
                         System.out.println("Returning to Main Menu...");
                         doc.resetData("appt");
                         return;
                     }
                 }
             } catch (Exception e) {
-                System.out.println("Please enter a valid number.");
+                System.out.println(e.getMessage());
             }
         }
     }
@@ -61,8 +71,10 @@ public class AppointmentOutcomeScreen implements Screen {
             System.out.print("Enter quantity needed for " + medicineName + ": ");
             int quantity = Integer.parseInt(scanner.nextLine());
 
-            Medicine medicine = new Medicine(medicineName, quantity);
-            medicationList.add(medicine);
+            Medicine medicine = new Medicine(medicineName);
+            AppointmentOutcomeRecord.PrescribedMedication prescribed =
+                    new AppointmentOutcomeRecord.PrescribedMedication(medicine, quantity);
+            medicationList.add(prescribed);
         }
 
         System.out.print("Enter outcome status (e.g., Completed, Follow-up Needed): ");
@@ -71,5 +83,8 @@ public class AppointmentOutcomeScreen implements Screen {
         doc.recordAppointmentOutcome(appt, svType, medicationList, notes, outcome);
 
         System.out.println("Appointment outcome recorded successfully.");
+        String logMsg = "User " + doc.getName() + " (ID: " + doc.getHospitalID() + ") added a new appointment outcome" +
+                " record.";
+        ActivityLogUtil.logActivity(logMsg, doc);
     }
 }
