@@ -723,7 +723,7 @@ public class Administrator extends Staff{
             Medicine newMedicine = new Medicine(name, stock, stockAlert);
             inventory.add(newMedicine);
             writeMedicineToExcel(newMedicine, user);
-            EmailUtil.checkInvAndNotify("phclerk00@outlook.com");
+            //EmailUtil.checkInvAndNotify("phclerk00@outlook.com");
             break;
         }
     }
@@ -804,7 +804,7 @@ public class Administrator extends Staff{
                 return;
         }
         updateInventoryInExcel(medicine, name, user);
-        EmailUtil.checkInvAndNotify("phclerk00@outlook.com");
+        //EmailUtil.checkInvAndNotify("phclerk00@outlook.com");
     }
 
     /**
