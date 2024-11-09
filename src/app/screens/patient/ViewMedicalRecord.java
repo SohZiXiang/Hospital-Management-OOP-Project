@@ -6,9 +6,14 @@ import interfaces.Screen;
 import models.entities.Patient;
 import models.entities.User;
 import models.enums.FilePaths;
+
+import utils.ActivityLogUtil;
+
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ViewMedicalRecord implements Screen {
@@ -21,37 +26,16 @@ public class ViewMedicalRecord implements Screen {
     DataLoader patientLoader = new PatientLoader();
     List<Patient> patientList = new ArrayList<>();
     String patientPath = FilePaths.PATIENT_DATA.getPath();
-    Patient currentPatient;
+
 
     @Override
     public void display(Scanner scanner, User user) {
+        String logMsg = "Patient " + user.getName() + " (ID: " + user.getHospitalID() + ") viewed medical record.";
+        ActivityLogUtil.logActivity(logMsg, user);
 
-        try {
-            patientList = patientLoader.loadData(patientPath);
-        }
-        catch (Exception e) {
-            System.err.println("Error loading data: " + e.getMessage());
-        }
+        Patient currentPatient = (Patient) user;
 
-        for (Patient patient : patientList) {
-            if (patient.getPatientID().equals(user.getHospitalID())) {
-                currentPatient = patient;
-            }
-        }
-
-        System.out.println("----- Displaying Medical Record for " + user.getHospitalID() + " -----");
-        System.out.println();
-        System.out.printf("%-30s %-30s%n", "Attribute", "Details");
-        System.out.println("----------------------------------------------------------------------------------------------------------------------------");
-
-        System.out.printf("%-30s %-30s%n", "Name:", currentPatient.getName());
-        System.out.printf("%-30s %-30s%n", "DOB:", currentPatient.getDateOfBirth());
-        System.out.printf("%-30s %-30s%n", "Gender:", currentPatient.getGender());
-        System.out.printf("%-30s %-30s%n", "Blood Type:", currentPatient.getBloodType());
-        System.out.printf("%-30s %-30s%n", "Phone Number:", currentPatient.getPhoneNumber());
-        System.out.printf("%-30s %-30s%n", "Email:", currentPatient.getEmail());
-
-        System.out.println();
+        currentPatient.loadMedicalRecordData(user);
 
         Boolean exit = false;
 
@@ -70,9 +54,36 @@ public class ViewMedicalRecord implements Screen {
                         exit = true;
                         break;
                     case 2:
-                        System.out.println("Please Enter New Contact (Email Address or Phone Number)");
+                        System.out.println("Please Enter New Phone Number");
+                        String newNumber = scanner.nextLine();
+                        Matcher matcherPhoneNumber = VALID_PHONE_REGEX.matcher(newNumber);
+
+                        if(matcherPhoneNumber.matches()){
+                            currentPatient.setPhoneNumber(newNumber);
+                            currentPatient.updateContact(user, currentPatient, false);
+                        }
+                        else{
+                            System.out.println("Invalid Contact Format");
+                            System.out.println("Valid Phone Example: 81234567");
+                            System.out.println("Phone number not updated");
+                        }
+                        currentPatient.loadMedicalRecordData(user);
                         break;
                     case 3:
+                        System.out.println("Please Enter New Email");
+                        String newEmail = scanner.nextLine();
+                        Matcher matcherEmail = VALID_EMAIL_REGEX.matcher(newEmail);
+
+                        if(matcherEmail.matches()){
+                            currentPatient.setEmail(newEmail);
+                            currentPatient.updateContact(user, currentPatient, true);
+                        }
+                        else{
+                            System.out.println("Invalid Email Format");
+                            System.out.println("Valid Email Example: someone@example.com");
+                            System.out.println("Email not updated");
+                        }
+                        currentPatient.loadMedicalRecordData(user);
                         break;
                     default:
                         System.out.println("Invalid choice, please try again.");
