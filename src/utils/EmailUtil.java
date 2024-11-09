@@ -5,13 +5,24 @@ import models.entities.*;
 import models.enums.*;
 
 import javax.mail.*;
-import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.util.List;
 import java.util.Properties;
 
+/**
+ * Utility class for sending emails and notifying about inventory status.
+ * This class supports sending email messages using SMTP and checks inventory levels to notify when stock is low.
+ */
 public class EmailUtil {
+
+    /**
+     * Sends an email using the Mailtrap SMTP service.
+     *
+     * @param recipient The email address of the recipient.
+     * @param subject   The subject of the email.
+     * @param body      The body content of the email.
+     */
     public static void sendEmail(String recipient, String subject, String body) {
         final String username = "ce5ac92f0e5561"; //use mailtrap username,pw
         final String password = "be9161717bdf85";
@@ -43,7 +54,12 @@ public class EmailUtil {
         }
     }
 
-    public static void checkInventoryAndNotify(String recipient) {
+    /**
+     * Checks the inventory levels and sends a notification email if any medicine is below the low stock alert level.
+     *
+     * @param recipient The email address to receive the low stock alert.
+     */
+    public static void checkInvAndNotify(String recipient) {
         String filePath = FilePaths.INV_DATA.getPath();
         InventoryLoader loader = new InventoryLoader();
         List<Medicine> medicineList = loader.loadData(filePath);

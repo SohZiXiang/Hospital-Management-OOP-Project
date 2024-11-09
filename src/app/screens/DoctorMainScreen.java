@@ -4,6 +4,7 @@ import app.Main;
 import interfaces.*;
 import models.entities.*;
 import app.screens.doctor.*;
+import utils.ActivityLogUtil;
 
 import java.util.*;
 
@@ -46,8 +47,8 @@ public class DoctorMainScreen implements Screen{
                         recordOutcome.display(scanner, user);
                     }
                     case 4 -> {
-                        System.out.println("Logging out...");
-                        Main.displayMain(scanner);
+                        ActivityLogUtil.logout(scanner, user);
+                        return;
                     }
                     default -> System.out.println("Invalid choice, please try again.");
                 }

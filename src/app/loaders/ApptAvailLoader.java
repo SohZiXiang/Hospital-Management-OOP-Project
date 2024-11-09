@@ -10,7 +10,19 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * The ApptAvailLoader class implements the DataLoader interface to load appointment and availability data
+ * from an Excel file.
+ */
 public class ApptAvailLoader implements DataLoader {
+
+    /**
+     * Loads appointment data from the specified Excel file and creates a list of Appointment objects.
+     * The first row is expected to be a header and is skipped.
+     *
+     * @param filePath the path to the Excel file containing appointment data.
+     * @return a list of Appointment objects, each representing a row in the Excel file.
+     */
     @Override
     public List<Appointment> loadData(String filePath) {
         List<Appointment> apts = new ArrayList<>();
@@ -37,11 +49,9 @@ public class ApptAvailLoader implements DataLoader {
 
                     String outcomeRecord = newRow.getCell(6, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).getStringCellValue();
 
-                    // Create a new Appointment object
                     Appointment newAppt = new Appointment(apptID, patientID, doctorID, apptDate, apptTime, outcomeRecord);
                     newAppt.setStatus(aptStatus);
 
-                    // Add to appointments list
                     apts.add(newAppt);
                 }
             }
@@ -54,6 +64,13 @@ public class ApptAvailLoader implements DataLoader {
         return apts;
     }
 
+    /**
+     * Loads availability data from the specified Excel file and creates a map of doctor IDs to their available slots.
+     * The first row is expected to be a header and is skipped.
+     *
+     * @param path the path to the Excel file containing availability data.
+     * @return a map where the key is the doctor ID and the value is a list of Availability objects.
+     */
     public Map<String, List<Availability>> loadAvailData(String path) {
         Map<String, List<Availability>> availList = new HashMap<>();
 
@@ -61,7 +78,7 @@ public class ApptAvailLoader implements DataLoader {
             Workbook wkBook = new XSSFWorkbook(input)) {
             DataFormatter desiredDateFormat = new DataFormatter();
             Sheet desiredSheet = wkBook.getSheetAt(0);
-            for (int i = 1; i <= desiredSheet.getLastRowNum(); i++) { // Skip header row
+            for (int i = 1; i <= desiredSheet.getLastRowNum(); i++) {
                 Row newRow = desiredSheet.getRow(i);
                 if (newRow != null) {
                     String doctorID = newRow.getCell(0).getStringCellValue();
@@ -72,7 +89,7 @@ public class ApptAvailLoader implements DataLoader {
                     String currentStatus = newRow.getCell(4).getStringCellValue().toUpperCase();
                     DoctorAvailability doctorAvail;
                     try {
-                        doctorAvail = DoctorAvailability.valueOf(currentStatus); // Converts to enum
+                        doctorAvail = DoctorAvailability.valueOf(currentStatus);
                     } catch (IllegalArgumentException e) {
                         System.err.println("Invalid availability status in file: " + currentStatus);
                         continue;

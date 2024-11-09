@@ -10,10 +10,18 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * Represents the screen for viewing scheduled appointments in the administration module.
+ */
 public class ViewAppointmentsScreen implements Screen {
     private ApptAvailLoader apptLoader = new ApptAvailLoader();
     private String filePath = FilePaths.APPT_DATA.getPath();
-
+    /**
+     * Displays the scheduled appointments for the user and logs the activity.
+     *
+     * @param scanner the Scanner object for user input
+     * @param user    the user accessing the appointment details
+     */
     @Override
     public void display(Scanner scanner, User user) {
         String logMsg = "User " + user.getName() + " (ID: " + user.getHospitalID() + ") viewed all appointment details.";
@@ -41,12 +49,20 @@ public class ViewAppointmentsScreen implements Screen {
         }
     }
 
+    /**
+     * Displays the header for the appointment details table.
+     */
     public void displayAppointmentDetailsHeader() {
         System.out.printf("\n%-15s %-15s %-15s %-15s %-15s %-10s%n",
                 "Appointment ID", "Patient ID", "Doctor ID", "Status", "Date", "Time");
         System.out.println("-------------------------------------------------------------------------------------------");
     }
 
+    /**
+     * Displays the details of a specific appointment.
+     *
+     * @param appointment the appointment object containing the details to display
+     */
     public void displayAppointmentDetails(Appointment appointment) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy");
         System.out.printf("%-15s %-15s %-15s %-15s %-15s %-10s%n",
