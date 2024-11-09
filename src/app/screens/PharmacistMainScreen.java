@@ -1,6 +1,7 @@
 package app.screens;
 
 import app.loaders.InventoryLoader;
+import app.screens.pharmacist.PharmacistRequestScreen;
 import models.entities.*;
 import utils.ActivityLogUtil;
 
@@ -73,33 +74,39 @@ public class PharmacistMainScreen {
                         pharmacist.viewSpecificMedicineStock(medicineStock, viewMedName);
                         break;
                     case 5:
-                        System.out.println("\nEnter Medicine Name to request replenishment for: ");
-                        String reqMedName = scanner.nextLine().trim();
 
-                        // Check if the entered medicine name exists in the stock
-                        boolean medicineExists = false;
-                        for (Medicine med : medicineStock) {
-                            if (med.getName().equalsIgnoreCase(reqMedName)) {
-                                medicineExists = true;
-                                break;
-                            }
-                        }
-
-                        if (!medicineExists) {
-                            System.out.println("Medicine " + reqMedName + " not found in inventory. Cannot request replenishment.");
-                            break;
-                        }
-
-                        System.out.println("Enter the amount of " + reqMedName + " you want to request: ");
-                        int reqAmount;
-                        try {
-                            reqAmount = Integer.parseInt(scanner.nextLine());
-                        } catch (NumberFormatException e) {
-                            System.out.println("Invalid input. Enter a valid number.");
-                            break;
-                        }
-                        pharmacist.submitReplenishmentRequest(reqMedName, reqAmount, scanner);
+                        // Redirect to the new PharmacistRequestScreen
+                        PharmacistRequestScreen requestScreen = new PharmacistRequestScreen(pharmacist);
+                        requestScreen.display(scanner);
                         break;
+
+//                        System.out.println("\nEnter Medicine Name to request replenishment for: ");
+//                        String reqMedName = scanner.nextLine().trim();
+//
+//                        // Check if the entered medicine name exists in the stock
+//                        boolean medicineExists = false;
+//                        for (Medicine med : medicineStock) {
+//                            if (med.getName().equalsIgnoreCase(reqMedName)) {
+//                                medicineExists = true;
+//                                break;
+//                            }
+//                        }
+//
+//                        if (!medicineExists) {
+//                            System.out.println("Medicine " + reqMedName + " not found in inventory. Cannot request replenishment.");
+//                            break;
+//                        }
+//
+//                        System.out.println("Enter the amount of " + reqMedName + " you want to request: ");
+//                        int reqAmount;
+//                        try {
+//                            reqAmount = Integer.parseInt(scanner.nextLine());
+//                        } catch (NumberFormatException e) {
+//                            System.out.println("Invalid input. Enter a valid number.");
+//                            break;
+//                        }
+//                        pharmacist.submitReplenishmentRequest(reqMedName, reqAmount, scanner);
+//                        break;
                     case 6:
                         ActivityLogUtil.logout(scanner, user);
                     default:
