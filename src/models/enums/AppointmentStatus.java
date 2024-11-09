@@ -19,7 +19,7 @@ public enum AppointmentStatus {
     /**
      * Appointment has been cancelled by the patient or the doctor.
      */
-    CANCELED,
+    CANCELLED,
 
     /**
      * Appointment has taken place successfully.
