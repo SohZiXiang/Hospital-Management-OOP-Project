@@ -8,7 +8,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,8 +41,8 @@ public class PatientLoader implements DataLoader {
 
                     // Added the below 2 lines
                     // Parse comma-separated diagnosis and treatment into lists
-                    List<String> pastDiagnoses = splitCommaSeparatedString(row.getCell(6));
-                    List<String> pastTreatments = splitCommaSeparatedString(row.getCell(7));
+                    List<String> pastDiagnoses = splitCommaStringIntoList(row.getCell(6));
+                    List<String> pastTreatments = splitCommaStringIntoList(row.getCell(7));
 
                     // changed the constructor values, pastdiagnosis and pasttreatments
                     Patient patient = new Patient("H000", patientId, name, dob, gender, contactInfo, bloodType, pastDiagnoses, pastTreatments, phoneNumber);
@@ -64,8 +63,7 @@ public class PatientLoader implements DataLoader {
         return patientList;
     }
 
-    // Helper method to split comma-separated strings into a list
-    private List<String> splitCommaSeparatedString(Cell cell) {
+    private List<String> splitCommaStringIntoList(Cell cell) {
         if (cell == null || cell.getStringCellValue().isEmpty()) {
             return List.of(); // Return empty list if cell is empty or null
         }

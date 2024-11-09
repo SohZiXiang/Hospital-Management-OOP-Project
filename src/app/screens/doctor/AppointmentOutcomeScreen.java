@@ -3,6 +3,7 @@ package app.screens.doctor;
 import interfaces.*;
 import models.entities.*;
 import models.records.*;
+import utils.ActivityLogUtil;
 
 import java.util.*;
 
@@ -13,7 +14,7 @@ public class AppointmentOutcomeScreen implements Screen {
     public void display(Scanner scanner, User user) {
         Doctor doc = (Doctor) user;
         doc.getApptList();
-        doc.getAppointmentOutcomeRecords();
+        doc.getOutcomeRecords();
 
         while (true) {
             System.out.println("\n--- Record Appointment Outcome ---");
@@ -27,7 +28,12 @@ public class AppointmentOutcomeScreen implements Screen {
                 int choice = Integer.parseInt(input);
                 switch (choice) {
                     case 1 -> addOutcome(scanner, doc);
-                    case 2 -> doc.viewAllAppointmentOutcomes();
+                    case 2 -> {
+                        doc.viewAllAppointmentOutcomes();
+                        String logMsg = "User " + doc.getName() + " (ID: " + doc.getHospitalID() + ") viewed all " +
+                                "outcome records added by the user";
+                        ActivityLogUtil.logActivity(logMsg, doc);
+                    }
                     case 3 -> {
                         System.out.println("Returning to Main Menu...");
                         doc.resetData("appt");
@@ -35,7 +41,7 @@ public class AppointmentOutcomeScreen implements Screen {
                     }
                 }
             } catch (Exception e) {
-                System.out.println("Please enter a valid number.");
+                System.out.println(e.getMessage());
             }
         }
     }
@@ -77,5 +83,8 @@ public class AppointmentOutcomeScreen implements Screen {
         doc.recordAppointmentOutcome(appt, svType, medicationList, notes, outcome);
 
         System.out.println("Appointment outcome recorded successfully.");
+        String logMsg = "User " + doc.getName() + " (ID: " + doc.getHospitalID() + ") added a new appointment outcome" +
+                " record.";
+        ActivityLogUtil.logActivity(logMsg, doc);
     }
 }

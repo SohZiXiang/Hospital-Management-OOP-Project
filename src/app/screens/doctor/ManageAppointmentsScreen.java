@@ -3,12 +3,16 @@ package app.screens.doctor;
 import interfaces.*;
 import models.entities.*;
 import models.enums.*;
+import utils.ActivityLogUtil;
 
 import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoField;
 import java.util.*;
 
 public class ManageAppointmentsScreen implements Screen {
-
     @Override
     public void display(Scanner scanner, User user) {
         Doctor doc = (Doctor) user;
@@ -34,12 +38,13 @@ public class ManageAppointmentsScreen implements Screen {
                         System.out.println("\n--- Manage your Availability ---");
                         doc.viewAllAvail();
                         System.out.println("\nWould you like to edit or add a new record?");
-                        if (scanner.nextLine().equalsIgnoreCase("add")) addAvailability(scanner, doc);
-                        else if (scanner.nextLine().equalsIgnoreCase("edit")) editAvailability(scanner, doc); // NOT
+                        input = scanner.nextLine();
+                        if (input.equalsIgnoreCase("add")) addAvailability(scanner, doc);
+                        else if (input.equalsIgnoreCase("edit")) editAvailability(scanner, doc); // NOT
                         // IMPLEMENTED
                         else System.out.println("Please enter 'add' or 'edit' only");
                     }
-                    // case 3 -> acceptDeclineAppointments(scanner, user); // NOT IMPLEMENTED
+                    case 3 -> reviewAppt(scanner, doc);
                     case 4 -> {
                         System.out.println("Returning to Main Menu...");
                         doc.resetData("both");
@@ -83,11 +88,139 @@ public class ManageAppointmentsScreen implements Screen {
                     DoctorAvailability.BUSY;
 
             doc.addAvail(combinedDate, start, end, docAvail);
+            String logMsg = "User " + doc.getName() + " (ID: " + doc.getHospitalID() + ") added new consulation slots";
+            ActivityLogUtil.logActivity(logMsg, doc);
         }
     }
 
-    public void editAvailability(Scanner scanner, User doc) {
+    public void editAvailability(Scanner scanner, Doctor doc) {
+        LocalDate selectedDate = changeFormat(scanner);
+        DateTimeFormatter displayFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
+        List<Availability> viewSlotsForOneDate = doc.slotsForDate(selectedDate);
+        if (viewSlotsForOneDate.isEmpty()) {
+            System.out.println("No availability slots found for " + selectedDate.format(displayFormat) + ".");
+            return;
+        }
+
+        System.out.println("Availability slots for " + selectedDate.format(displayFormat) + ":");
+        for (int i = 0; i < viewSlotsForOneDate.size(); i++) {
+            Availability oneSlot = viewSlotsForOneDate.get(i);
+            System.out.printf("%d. %s - %s : %s%n", i + 1, oneSlot.getStartTime(), oneSlot.getEndTime(), oneSlot.getStatus());
+        }
+
+        // Prompt user for start time of the slot to edit
+        System.out.print("Enter the start time of the slot to edit (hh:mm AM/PM) or press Enter to cancel: ");
+        String desiredStartTime = scanner.nextLine();
+        if (desiredStartTime.isEmpty()) {
+            System.out.println("Edit cancelled.");
+            return;
+        }
+
+        Availability userSelectedSlot = viewSlotsForOneDate.stream()
+                .filter(slot -> timeMatches(desiredStartTime, slot.getStartTime()))
+                .findFirst()
+                .orElse(null);
+
+        if (userSelectedSlot == null) {
+            System.out.println("No slot found with the start time " + desiredStartTime + ".");
+            return;
+        }
+
+        System.out.print("Enter new start time (hh:mm AM/PM) or press Enter to keep [" + userSelectedSlot.getStartTime() + "]: ");
+        String changeStart = scanner.nextLine();
+        changeStart = changeStart.isEmpty() ? null : changeStart;
+
+        System.out.print("Enter new end time (hh:mm AM/PM) or press Enter to keep [" + userSelectedSlot.getEndTime() + "]: ");
+        String changedEnd = scanner.nextLine();
+        changedEnd = changedEnd.isEmpty() ? null : changedEnd;
+
+        System.out.print("Enter new status (A for Available, B for Busy) or press Enter to keep [" + userSelectedSlot.getStatus() + "]: ");
+        String changedStatus = scanner.nextLine().toUpperCase();
+        DoctorAvailability updatedStatus = changedStatus.isEmpty() ? null : (changedStatus.equals("A") ? DoctorAvailability.AVAILABLE : DoctorAvailability.BUSY);
+
+        doc.editOneSlot(selectedDate, desiredStartTime, changeStart, changedEnd, updatedStatus);
+
+        String logMsg = "User " + doc.getName() + " (ID: " + doc.getHospitalID() + ") edited a consulation slot";
+        ActivityLogUtil.logActivity(logMsg, doc);
+    }
+
+    private LocalDate changeFormat(Scanner scanner) {
+        DateTimeFormatter formatDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDate chosenDate = null;
+
+        while (chosenDate == null) {
+            System.out.print("Enter date (dd/MM/yyyy): ");
+            String date = scanner.nextLine();
+            try {
+                chosenDate = LocalDate.parse(date, formatDate);
+            } catch (DateTimeParseException e) {
+                System.out.println("Invalid date format. Please enter the date as dd/MM/yyyy.");
+            }
+        }
+
+        return chosenDate;
+    }
+
+
+    private DateTimeFormatter formatTiming() {
+        return new DateTimeFormatterBuilder()
+                .parseCaseInsensitive()
+                .appendPattern("h[:mm][ ]a")
+                .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
+                .toFormatter();
+    }
+
+    private boolean timeMatches(String appTime, String slot) {
+        DateTimeFormatter formatTheTime = formatTiming();
+        try {
+            LocalTime formattedApptTime = LocalTime.parse(appTime, formatTheTime);
+            LocalTime formattedSlotTime = LocalTime.parse(slot, formatTheTime);
+            return formattedApptTime.equals(formattedSlotTime);
+        } catch (DateTimeParseException e) {
+            System.err.println("Error parsing time for comparison: " + appTime + " or " + slot);
+            return false;
+        }
+    }
+
+    public void reviewAppt(Scanner scanner, Doctor doctor) {
+        List<Appointment> scheduledAppt = doctor.apptPendingReviews();
+
+        if (scheduledAppt.isEmpty()) {
+            System.out.println("No scheduled appointments to review.");
+            return;
+        }
+
+        System.out.println("Scheduled Appointments for Review:");
+        for (int i = 0; i < scheduledAppt.size(); i++) {
+            Appointment oneAppt = scheduledAppt.get(i);
+            System.out.printf("%d. Date: %s | Time: %s | Patient ID: %s%n",
+                    i + 1,
+                    oneAppt.getAppointmentDate().toInstant()
+                            .atZone(TimeZone.getDefault().toZoneId()).toLocalDate(),
+                    oneAppt.getAppointmentTime(),
+                    oneAppt.getPatientId());
+        }
+
+        System.out.println("Enter the number of the appointment you want to review (or 0 to exit):");
+        int noOfReviewNeeded = Integer.parseInt(scanner.nextLine()) - 1;
+
+        if (noOfReviewNeeded >= 0 && noOfReviewNeeded < scheduledAppt.size()) {
+            Appointment selectedAppointment = scheduledAppt.get(noOfReviewNeeded);
+
+            System.out.println("Do you want to accept or decline this appointment? (A for Accept, D for Decline):");
+            String reviewOutcome = scanner.nextLine().trim().toUpperCase();
+
+            if (reviewOutcome.equals("A")) {
+                doctor.updateAppointmentStatus(selectedAppointment, AppointmentStatus.CONFIRMED);
+            } else if (reviewOutcome.equals("D")) {
+                doctor.updateAppointmentStatus(selectedAppointment, AppointmentStatus.CANCELLED);
+            } else {
+                System.out.println("Invalid input. Please choose A for Accept or D for Decline.");
+            }
+        } else {
+            System.out.println("Invalid selection. Exiting appointment review.");
+        }
     }
 
 }
