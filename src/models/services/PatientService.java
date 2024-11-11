@@ -239,6 +239,7 @@ public class PatientService {
     public void createAppointment(User user, int option, String appointmentID, boolean create) {
 
         int slotCount = 0;
+        boolean exist = false;
 
         try {
             appointmentList = appointmentLoader.loadData(appointmentPath);
@@ -253,10 +254,24 @@ public class PatientService {
 
                     ++slotCount;
                     if(slotCount == option){
-                        Appointment newAppointment = new Appointment(appointmentID, user.getHospitalID(),
-                                availability.getDoctorId(), availability.getAvailableDate(), availability.getStartTime(), "");
-                        writeAppointmentToExcel(user, newAppointment, create);
+                        for (Appointment appointment : appointmentList) {
+                            if (appointment.getPatientId().equals(user.getHospitalID())
+                                    && appointment.getAppointmentDate().equals(availability.getAvailableDate())
+                                    && appointment.getAppointmentTime().equals(availability.getStartTime())) {
+                                exist = true;
+                                break;
+                            }
+                        }
 
+                        if(!exist){
+                            Appointment newAppointment = new Appointment(appointmentID, user.getHospitalID(),
+                                    availability.getDoctorId(), availability.getAvailableDate(), availability.getStartTime(), "");
+                            writeAppointmentToExcel(user, newAppointment, create);
+                        }
+                        else{
+                            System.out.println("You already scheduled a slot on " + formatter.format(availability.getAvailableDate())
+                            + " at " + availability.getStartTime());
+                        }
                     }
                 }
             }
