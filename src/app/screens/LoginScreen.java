@@ -5,6 +5,7 @@ import app.loaders.*;
 import interfaces.*;
 import models.entities.*;
 import models.enums.FilePaths;
+import models.services.PatientService;
 import utils.*;
 
 import java.util.ArrayList;
@@ -49,6 +50,8 @@ public class LoginScreen implements BaseScreen {
                 System.out.println("Login successful! Welcome " + user.getName());
                 switch (user.getRole()) {
                     case PATIENT:
+                        PatientService ps = new PatientService();
+                        ps.loadAppointmentAlert(user);
                         PatientScreen patientScreen = new PatientScreen();
                         patientScreen.display(scanner, user);
                         break;

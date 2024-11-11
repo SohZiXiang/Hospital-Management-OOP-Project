@@ -1,6 +1,7 @@
 package models.services;
 
 import app.loaders.*;
+import com.twilio.twiml.voice.Sms;
 import interfaces.DataLoader;
 import models.enums.*;
 import models.entities.*;
@@ -24,6 +25,7 @@ import utils.ActivityLogUtil;
 import utils.SMSUtil;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 public class PatientService {
     private List<Patient> patientsUnderCare = new ArrayList<>();
@@ -698,7 +700,6 @@ public class PatientService {
     }
 
     private void updateAvailInExcel(User user, String doctorID, Date date, String startTime) {
-
         try (FileInputStream fis = new FileInputStream(availabilityFilePath);
              Workbook workbook = WorkbookFactory.create(fis)) {
             Sheet sheet = workbook.getSheetAt(0);
@@ -722,6 +723,47 @@ public class PatientService {
             }
         } catch (IOException | InvalidFormatException e) {
             System.err.println("Error updating availability in Excel: " + e.getMessage());
+        }
+    }
+
+    public void loadAppointmentAlert(User user) {
+
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd MM yyyy");
+        Date date = new Date();
+
+        try {
+            appointmentList = appointmentLoader.loadData(appointmentPath);
+        }
+        catch (Exception e) {
+            System.err.println("Error loading data: " + e.getMessage());
+        }
+
+        try {
+            staffList = staffLoader.loadData(staffPath);
+        }
+        catch (Exception e) {
+            System.err.println("Error loading data: " + e.getMessage());
+        }
+
+        for (Appointment appointment : appointmentList) {
+            long diffInMillies = appointment.getAppointmentDate().getTime() - date.getTime();
+            long daysDifference = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+
+            if (daysDifference <= 2 && daysDifference >= 0 && appointment.getStatus() == AppointmentStatus.CONFIRMED
+            && appointment.getPatientId().equals(user.getHospitalID())) {
+                String doctorName = "N/A";
+
+                for (Staff staff : staffList) {
+                    if (staff.getStaffId().equals(appointment.getDoctorId())) {
+                        doctorName = "Dr " + staff.getName();
+                        break;
+                    }
+                }
+
+                SMSUtil.sendSms(SMSUtil.numberHX, "Alert! you have a appointment " +
+                        appointment.getAppointmentId() + " scheduled on " + formatter.format(appointment.getAppointmentDate())
+                        + " at " + appointment.getAppointmentTime() + " with " + doctorName);
+            }
         }
     }
 }
