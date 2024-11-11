@@ -435,14 +435,17 @@ public class PatientService {
                         && appointment.getStatus() != AppointmentStatus.COMPLETED
                         && appointment.getAppointmentId().equals(appointmentID))
                 {
+                    if(appointment.getStatus() == AppointmentStatus.CONFIRMED) {
+                        updateAvailInExcel(user, appointment.getDoctorId(), appointment.getAppointmentDate(),
+                                appointment.getAppointmentTime());
+                    }
+
                     removeAppointmentInExcel(user, appointmentID, cancel);
                     removeAppointment = true;
-
-                    availService.editOneSlot(appointment.getDoctorId(), LocalDate.ofInstant(appointment.getAppointmentDate().toInstant(), ZoneId.systemDefault()),
-                            appointment.getAppointmentTime().toUpperCase(), appointment.getAppointmentTime().toUpperCase(), addOneHour(appointment.getAppointmentTime()).toUpperCase(),
-                            DoctorAvailability.AVAILABLE);
                 }
             }
+
+
         }
         catch (Exception e) {
             System.err.println("Error loading data: " + e.getMessage());
@@ -482,10 +485,11 @@ public class PatientService {
                 workbook.write(fos);
             }
 
-            loadAppointmentData(currentUser);
             System.out.println();
 
             if(cancel){
+                loadAppointmentData(currentUser);
+
                 System.out.println("Appointment cancelled successfully.");
 
                 String logMsg = "Patient " + currentUser.getName() + " (ID: " + currentUser.getHospitalID() + ") " +
@@ -675,6 +679,34 @@ public class PatientService {
             System.out.println(type + " Successfully Updated To " + changeValue);
         } catch (IOException | InvalidFormatException e) {
             System.err.println("Error updating staff in Excel: " + e.getMessage());
+        }
+    }
+
+    private void updateAvailInExcel(User user, String doctorID, Date date, String startTime) {
+
+        try (FileInputStream fis = new FileInputStream(availabilityFilePath);
+             Workbook workbook = WorkbookFactory.create(fis)) {
+            Sheet sheet = workbook.getSheetAt(0);
+
+            for (Row row : sheet) {
+                Cell doctorIdCell = row.getCell(0);
+                Cell availableDateCell = row.getCell(1);
+                Cell startTimeCell = row.getCell(2);
+                if (doctorIdCell.getStringCellValue().equals(doctorID)
+                        && availableDateCell.getDateCellValue().equals(date)
+                        && startTimeCell.getStringCellValue().equals(startTime))
+                {
+                    row.getCell(4).setCellValue(DoctorAvailability.AVAILABLE.toString());
+
+                    try (FileOutputStream fos = new FileOutputStream(availabilityFilePath)) {
+                        workbook.write(fos);
+                    }
+                    break;
+                }
+
+            }
+        } catch (IOException | InvalidFormatException e) {
+            System.err.println("Error updating availability in Excel: " + e.getMessage());
         }
     }
 }
