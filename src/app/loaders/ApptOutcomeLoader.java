@@ -25,7 +25,7 @@ public class ApptOutcomeLoader implements DataLoader{
     public List<AppointmentOutcomeRecord> loadData(String filePath) {
         apptOutcomes = new ArrayList<>();
         try (FileInputStream input = new FileInputStream(filePath);
-            Workbook wkBook = new XSSFWorkbook(input)) {
+             Workbook wkBook = new XSSFWorkbook(input)) {
 
             Sheet theSheet = wkBook.getSheetAt(0);
 
@@ -83,7 +83,7 @@ public class ApptOutcomeLoader implements DataLoader{
         return Arrays.asList(cell.getStringCellValue().split(",\\s*")); // Split by comma and optional whitespace
     }
 
-    private List<Integer> splitQuantityClm(Cell cell) {
+    public static List<Integer> splitQuantityClm(Cell cell) {
         List<Integer> quantityList = new ArrayList<>();
         if (cell == null) {
             return quantityList; // Return an empty list if the cell is null

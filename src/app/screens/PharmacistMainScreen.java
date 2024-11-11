@@ -2,9 +2,8 @@ package app.screens;
 
 import app.loaders.InventoryLoader;
 import app.screens.pharmacist.PharmacistRequestScreen;
-import app.screens.pharmacist.PharmacistRequestScreen;
+import app.screens.pharmacist.UpdatePrescriptionScreen;
 import models.entities.*;
-import utils.ActivityLogUtil;
 import utils.ActivityLogUtil;
 
 import java.util.*;
@@ -20,9 +19,7 @@ public class PharmacistMainScreen {
                             " | |__) | |__   __ _ _ __ _ __ ___   __ _  ___ _ ___| |_ \n" +
                             " |  ___/| '_ \\ / _` | '__| '_ ` _ \\ / _` |/ __| / __| __|\n" +
                             " | |    | | | | (_| | |  | | | | | | (_| | (__| \\__ \\ |_ \n" +
-                            " |_|    |_| |_|\\__,_|_|  |_| |_| |_|\\__,_|\\___|_|___/\\__|\n" +
-                            "                                                         \n" +
-                            "                                                         \n"
+                            " |_|    |_| |_|\\__,_|_|  |_| |_| |_|\\__,_|\\___|_|___/\\__|\n"
             );
 
             System.out.println("\nWelcome, Pharmacist: " + pharmacist.getName());
@@ -47,26 +44,9 @@ public class PharmacistMainScreen {
                         pharmacist.viewPrescriptionRecords();
                         break;
                     case 2:
-                        System.out.print("Enter Appointment ID: ");
-                        String apptId = scanner.nextLine().trim();
-
-                        // Check if the appointment ID is valid and if there are pending medicines
-                        if (!pharmacist.isAppointmentIdValid(apptId)) {
-                            System.out.println("No appointment found with ID: " + apptId);
-                            break;
-                        }
-
-                        if (!pharmacist.hasPendingMedicines(apptId)) {
-                            System.out.println("All medicines for Appointment ID " + apptId + " have already been dispensed or there were no medicines to dispense.");
-                            break;
-                        }
-
-                        // Only prompt for medicine name and status if there are pending medicines
-                        System.out.print("Enter Medicine Name: ");
-                        String medicineName = scanner.nextLine().trim();
-                        System.out.print("Enter new status (e.g., DISPENSED): ");
-                        String newStatus = scanner.nextLine().trim();
-                        pharmacist.updatePrescriptionStatus(apptId, medicineName, newStatus);
+                        // Redirect to PharmacistUpdatePrescriptionScreen
+                        UpdatePrescriptionScreen updateScreen = new UpdatePrescriptionScreen(pharmacist);
+                        updateScreen.display(scanner, user);
                         break;
                     case 3:
                         System.out.println("\nViewing all medicine stock...");
@@ -78,13 +58,12 @@ public class PharmacistMainScreen {
                         pharmacist.viewSpecificMedicineStock(medicineStock, viewMedName);
                         break;
                     case 5:
-                        // Redirect to the new PharmacistRequestScreen
+                        // Redirect to the PharmacistRequestScreen
                         PharmacistRequestScreen requestScreen = new PharmacistRequestScreen(pharmacist);
                         requestScreen.display(scanner);
                         break;
                     case 6:
                         ActivityLogUtil.logout(scanner, user);
-                        return;
                     default:
                         System.out.println("Invalid choice, please try again.");
                 }
@@ -93,49 +72,4 @@ public class PharmacistMainScreen {
             }
         }
     }
-
-    /*private void submitReplenishmentRequest(Pharmacist pharmacist, Scanner scanner) {
-        System.out.println("\nEnter Medicine Name to request replenishment: ");
-        String medicineName = scanner.nextLine().trim();
-
-        System.out.println("Enter the amount of " + medicineName + " you want to request: ");
-        int requestedAmount;
-        try {
-            requestedAmount = Integer.parseInt(scanner.nextLine());
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid input. Please enter a valid number for the requested amount.");
-            return;
-        }
-        //Submit req
-        pharmacist.submitReplenishmentRequest(medicineName, requestedAmount, scanner);
-    }
-
-    private void viewPrescriptionRecords(Pharmacist pharmacist, Scanner scanner) {
-        System.out.println("\nViewing all prescription records...");
-        //NOT IMPLEMENTED YET
-    }
-
-    private void updatePrescriptionStatus(Pharmacist pharmacist, Scanner scanner) {
-//        System.out.println("\nEnter Appointment ID to update prescription status: ");
-//        String appointmentId = scanner.nextLine();
-//        System.out.println("Enter new prescription status (e.g., 'dispensed', 'pending'):");
-//        String status = scanner.nextLine();
-//        System.out.println("Prescription status for appointment ID " + appointmentId + " has been updated to " + status);
-//        NOT IMPLEMENTED YET
-    }
-
-    private void viewAllMedicineStock(Pharmacist pharmacist) {
-        System.out.println("\nViewing all medicine stock...");
-        InventoryLoader loader = new InventoryLoader();
-        List<Medicine> medicineStock = loader.loadData("data/Medicine_List.xlsx");//Excel Path
-        pharmacist.viewAllMedicineStock(medicineStock);
-    }
-
-    private void viewSpecificMedicineStock(Pharmacist pharmacist, Scanner scanner) {
-        System.out.println("\nEnter medicine name to view current stock: ");
-        String medicineName = scanner.nextLine().trim();
-        InventoryLoader loader = new InventoryLoader();
-        List<Medicine> medicineStock = loader.loadData("data/Medicine_List.xlsx");//Excel Path
-        pharmacist.viewSpecificMedicineStock(medicineStock, medicineName);
-    }*/
 }
