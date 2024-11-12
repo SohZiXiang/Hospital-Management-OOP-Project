@@ -469,7 +469,7 @@ public class PatientService {
         }
 
         if(!removeAppointment){
-            System.out.println("Appointment cancelled unsuccessful.");
+            System.out.println("Please pick a valid appointment ID");
         }
     }
 
@@ -636,8 +636,7 @@ public class PatientService {
         Patient currentPatient = (Patient) user;
         try {
             patientList = patientLoader.loadData(patientPath);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.err.println("Error loading data: " + e.getMessage());
         }
 
@@ -660,6 +659,42 @@ public class PatientService {
         System.out.printf("%-30s %-30s%n", "Email:", currentPatient.getEmail());
 
         System.out.println();
+
+        String formatHeader = "| %-25s | %-25s %n";
+        String formatRow = "| %-25s | %-25s %n";
+
+        System.out.format("+----------------------+----------------------+\n");
+        System.out.format(formatHeader, "Diagnoses", "Treatment Plan");
+        System.out.format("+----------------------+----------------------+\n");
+
+        List<String> diagnosisList = currentPatient.getPastDiagnoses();
+        String formatDiagnoses = (diagnosisList == null || diagnosisList.isEmpty())
+                ? "No records available"
+                : String.join("\n", diagnosisList);
+
+
+        List<String> treatmentList = currentPatient.getPastTreatments();
+        String formatTreatments = (treatmentList == null || treatmentList.isEmpty())
+                ? "No records available"
+                : String.join("\n", treatmentList);
+
+        String[] diagnosisLines = formatDiagnoses.split("\n");
+        String[] treatmentLines = formatTreatments.split("\n");
+        int maxLines = Math.max(diagnosisLines.length, treatmentLines.length);
+
+        for (int i = 0; i < maxLines; i++) {
+            if (i == 0) {
+                System.out.format(formatRow,
+                        diagnosisLines[0],
+                        treatmentLines[0]);
+            } else {
+                System.out.format(formatRow, "", "", "", "", "",
+                        i < diagnosisLines.length ? diagnosisLines[i] : "",
+                        i < treatmentLines.length ? treatmentLines[i] : "");
+            }
+        }
+
+        System.out.format("+----------------------+----------------------+\n");
     }
 
     public void updateContact(User user, Patient patient, boolean email) {
