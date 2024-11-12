@@ -47,7 +47,6 @@ public class PatientService implements PatientManager {
     SimpleDateFormat formatter = new SimpleDateFormat("EEE dd/MM/yyyy");
 
     DataLoader patientLoader = new PatientLoader();
-    List<Patient> patientList = new ArrayList<>();
     String patientPath = FilePaths.PATIENT_DATA.getPath();
     List<PatientOutcomeRecord> patientOutcomeRecordList = new ArrayList<>();
 
