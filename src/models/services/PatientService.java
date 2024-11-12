@@ -12,11 +12,12 @@ import java.util.*;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import utils.StringFormatUtil;
 
 import java.io.IOException;
 
 public class PatientService implements PatientManager {
-    private List<Patient> patientsUnderCare = new ArrayList<>();
+    private List<Patient> patientList = new ArrayList<>();
     private boolean patientsLoaded = false;
 
     public PatientService() {
@@ -34,7 +35,7 @@ public class PatientService implements PatientManager {
         String path = FilePaths.PATIENT_DATA.getPath();
         DataLoader loadPatient = new PatientLoader();
         try {
-            patientsUnderCare = loadPatient.loadData(path);
+            patientList = loadPatient.loadData(path);
         } catch (Exception e) {
             System.err.println("Error loading patient data: " + e.getMessage());
         }
@@ -42,8 +43,8 @@ public class PatientService implements PatientManager {
 
     // Update patient data
     public void updateData() {
-        if (patientsUnderCare != null) {
-            patientsUnderCare.clear();
+        if (patientList != null) {
+            patientList.clear();
         }
         patientsLoaded = false;
         getPatientList();
@@ -56,7 +57,7 @@ public class PatientService implements PatientManager {
     // Show all patient records
     public void showAllPatientsRecords() {
         System.out.println("\n--- All Patient Records ---");
-        if (patientsUnderCare.isEmpty()) {
+        if (patientList.isEmpty()) {
             System.out.println("No patient records available.");
             return;
         }
@@ -68,7 +69,7 @@ public class PatientService implements PatientManager {
         System.out.format(formatHeader, "Patient ID", "Name", "Date of Birth", "Gender", "Blood Type", "Diagnoses", "Treatment Plan");
         System.out.format("+------------+-----------------+--------------+--------+------------+----------------------+----------------------+\n");
 
-        for (Patient onePatient : patientsUnderCare) {
+        for (Patient onePatient : patientList) {
 
             List<String> diagnosisList = onePatient.getPastDiagnoses();
             String formatDiagnoses = (diagnosisList == null || diagnosisList.isEmpty())
@@ -85,14 +86,16 @@ public class PatientService implements PatientManager {
             String[] treatmentLines = formatTreatments.split("\n");
             int maxLines = Math.max(diagnosisLines.length, treatmentLines.length);
 
+            String bldType = (onePatient.getBloodType() != null) ? onePatient.getBloodType().getDisplayValue() : "";
+
             for (int i = 0; i < maxLines; i++) {
                 if (i == 0) {
                     System.out.format(formatRow,
                             onePatient.getPatientID(),
                             onePatient.getName(),
                             onePatient.getDateOfBirth(),
-                            onePatient.getGender(),
-                            onePatient.getBloodType(),
+                            StringFormatUtil.toCamelCase(onePatient.getGender().toString()),
+                            bldType,
                             diagnosisLines[0],
                             treatmentLines[0]);
                 } else {
@@ -110,7 +113,7 @@ public class PatientService implements PatientManager {
     // Filter patients by ID
     public void filterPatients(String patientID) {
         System.out.println("--- Patient Details ---");
-        Patient requestedPatient = patientsUnderCare.stream()
+        Patient requestedPatient = patientList.stream()
                 .filter(p -> p.getPatientID().equals(patientID))
                 .findFirst()
                 .orElse(null);
@@ -136,13 +139,16 @@ public class PatientService implements PatientManager {
                     formatTreatments.append("Treatment ").append(i + 1).append(": ").append(indTreatments.get(i)).append("\n");
                 }
             }
+            String bldType = (requestedPatient.getBloodType() != null) ?
+                    requestedPatient.getBloodType().getDisplayValue()
+                    : "";
 
             System.out.printf("Patient ID: %s%nName: %s%nDate of Birth: %s%nGender: %s%nBlood Type: %s%nContact Information: %s%n %s%n %s%n",
                     requestedPatient.getPatientID(),
                     requestedPatient.getName(),
                     requestedPatient.getDateOfBirth(),
                     requestedPatient.getGender(),
-                    requestedPatient.getBloodType(),
+                    bldType,
                     requestedPatient.getEmail(),
                     formatDiagnoses,
                     formatTreatments);
@@ -153,7 +159,7 @@ public class PatientService implements PatientManager {
 
     // Check if patient is valid
     public Patient checkWhetherPatientValid(String patientID) {
-        return patientsUnderCare.stream()
+        return patientList.stream()
                 .filter(p -> p.getPatientID().equals(patientID))
                 .findFirst()
                 .orElse(null);
@@ -238,4 +244,19 @@ public class PatientService implements PatientManager {
         }
         return format.toString();
     }
+
+//    private String changeToSigns(BloodType bloodType) {
+//        if (bloodType == null) return "";
+//        switch (bloodType) {
+//            case A_POSITIVE: return "A+";
+//            case A_NEGATIVE: return "A-";
+//            case B_POSITIVE: return "B+";
+//            case B_NEGATIVE: return "B-";
+//            case AB_POSITIVE: return "AB+";
+//            case AB_NEGATIVE: return "AB-";
+//            case O_POSITIVE: return "O+";
+//            case O_NEGATIVE: return "O-";
+//            default: return bloodType.toString();
+//        }
+//    }
 }

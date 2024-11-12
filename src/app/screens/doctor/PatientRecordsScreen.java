@@ -14,7 +14,7 @@ public class PatientRecordsScreen implements Screen {
         doc.getPatientList();
 
         while (true) {
-            System.out.println("\nPatient Records Screen - Please choose an option:");
+            System.out.println("\n--- Patient Records Screen ---");
             System.out.println("1. View all patient records");
             System.out.println("2. View a specific patient record");
             System.out.println("3. Update a patient record");
