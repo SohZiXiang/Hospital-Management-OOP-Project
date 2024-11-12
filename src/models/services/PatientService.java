@@ -465,6 +465,7 @@ public class PatientService implements PatientManager {
                 }
             }
         }
+        System.out.println();
     }
 
     public static String addOneHour(String time) {
