@@ -83,7 +83,7 @@ public class ApptOutcomeLoader implements DataLoader{
         return Arrays.asList(cell.getStringCellValue().split(",\\s*")); // Split by comma and optional whitespace
     }
 
-    private List<Integer> splitQuantityClm(Cell cell) {
+    public static List<Integer> splitQuantityClm(Cell cell) {
         List<Integer> quantityList = new ArrayList<>();
         if (cell == null) {
             return quantityList; // Return an empty list if the cell is null

@@ -3,6 +3,7 @@ package models.services;
 import app.loaders.*;
 import interfaces.ApptManager;
 import interfaces.AvailabilityManager;
+import interfaces.PatientManager;
 import models.enums.*;
 import models.records.*;
 import models.entities.*;
@@ -28,9 +29,11 @@ public class ApptService implements ApptManager {
     private boolean apptsLoaded = false;
     private boolean outcomeRecordsLoaded = false;
     private final AvailabilityManager availManager;
+    private final PatientManager onePatientManager;
 
-    public ApptService(AvailabilityManager availManager) {
+    public ApptService(AvailabilityManager availManager, PatientManager onePatientManager) {
         this.availManager = availManager;
+        this.onePatientManager = onePatientManager;
     }
 
     /* START OF METHODS TO LOAD/UPDATE DATA */
@@ -110,7 +113,7 @@ public class ApptService implements ApptManager {
 
     /* START OF DOCTOR APPOINTMENTS METHODS */
 
-    public void viewDoctorSchedule(String doctorId) {
+    public void viewDoctorSchedule(String docID) {
         LocalDate todayDate = LocalDate.now();
         int year = todayDate.getYear();
         int month = todayDate.getMonthValue();
@@ -121,18 +124,17 @@ public class ApptService implements ApptManager {
 
         Set<Integer> onlyConfirmedDates = new HashSet<>();
         List<Appointment> allRelevantAppt = new ArrayList<>();
+
         for (Appointment oneApt : apptList) {
             LocalDate apptDate = oneApt.getAppointmentDate().toInstant()
                     .atZone(TimeZone.getDefault().toZoneId()).toLocalDate();
-
-            if (oneApt.getStatus() == AppointmentStatus.CONFIRMED &&
-                    apptDate.getYear() == year && apptDate.getMonthValue() == month) {
-                onlyConfirmedDates.add(apptDate.getDayOfMonth());
-            }
-
-            if (oneApt.getStatus() != AppointmentStatus.CANCELLED &&
-                    apptDate.getYear() == year && apptDate.getMonthValue() == month) {
-                allRelevantAppt.add(oneApt);
+            if (apptDate.isAfter(todayDate) && apptDate.getMonthValue() == todayDate.getMonthValue() ) {
+                if (oneApt.getStatus() == AppointmentStatus.CONFIRMED) {
+                    onlyConfirmedDates.add(apptDate.getDayOfMonth());
+                }
+                if (oneApt.getStatus() != AppointmentStatus.CANCELLED) {
+                    allRelevantAppt.add(oneApt);
+                }
             }
         }
 
@@ -145,10 +147,10 @@ public class ApptService implements ApptManager {
         System.out.printf("%n%s %d%n", currentYrMth.getMonth(), year);
         System.out.println("Mon Tue Wed Thu Fri Sat Sun");
 
-        LocalDate firstDay = LocalDate.of(year, month, 1);
-        int whichDayOfWk = firstDay.getDayOfWeek().getValue();
+        LocalDate firstDay = LocalDate.of(todayDate.getYear(), todayDate.getMonth(), 1);
+        int whichDayOfWk = firstDay.getDayOfWeek().getValue() % 7;
 
-        for (int i = 1; i < whichDayOfWk; i++) {
+        for (int i = 0; i < whichDayOfWk; i++) {
             System.out.print("   ");
         }
 
@@ -172,49 +174,80 @@ public class ApptService implements ApptManager {
                         .atZone(TimeZone.getDefault().toZoneId()).toLocalDate();
 
                 String date = apptDate.format(desiredDateFormat);
-                System.out.printf("Date: %s | Time: %s | Status: %s | Patient ID: %s | Doctor ID: %s%n",
+                System.out.printf("Date: %s | Time: %s | Status: %s | Patient ID: %s%n",
                         date,
                         oneApt.getAppointmentTime(),
                         oneApt.getStatus(),
-                        oneApt.getPatientId(),
-                        oneApt.getDoctorId());
-
+                        oneApt.getPatientId());
             }
         }
+        availManager.viewAllAvail(docID);
     }
-    // Change variableName
+
+    public void viewUpcomingAppt() {
+        LocalDate todayDate = LocalDate.now();
+        DateTimeFormatter desiredDateFormat = DateTimeFormatter.ofPattern("dd MMM yyyy");
+
+        List<Appointment> onlyConfirmedAppt = apptList.stream()
+                .filter(oneAppt -> oneAppt.getStatus() == AppointmentStatus.CONFIRMED &&
+                        toLocalDateFormat(oneAppt.getAppointmentDate()).isAfter(todayDate) &&
+                        toLocalDateFormat(oneAppt.getAppointmentDate()).getMonthValue() == todayDate.getMonthValue())
+                .collect(Collectors.toList());
+
+        if (onlyConfirmedAppt.isEmpty()) {
+            System.out.println("No upcoming confirmed appointments.");
+            return;
+        }
+
+        System.out.println();
+        System.out.println("Upcoming Confirmed Appointments\n");
+
+        for (Appointment oneApt : onlyConfirmedAppt) {
+            LocalDate apptDate = oneApt.getAppointmentDate().toInstant()
+                    .atZone(TimeZone.getDefault().toZoneId()).toLocalDate();
+
+            String date = apptDate.format(desiredDateFormat);
+            System.out.printf("Date: %s | Time: %s",
+                    date,
+                    oneApt.getAppointmentTime());
+            System.out.println();
+
+            onePatientManager.filterPatients(oneApt.getPatientId());
+        }
+    }
+
     public void cancelAppt(Appointment oneAppt) {
-        String apptPath = FilePaths.APPT_DATA.getPath();
-        String tempPath = apptPath + ".tmp";
+        String aptPath = FilePaths.APPT_DATA.getPath();
+        String tempFilePath = aptPath + ".tmp";
 
-        try (FileInputStream input = new FileInputStream(apptPath);
-             Workbook wkBook = new XSSFWorkbook(input)) {
+        try (FileInputStream inputStm = new FileInputStream(aptPath);
+             Workbook wkBk = new XSSFWorkbook(inputStm)) {
 
-            Sheet desiredSheet = wkBook.getSheetAt(0);
-            boolean foundAppt = false;
+            Sheet requestedSheet = wkBk.getSheetAt(0);
+            boolean isCorrectAppt = false;
 
-            for (Row row : desiredSheet) {
-                if (row.getRowNum() == 0) continue;
+            for (Row oneRow : requestedSheet) {
+                if (oneRow.getRowNum() == 0) continue;
 
-                Cell cell = row.getCell(0);
-                if (cell != null && cell.getStringCellValue().equals(oneAppt.getAppointmentId())) {
-                    row.getCell(3).setCellValue(AppointmentStatus.CANCELLED.name());
-                    foundAppt = true;
+                Cell desiredCell = oneRow.getCell(0);
+                if (desiredCell != null && desiredCell.getStringCellValue().equals(oneAppt.getAppointmentId())) {
+                    oneRow.getCell(3).setCellValue(AppointmentStatus.CANCELLED.name());
+                    isCorrectAppt = true;
                     break;
                 }
             }
 
-            input.close();
+            inputStm.close();
 
-            if (foundAppt) {
-                try (FileOutputStream output = new FileOutputStream(tempPath)) {
-                    wkBook.write(output);
+            if (isCorrectAppt) {
+                try (FileOutputStream outputStrm = new FileOutputStream(tempFilePath)) {
+                    wkBk.write(outputStrm);
                 }
 
-                File originalFile = new File(apptPath);
-                File tempFile = new File(tempPath);
+                File originFile = new File(aptPath);
+                File temFile = new File(tempFilePath);
 
-                if (originalFile.delete() && tempFile.renameTo(originalFile)) {
+                if (originFile.delete() && temFile.renameTo(originFile)) {
                     System.out.println("Appointment status updated successfully.");
                 } else {
                     System.err.println("Failed to update the appointment data.");
@@ -337,6 +370,8 @@ public class ApptService implements ApptManager {
 
             StringBuilder names = new StringBuilder();
             StringBuilder statusOfDispersion = new StringBuilder();
+            StringBuilder quantities = new StringBuilder();
+
             for (AppointmentOutcomeRecord.PrescribedMedication oneMedicine : record.getPrescriptions()) {
                 if (names.length() > 0) {
                     names.append(", ");
@@ -344,16 +379,73 @@ public class ApptService implements ApptManager {
                 }
                 names.append(oneMedicine.getMedicine().getName());
                 statusOfDispersion.append(oneMedicine.getStatus());
+                quantities.append(oneMedicine.getQuantityOfMed());
             }
 
             newRow.createCell(6).setCellValue(names.toString());
             newRow.createCell(7).setCellValue(statusOfDispersion.toString());
-            newRow.createCell(8).setCellValue(record.getApptStatus());
+            newRow.createCell(8).setCellValue(quantities.toString().isEmpty() ? "0" : quantities.toString());
+            newRow.createCell(9).setCellValue(record.getApptStatus());
 
             wkBook.write(outputStream);
 
+            if ("Completed".equalsIgnoreCase(record.getApptStatus())) {
+                String summary = record.getServiceType() + ": " + record.getConsultationNotes();
+                updateApptOutcomeRecord(record.getAppt().getAppointmentId(), summary, AppointmentStatus.COMPLETED);
+            }
+
         } catch (IOException e) {
             System.err.println("Error writing appointment outcome to file: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Updates the outcome record for a specific appointment in the Appointment Excel file.
+     * This method is triggered when the appointment's outcome status is set to "Completed".
+     *
+     * @param apptID  The ID of the appointment to update.
+     * @param outcome  The outcome record details to add to the appointment.
+     */
+    public void updateApptOutcomeRecord(String apptID, String outcome, AppointmentStatus apptSts) {
+        String apptDataPath = FilePaths.APPT_DATA.getPath();
+        try (FileInputStream input = new FileInputStream(apptDataPath);
+             Workbook wkBook = new XSSFWorkbook(input)) {
+
+            Sheet desiredSheet = wkBook.getSheetAt(0);
+            boolean foundRecord = false;
+
+            for (Row eachRow : desiredSheet) {
+                Cell apptIDCell = eachRow.getCell(0);
+                if (apptIDCell != null && apptIDCell.getStringCellValue().equals(apptID)) {
+                    Cell apptStatusCell = eachRow.getCell(3); // Assuming status is in column 3
+                    if (apptStatusCell == null) {
+                        apptStatusCell = eachRow.createCell(3);
+                    }
+                    apptStatusCell.setCellValue(apptSts.name());
+
+                    Cell outcomeRecordCell = eachRow.getCell(6);
+                    if (outcomeRecordCell == null) {
+                        outcomeRecordCell = eachRow.createCell(6);
+                    }
+                    outcomeRecordCell.setCellValue(outcome);
+                    foundRecord = true;
+                    break;
+                }
+            }
+
+            if (!foundRecord) {
+                System.out.println("Appointment ID not found in the Appointment file.");
+            }
+
+            input.close();
+
+            try (FileOutputStream output = new FileOutputStream(apptDataPath)) {
+                wkBook.write(output);
+                System.out.println("Outcome record updated successfully in the Appointment file.");
+            }
+
+        } catch (IOException e) {
+            System.err.println("Error updating outcome record in Appointment file: " + e.getMessage());
         }
     }
 
@@ -407,5 +499,11 @@ public class ApptService implements ApptManager {
                 .parseCaseInsensitive()
                 .appendPattern("h:mm a")
                 .toFormatter();
+    }
+
+    private LocalDate toLocalDateFormat(Date date) {
+        return date.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
     }
 }
