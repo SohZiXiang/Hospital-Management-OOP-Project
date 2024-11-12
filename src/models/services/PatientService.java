@@ -1,7 +1,6 @@
 package models.services;
 
 import app.loaders.*;
-import com.twilio.twiml.voice.Sms;
 import interfaces.DataLoader;
 import interfaces.PatientManager;
 import models.enums.*;
@@ -16,6 +15,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import models.records.PatientOutcomeRecord;
@@ -24,12 +24,13 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import utils.ActivityLogUtil;
 import utils.SMSUtil;
+import utils.StringFormatUtil;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 public class PatientService implements PatientManager {
-    private List<Patient> patientsUnderCare = new ArrayList<>();
+    private List<Patient> patientList = new ArrayList<>();
     private boolean patientsLoaded = false;
 
     ApptAvailLoader appointmentLoader = new ApptAvailLoader();
@@ -67,7 +68,7 @@ public class PatientService implements PatientManager {
         String path = FilePaths.PATIENT_DATA.getPath();
         DataLoader loadPatient = new PatientLoader();
         try {
-            patientsUnderCare = loadPatient.loadData(path);
+            patientList = loadPatient.loadData(path);
         } catch (Exception e) {
             System.err.println("Error loading patient data: " + e.getMessage());
         }
@@ -75,8 +76,8 @@ public class PatientService implements PatientManager {
 
     // Update patient data
     public void updateData() {
-        if (patientsUnderCare != null) {
-            patientsUnderCare.clear();
+        if (patientList != null) {
+            patientList.clear();
         }
         patientsLoaded = false;
         getPatientList();
@@ -89,7 +90,7 @@ public class PatientService implements PatientManager {
     // Show all patient records
     public void showAllPatientsRecords() {
         System.out.println("\n--- All Patient Records ---");
-        if (patientsUnderCare.isEmpty()) {
+        if (patientList.isEmpty()) {
             System.out.println("No patient records available.");
             return;
         }
@@ -101,7 +102,7 @@ public class PatientService implements PatientManager {
         System.out.format(formatHeader, "Patient ID", "Name", "Date of Birth", "Gender", "Blood Type", "Diagnoses", "Treatment Plan");
         System.out.format("+------------+-----------------+--------------+--------+------------+----------------------+----------------------+\n");
 
-        for (Patient onePatient : patientsUnderCare) {
+        for (Patient onePatient : patientList) {
 
             List<String> diagnosisList = onePatient.getPastDiagnoses();
             String formatDiagnoses = (diagnosisList == null || diagnosisList.isEmpty())
@@ -143,7 +144,7 @@ public class PatientService implements PatientManager {
     // Filter patients by ID
     public void filterPatients(String patientID) {
         System.out.println("--- Patient Details ---");
-        Patient requestedPatient = patientsUnderCare.stream()
+        Patient requestedPatient = patientList.stream()
                 .filter(p -> p.getPatientID().equals(patientID))
                 .findFirst()
                 .orElse(null);
@@ -186,7 +187,7 @@ public class PatientService implements PatientManager {
 
     // Check if patient is valid
     public Patient checkWhetherPatientValid(String patientID) {
-        return patientsUnderCare.stream()
+        return patientList.stream()
                 .filter(p -> p.getPatientID().equals(patientID))
                 .findFirst()
                 .orElse(null);
