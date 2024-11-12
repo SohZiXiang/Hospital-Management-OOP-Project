@@ -43,24 +43,37 @@ public class ViewPatientAppointmentScreen implements Screen {
                         exit = true;
                         break;
                     case 2:
-                        System.out.println("Select A Option For Your Prefer Slot, example: 1");
+                        System.out.println("Select A Option For Your Prefer Slot, example: 1 (enter 0 to exit)");
                         String appointmentOption = scanner.nextLine();
                         int option = Integer.parseInt(appointmentOption);
-                        patient.createAppointment(user, option, GenerateIdUtil.genAppointmentID(), true);
+                        if(option != 0){
+                            patient.createAppointment(user, option, GenerateIdUtil.genAppointmentID(), true);
+                        }
                         break;
                     case 3:
-                        System.out.println("Select an Appointment ID to cancel, example: AP01");
+                        System.out.println("Select an Appointment ID to reschedule, example: AP01(enter \"exit\" to leave)");
                         String selectAppointmentID = scanner.nextLine();
 
-                        System.out.println("Select A Option For Your Prefer Slot, example: 1");
+                        if(selectAppointmentID.equals("exit")){
+                            break;
+                        }
+
+                        System.out.println("Select A Option For Your Prefer Slot, example: 1 (enter 0 to exit)");
                         String newAppointmentOption = scanner.nextLine();
+
+                        if(newAppointmentOption.equals("0")){
+                            break;
+                        }
+
                         int newOption = Integer.parseInt(newAppointmentOption);
                         patient.rescheduleAppointment(user, newOption, selectAppointmentID);
                         break;
                     case 4:
-                        System.out.println("Select an Appointment ID to cancel, example: AP01");
+                        System.out.println("Select an Appointment ID to cancel, example: AP01 (enter \"exit\" to leave)");
                         String appointmentID = scanner.nextLine();
-                        patient.cancelAppointment(user, appointmentID, true);
+                        if(!appointmentID.equals("exit")){
+                            patient.cancelAppointment(user, appointmentID, true);
+                        }
                         break;
                     default:
                         System.out.println("Invalid choice, please try again.");
