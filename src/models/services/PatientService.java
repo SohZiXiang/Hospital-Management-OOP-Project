@@ -38,7 +38,6 @@ public class PatientService implements PatientManager {
     String appointmentPath = FilePaths.APPT_DATA.getPath();
 
     String availabilityFilePath = FilePaths.DOCAVAIL_DATA.getPath();
-    Map<String, List<Availability>> availabilityMap = appointmentLoader.loadAvailData(availabilityFilePath);
 
     DataLoader staffLoader = new StaffLoader();
     List<Staff> staffList = new ArrayList<>();
@@ -274,6 +273,7 @@ public class PatientService implements PatientManager {
 
     public void createAppointment(User user, int option, String appointmentID, boolean create) {
 
+        Map<String, List<Availability>> availabilityMap = appointmentLoader.loadAvailData(availabilityFilePath);
         int slotCount = 0;
         boolean exist = false;
 
@@ -396,6 +396,7 @@ public class PatientService implements PatientManager {
     public void loadAppointmentData(User user){
 
         int slotCount = 0;
+        Map<String, List<Availability>> availabilityMap = appointmentLoader.loadAvailData(availabilityFilePath);
         System.out.println();
         System.out.println("--------- Displaying Appointments for patient: " + user.getName() + " ---------");
         System.out.println();
