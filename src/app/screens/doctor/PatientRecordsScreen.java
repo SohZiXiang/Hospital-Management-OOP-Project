@@ -19,6 +19,7 @@ public class PatientRecordsScreen implements Screen {
             System.out.println("2. View a specific patient record");
             System.out.println("3. Update a patient record");
             System.out.println("4. Go back to the previous screen");
+            System.out.print("Enter your choice: ");
 
             String input = scanner.nextLine();
 

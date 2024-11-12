@@ -2,6 +2,7 @@ package models.services;
 
 import app.loaders.*;
 import interfaces.DataLoader;
+import interfaces.PatientManager;
 import models.enums.*;
 import models.entities.*;
 
@@ -14,7 +15,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.IOException;
 
-public class PatientService {
+public class PatientService implements PatientManager {
     private List<Patient> patientsUnderCare = new ArrayList<>();
     private boolean patientsLoaded = false;
 
@@ -54,39 +55,61 @@ public class PatientService {
 
     // Show all patient records
     public void showAllPatientsRecords() {
+        System.out.println("\n--- All Patient Records ---");
         if (patientsUnderCare.isEmpty()) {
             System.out.println("No patient records available.");
             return;
         }
 
-        System.out.printf("%-10s %-20s %-15s %-10s %-10s %-30s %-30s%n",
-                "Patient ID", "Name", "Date of Birth", "Gender", "Blood Type", "Diagnosis", "Treatment Plan");
-        System.out.println("--------------------------------------------------------------------------------------------");
+        String formatHeader = "| %-10s | %-15s | %-12s | %-6s | %-10s | %-25s | %-25s %n";
+        String formatRow = "| %-10s | %-15s | %-12s | %-6s | %-10s | %-25s | %-25s %n";
+
+        System.out.format("+------------+-----------------+--------------+--------+------------+----------------------+----------------------+\n");
+        System.out.format(formatHeader, "Patient ID", "Name", "Date of Birth", "Gender", "Blood Type", "Diagnoses", "Treatment Plan");
+        System.out.format("+------------+-----------------+--------------+--------+------------+----------------------+----------------------+\n");
 
         for (Patient onePatient : patientsUnderCare) {
-            List<String> indDiagnosis = onePatient.getPastDiagnoses();
-            List<String> indTreatments = onePatient.getPastTreatments();
 
-            String formatDiagnosis = (indDiagnosis == null || indDiagnosis.isEmpty())
+            List<String> diagnosisList = onePatient.getPastDiagnoses();
+            String formatDiagnoses = (diagnosisList == null || diagnosisList.isEmpty())
                     ? "No records available"
-                    : displayInDiffFormat(indDiagnosis, "Diagnosis");
-            String formatTreatments = (indTreatments == null || indTreatments.isEmpty())
-                    ? "No records available"
-                    : displayInDiffFormat(indTreatments, "Treatment");
+                    : String.join("\n", diagnosisList);
 
-            System.out.printf("%-10s %-20s %-15s %-10s %-10s %-30s %-30s%n",
-                    onePatient.getPatientID(),
-                    onePatient.getName(),
-                    onePatient.getDateOfBirth(),
-                    onePatient.getGender(),
-                    onePatient.getBloodType(),
-                    formatDiagnosis,
-                    formatTreatments);
+
+            List<String> treatmentList = onePatient.getPastTreatments();
+            String formatTreatments = (treatmentList == null || treatmentList.isEmpty())
+                    ? "No records available"
+                    : String.join("\n", treatmentList);
+
+            String[] diagnosisLines = formatDiagnoses.split("\n");
+            String[] treatmentLines = formatTreatments.split("\n");
+            int maxLines = Math.max(diagnosisLines.length, treatmentLines.length);
+
+            for (int i = 0; i < maxLines; i++) {
+                if (i == 0) {
+                    System.out.format(formatRow,
+                            onePatient.getPatientID(),
+                            onePatient.getName(),
+                            onePatient.getDateOfBirth(),
+                            onePatient.getGender(),
+                            onePatient.getBloodType(),
+                            diagnosisLines[0],
+                            treatmentLines[0]);
+                } else {
+                    System.out.format(formatRow, "", "", "", "", "",
+                            i < diagnosisLines.length ? diagnosisLines[i] : "",
+                            i < treatmentLines.length ? treatmentLines[i] : "");
+                }
+            }
+
+            System.out.format("+------------+-----------------+--------------+--------+------------+----------------------+----------------------+\n");
         }
     }
 
+    @Override
     // Filter patients by ID
     public void filterPatients(String patientID) {
+        System.out.println("--- Patient Details ---");
         Patient requestedPatient = patientsUnderCare.stream()
                 .filter(p -> p.getPatientID().equals(patientID))
                 .findFirst()
@@ -96,14 +119,25 @@ public class PatientService {
             List<String> indDiagnosis = requestedPatient.getPastDiagnoses();
             List<String> indTreatments = requestedPatient.getPastTreatments();
 
-            String formatDiagnoses = (indDiagnosis == null || indDiagnosis.isEmpty())
-                    ? "No records available"
-                    : displayInDiffFormat(indDiagnosis, "Diagnosis");
-            String formatTreatments = (indTreatments == null || indTreatments.isEmpty())
-                    ? "No records available"
-                    : displayInDiffFormat(indTreatments, "Treatment");
+            StringBuilder formatDiagnoses = new StringBuilder("---- Diagnosis ----\n");
+            if (indDiagnosis == null || indDiagnosis.isEmpty()) {
+                formatDiagnoses.append("No records available\n");
+            } else {
+                for (int i = 0; i < indDiagnosis.size(); i++) {
+                    formatDiagnoses.append("Diagnosis ").append(i + 1).append(": ").append(indDiagnosis.get(i)).append("\n");
+                }
+            }
 
-            System.out.printf("Patient ID: %s%nName: %s%nDate of Birth: %s%nGender: %s%nBlood Type: %s%nContact Information: %s%nDiagnoses: %s%nTreatments: %s%n",
+            StringBuilder formatTreatments = new StringBuilder("---- Treatment ----\n");
+            if (indTreatments == null || indTreatments.isEmpty()) {
+                formatTreatments.append("No records available\n");
+            } else {
+                for (int i = 0; i < indTreatments.size(); i++) {
+                    formatTreatments.append("Treatment ").append(i + 1).append(": ").append(indTreatments.get(i)).append("\n");
+                }
+            }
+
+            System.out.printf("Patient ID: %s%nName: %s%nDate of Birth: %s%nGender: %s%nBlood Type: %s%nContact Information: %s%n %s%n %s%n",
                     requestedPatient.getPatientID(),
                     requestedPatient.getName(),
                     requestedPatient.getDateOfBirth(),

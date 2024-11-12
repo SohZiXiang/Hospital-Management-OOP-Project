@@ -18,13 +18,15 @@ public class ManageAppointmentsScreen implements Screen {
         Doctor doc = (Doctor) user;
         doc.getApptList();
         doc.getAvailList();
+        doc.getPatientList();
 
         while (true) {
             System.out.println("\n--- Manage Appointments ---");
-            System.out.println("1. View Schedule and Pending Appointments");
-            System.out.println("2. Set Availability");
-            System.out.println("3. Accept/Decline Appointment Requests");
-            System.out.println("4. Return to Main Menu");
+            System.out.println("1. View Personal Schedule");
+            System.out.println("2. View Upcoming Appointments");
+            System.out.println("3. Set Availability");
+            System.out.println("4. Accept/Decline Appointment Requests");
+            System.out.println("5. Return to Main Menu");
             System.out.print("Enter your choice: ");
 
             String input = scanner.nextLine();
@@ -34,18 +36,18 @@ public class ManageAppointmentsScreen implements Screen {
 
                 switch (choice) {
                     case 1 -> doc.viewDoctorSchedule();
-                    case 2 -> {
+                    case 2 -> doc.viewUpcomingAppt();
+                    case 3 -> {
                         System.out.println("\n--- Manage your Availability ---");
                         doc.viewAllAvail();
                         System.out.println("\nWould you like to edit or add a new record?");
                         input = scanner.nextLine();
                         if (input.equalsIgnoreCase("add")) addAvailability(scanner, doc);
                         else if (input.equalsIgnoreCase("edit")) editAvailability(scanner, doc); // NOT
-                        // IMPLEMENTED
                         else System.out.println("Please enter 'add' or 'edit' only");
                     }
-                    case 3 -> reviewAppt(scanner, doc);
-                    case 4 -> {
+                    case 4 -> reviewAppt(scanner, doc);
+                    case 5 -> {
                         System.out.println("Returning to Main Menu...");
                         doc.resetData("both");
                         return;
