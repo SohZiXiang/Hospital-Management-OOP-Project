@@ -722,7 +722,7 @@ public class PatientService implements PatientManager {
                         diagnosisLines[0],
                         treatmentLines[0]);
             } else {
-                System.out.format(formatRow, "", "", "", "", "",
+                System.out.format(formatRow,
                         i < diagnosisLines.length ? diagnosisLines[i] : "",
                         i < treatmentLines.length ? treatmentLines[i] : "");
             }
