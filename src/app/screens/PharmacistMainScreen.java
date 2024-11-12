@@ -41,10 +41,9 @@ public class PharmacistMainScreen {
                 switch (choice) {
                     case 1:
                         System.out.println("\nViewing all prescription records...");
-                        pharmacist.viewPrescriptionRecords();
+                        pharmacist.viewAllPrescriptionRecords();
                         break;
                     case 2:
-                        // Redirect to PharmacistUpdatePrescriptionScreen
                         UpdatePrescriptionScreen updateScreen = new UpdatePrescriptionScreen(pharmacist);
                         updateScreen.display(scanner, user);
                         break;
@@ -58,7 +57,6 @@ public class PharmacistMainScreen {
                         pharmacist.viewSpecificMedicineStock(medicineStock, viewMedName);
                         break;
                     case 5:
-                        // Redirect to the PharmacistRequestScreen
                         PharmacistRequestScreen requestScreen = new PharmacistRequestScreen(pharmacist);
                         requestScreen.display(scanner);
                         break;

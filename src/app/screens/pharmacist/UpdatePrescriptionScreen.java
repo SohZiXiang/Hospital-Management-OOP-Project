@@ -21,7 +21,7 @@ public class UpdatePrescriptionScreen implements Screen {
             String apptId = scanner.nextLine().trim();
 
             // Check appointment ID is valid and for pending medicines
-            if (!pharmacist.isAppointmentIdValid(apptId)) {
+            if (!pharmacist.AppointmentIDValid(apptId)) {
                 System.out.println("No appointment found with ID: " + apptId);
                 return;
             }
@@ -36,7 +36,7 @@ public class UpdatePrescriptionScreen implements Screen {
             System.out.print("Enter Medicine Name: ");
             String medicineName = scanner.nextLine().trim();
 
-            // Call method to handle the update process and dispensing prompt
+            //Update status and inventory
             pharmacist.updatePrescriptionStatus(apptId, medicineName);
         } else {
             System.out.println("Wrong access. Only pharmacists can update prescriptions.");

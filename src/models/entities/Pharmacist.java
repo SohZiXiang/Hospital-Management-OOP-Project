@@ -46,15 +46,15 @@ public class Pharmacist extends Staff {
         }
     }
 
-    public void viewPrescriptionRecords() {
-        loadApptList(); // Ensure appointments are loaded
+    public void viewAllPrescriptionRecords() {
+        loadApptList(); // load all appt
 
         ApptOutcomeLoader outcomeLoader = new ApptOutcomeLoader(this.apptList);
         String filePath = FilePaths.APPTOUTCOME.getPath();
         List<AppointmentOutcomeRecord> outcomeRecords = outcomeLoader.loadData(filePath);
 
         if (outcomeRecords.isEmpty()) {
-            System.out.println("No records were loaded. Wait for doctor to input Appointment Outcome");
+            System.out.println("No records loaded. Wait for a doctor to input Appointment Outcome");
             return;
         }
 
@@ -62,26 +62,25 @@ public class Pharmacist extends Staff {
                 "Appointment ID", "Date", "Doctor ID", "Patient ID", "Service Type",
                 "Consultation Notes", "Medicine Name(s)", "Medication Status", "Quantity");
 
-        for (AppointmentOutcomeRecord record : outcomeRecords) {
-            for (AppointmentOutcomeRecord.PrescribedMedication prescription : record.getPrescriptions()) {
-                String status = prescription.getStatus().toString(); // Convert enum to String
+        for (AppointmentOutcomeRecord apptOutRecord : outcomeRecords) {
+            for (AppointmentOutcomeRecord.PrescribedMedication prescription : apptOutRecord.getPrescriptions()) {
+                String prescribeStatus = prescription.getStatus().toString(); // Convert enum to String
 
                 System.out.printf("%-15s %-30s %-15s %-15s %-20s %-40s %-25s %-20s %-10d\n",
-                        record.getAppt().getAppointmentId(),
-                        record.getAppointmentDate(),
-                        record.getAppt().getDoctorId(),
-                        record.getAppt().getPatientId(),
-                        record.getServiceType(),
-                        record.getConsultationNotes(),
+                        apptOutRecord.getAppt().getAppointmentId(),
+                        apptOutRecord.getAppointmentDate(),
+                        apptOutRecord.getAppt().getDoctorId(),
+                        apptOutRecord.getAppt().getPatientId(),
+                        apptOutRecord.getServiceType(),
+                        apptOutRecord.getConsultationNotes(),
                         prescription.getMedicine().getName(),
-                        status,
+                        prescribeStatus,
                         prescription.getQuantityOfMed());
             }
         }
     }
 
-    // In Pharmacist.java, add a helper method to validate appointment ID
-    public boolean isAppointmentIdValid(String appointmentId) {
+    public boolean AppointmentIDValid(String appointmentId) {
         String filePath = FilePaths.APPTOUTCOME.getPath(); // Path to the Appointment Outcome file
         boolean appointmentFound = false;
 
@@ -108,7 +107,7 @@ public class Pharmacist extends Staff {
         return appointmentFound;
     }
 
-    public void updatePrescriptionStatus(String appointmentId, String medicineName) {
+    public void updatePrescriptionStatus(String appointmentID, String medicineName) {
         String filePath = FilePaths.APPTOUTCOME.getPath();
         boolean appointmentFound = false;
         boolean medicineFound = false;
@@ -128,14 +127,16 @@ public class Pharmacist extends Staff {
                 Cell statusCell = row.getCell(7);
                 Cell quantityCell = row.getCell(8);
 
-                if (apptIdCell != null && apptIdCell.getStringCellValue().equals(appointmentId)) {
+                //apptID Found & !Null
+                if (apptIdCell != null && apptIdCell.getStringCellValue().equals(appointmentID)) {
                     appointmentFound = true;
 
-                    // Parse multiple medicines and statuses
+                    // Split the cell values to handle multiple medicines and statuses within a single row
                     List<String> medicines = Arrays.asList(medicineCell.getStringCellValue().split(",\\s*"));
                     List<String> statuses = Arrays.asList(statusCell.getStringCellValue().split(",\\s*"));
                     List<Integer> quantities = ApptOutcomeLoader.splitQuantityClm(quantityCell);
 
+                    //StringBuilder to store updated statuses(dispense,pending)
                     StringBuilder newStatuses = new StringBuilder();
                     boolean updateMade = false;
 
@@ -154,9 +155,9 @@ public class Pharmacist extends Staff {
                                     dispensedQuantity = quantities.get(j);
                                     updateMade = true;
                                     medicineFound = true;
-                                    System.out.println("Prescription status updated to DISPENSED for Appointment ID: " + appointmentId + ", Medicine: " + medicineName);
+                                    System.out.println("Prescription DISPENSED for Appointment ID: " + appointmentID + ", Medicine: " + medicineName);
                                 } else {
-                                    System.out.println("Dispense rejected for Medicine: " + medicineName + " in Appointment ID: " + appointmentId);
+                                    System.out.println("Dispense rejected for Medicine: " + medicineName + " in Appointment ID: " + appointmentID);
                                     return;
                                 }
                             } else {
@@ -168,7 +169,7 @@ public class Pharmacist extends Staff {
 
                     if (!updateMade && medicineFound) {
                         // If no pending prescriptions were found to update
-                        System.out.println("All medicines for Appointment ID " + appointmentId + " have already been dispensed or there were no medicines to dispense.");
+                        System.out.println("All medicines for Appointment ID " + appointmentID + " have already been dispensed or there were no medicines to dispense.");
                         return;
                     }
 
@@ -178,18 +179,18 @@ public class Pharmacist extends Staff {
                         newStatuses.append(status);
                     }
 
-                    statusCell.setCellValue(newStatuses.toString()); // Update cell value
+                    statusCell.setCellValue(newStatuses.toString()); // Update status cell
                     break; // Exit loop after updating
                 }
             }
 
             if (!appointmentFound) {
-                System.out.println("No appointment found with ID: " + appointmentId);
+                System.out.println("No appointment found with ID: " + appointmentID);
             } else if (!medicineFound) {
-                System.out.println("No prescription found for Medicine: " + medicineName + " in Appointment ID: " + appointmentId);
+                System.out.println("No prescription found for Medicine: " + medicineName + " in Appointment ID: " + appointmentID);
             }
 
-            // Save changes to the Excel file
+            // Save back to Excel
             try (FileOutputStream fos = new FileOutputStream(filePath)) {
                 workbook.write(fos);
             }
@@ -198,7 +199,7 @@ public class Pharmacist extends Staff {
             System.err.println("Error updating Appointment Outcome Record: " + e.getMessage());
         }
 
-        // Update the inventory if needed
+        // Update the inventory if medicine found
         if (medicineFound && dispensedQuantity > 0) {
             updateInventory(medicineName, dispensedQuantity);
         }
@@ -206,7 +207,7 @@ public class Pharmacist extends Staff {
 
     // Helper function to update inventory
     private void updateInventory(String medicineName, int dispensedQuantity) {
-        String inventoryPath = FilePaths.INV_DATA.getPath(); // Path to the Medicine Inventory file
+        String inventoryPath = FilePaths.INV_DATA.getPath();
         boolean medicineFound = false;
 
         try (FileInputStream fis = new FileInputStream(inventoryPath);
@@ -225,13 +226,13 @@ public class Pharmacist extends Staff {
                     int newStock = currentStock - dispensedQuantity;
 
                     if (newStock < 0) {
-                        System.out.println("Warning: Insufficient stock for " + medicineName);
+                        System.out.println("Insufficient stock for " + medicineName);
                         newStock = 0;
                     }
 
                     row.getCell(1).setCellValue(newStock); // Update the stock quantity
                     medicineFound = true;
-                    System.out.println("Inventory updated. " + medicineName + " stock is now " + newStock);
+                    System.out.println("Updated inventory. " + medicineName + " stock is now " + newStock);
                     break;
                 }
             }
@@ -298,7 +299,6 @@ public class Pharmacist extends Staff {
         return hasPending;
     }
 
-
     public void viewAllMedicineStock(List<Medicine> medicineStock) {
         System.out.println("Medicine Inventory:");
         System.out.printf("%-25s %-10s\n", "Medicine Name", "Stock");
@@ -327,15 +327,14 @@ public class Pharmacist extends Staff {
 
     public void submitReplenishmentRequest(String medicineName, int requestedAmount, Scanner scanner) {
         if (requestedAmount <= 0) {
-            System.out.println("Requested amount must be greater than zero.");
+            System.out.println("Value must be more than 0.");
             return;
         }
 
-        // Load the inventory of medicines
-        InventoryLoader loader = new InventoryLoader();
+        InventoryLoader loader = new InventoryLoader();// Load the inventory of medicines
         List<Medicine> medicineStock = loader.loadData("data/Medicine_List.xlsx");
 
-        Medicine selectedMedicine = null;
+        Medicine selectedMedicine = null;//Find medicine from inventory
         for (Medicine medicine : medicineStock) {
             if (medicine.getName().equalsIgnoreCase(medicineName)) {
                 selectedMedicine = medicine;
@@ -348,23 +347,23 @@ public class Pharmacist extends Staff {
             return;
         }
 
-        // Check for existing req (same name)
+//        // Check for existing req (same name)
         ReplenishmentRequestManager requestManager = new ReplenishmentRequestManager();
-        List<ReplenishmentRequest> existingRequests = requestManager.getAllRequests();
-
-        for (ReplenishmentRequest request : existingRequests) {
-            if (request.getMedicineName().equalsIgnoreCase(medicineName)) {
-                System.out.println("A replenishment request for " + medicineName + " has already been made previously.");
-                System.out.println("Do you still want to submit this request? (yes/no): ");
-                String reconfirmation = scanner.nextLine().trim().toLowerCase();
-
-                if (!reconfirmation.equals("yes")) {
-                    System.out.println("Replenishment request cancelled.");
-                    return;
-                }
-                break;
-            }
-        }
+//        List<ReplenishmentRequest> existingRequests = requestManager.getAllRequests();
+//
+//        for (ReplenishmentRequest request : existingRequests) {
+//            if (request.getMedicineName().equalsIgnoreCase(medicineName)) {
+//                System.out.println("Replenishment request for " + medicineName + " has been made previously.");
+//                System.out.println("Proceed to submit this request? (yes/no): ");
+//                String reconfirmation = scanner.nextLine().trim().toLowerCase();
+//
+//                if (!reconfirmation.equals("yes")) {
+//                    System.out.println("Request cancelled.");
+//                    return;
+//                }
+//                break;
+//            }
+//        }
 
         // Check if current stock > low stock
         if (selectedMedicine.getQuantity() > selectedMedicine.getLowStockAlert()) {
