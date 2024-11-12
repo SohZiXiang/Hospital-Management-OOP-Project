@@ -138,7 +138,7 @@ public class Patient extends User {
     }
 
     public void cancelAppointment(User user, String appointmentID, boolean cancel) {
-        patientService.cancelAppointment(user, appointmentID, cancel);
+        patientService.cancelAppointment(user, appointmentID, cancel, 0);
     }
 
     public void rescheduleAppointment(User user, int option, String appointmentID) {

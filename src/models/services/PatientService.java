@@ -474,7 +474,7 @@ public class PatientService implements PatientManager {
         return newTime.format(formatter);
     }
 
-    public void cancelAppointment(User user, String appointmentID, boolean cancel) {
+    public void cancelAppointment(User user, String appointmentID, boolean cancel, int option) {
 
         Boolean removeAppointment = false;
         AvailService availService = new AvailService(null);
@@ -492,7 +492,7 @@ public class PatientService implements PatientManager {
                                 appointment.getAppointmentTime());
                     }
 
-                    removeAppointmentInExcel(user, appointmentID, cancel);
+                    removeAppointmentInExcel(user, appointmentID, cancel, option);
                     removeAppointment = true;
                 }
             }
@@ -508,7 +508,7 @@ public class PatientService implements PatientManager {
         }
     }
 
-    private void removeAppointmentInExcel(User currentUser, String appointmentID, boolean cancel) {
+    private void removeAppointmentInExcel(User currentUser, String appointmentID, boolean cancel, int option) {
         String appt_path = FilePaths.APPT_DATA.getPath();
         try (FileInputStream fis = new FileInputStream(appt_path);
              Workbook workbook = WorkbookFactory.create(fis)) {
@@ -551,6 +551,9 @@ public class PatientService implements PatientManager {
                 SMSUtil.sendSms(SMSUtil.numberHX, "Your Appointment: " + appointmentID + " is cancelled");
 
             }
+            else{
+                createAppointment(currentUser, option, appointmentID, false);
+            }
 
 
         } catch (IOException | InvalidFormatException e) {
@@ -559,14 +562,49 @@ public class PatientService implements PatientManager {
     }
 
     public void rescheduleAppointment(User user, int option, String appointmentID) {
+
+        boolean exist = false;
+        int slotCount = 0;
+        Map<String, List<Availability>> availabilityMap = appointmentLoader.loadAvailData(availabilityFilePath);
+
         try {
-            cancelAppointment(user, appointmentID, false);
-            createAppointment(user, option, appointmentID, false);
-            System.out.println("Appointment rescheduled successfully.");
-            String logMsg = "Patient " + user.getName() + " (ID: " + user.getHospitalID() + ") rescheduled appointment for ." + appointmentID;
-            ActivityLogUtil.logActivity(logMsg, user);
-            loadAppointmentData(user);
-            SMSUtil.sendSms(SMSUtil.numberHX, "Your Appointment: " + appointmentID + " is successfully rescheduled");
+            appointmentList = appointmentLoader.loadData(appointmentPath);
+        }
+        catch (Exception e) {
+            System.err.println("Error loading data: " + e.getMessage());
+        }
+
+        try {
+            for (List<Availability> availabilityList : availabilityMap.values()) {
+                for (Availability availability : availabilityList) {
+                    if (availability.getStatus() == DoctorAvailability.AVAILABLE) {
+
+                        ++slotCount;
+                        if (slotCount == option) {
+                            for (Appointment appointment : appointmentList) {
+                                if (appointment.getPatientId().equals(user.getHospitalID())
+                                        && appointment.getAppointmentDate().equals(availability.getAvailableDate())
+                                        && appointment.getAppointmentTime().equals(availability.getStartTime())) {
+                                    exist = true;
+                                    break;
+                                }
+                            }
+
+                            if (!exist) {
+                                cancelAppointment(user, appointmentID, false, option);
+                                System.out.println("Appointment rescheduled successfully.");
+                                String logMsg = "Patient " + user.getName() + " (ID: " + user.getHospitalID() + ") rescheduled appointment for ." + appointmentID;
+                                ActivityLogUtil.logActivity(logMsg, user);
+                                loadAppointmentData(user);
+                                SMSUtil.sendSms(SMSUtil.numberHX, "Your Appointment: " + appointmentID + " is successfully rescheduled");
+                            } else {
+                                System.out.println("You already scheduled a slot on " + formatter.format(availability.getAvailableDate())
+                                        + " at " + availability.getStartTime());
+                            }
+                        }
+                    }
+                }
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
