@@ -69,19 +69,32 @@ public class AvailService implements AvailabilityManager {
 
     public void viewAllAvail(String doctorId) {
         try {
+            LocalDate todayDate = LocalDate.now();
+            YearMonth thisMonth = YearMonth.of(todayDate.getYear(), todayDate.getMonth());
             DateTimeFormatter formatTheDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             DateTimeFormatter formatTheTime = formatTiming();
 
             Map<LocalDate, List<Availability>> allAvail = availList.stream()
+                    .filter(oneAvail -> {
+                        LocalDate availDate = oneAvail.getAvailableDate().toInstant()
+                                .atZone(ZoneId.systemDefault()).toLocalDate();
+                        YearMonth availMonth = YearMonth.from(availDate);
+                        return availDate.isAfter(todayDate) && availMonth.equals(thisMonth);
+                    })
                     .collect(Collectors.groupingBy(
-                            avail -> avail.getAvailableDate().toInstant()
+                            oneAvail -> oneAvail.getAvailableDate().toInstant()
                                     .atZone(ZoneId.systemDefault()).toLocalDate(),
                             TreeMap::new,
                             Collectors.toList()
                     ));
 
-            System.out.println("Doctor ID: " + doctorId);
-            System.out.println("\n-- All Dates: --");
+            if (allAvail.isEmpty()) {
+                System.out.println("No availability slots for the remaining days of this month.");
+                return;
+            }
+
+            System.out.println();
+            System.out.println("\n-- All Availability Dates: --");
 
             for (LocalDate oneDate: allAvail.keySet()) {
                 System.out.printf("Date: %s\n", oneDate.format(formatTheDate));

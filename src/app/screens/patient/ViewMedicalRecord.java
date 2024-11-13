@@ -54,7 +54,7 @@ public class ViewMedicalRecord implements Screen {
                         exit = true;
                         break;
                     case 2:
-                        System.out.println("Please Enter New Phone Number");
+                        System.out.println("Please Enter New Phone Number (enter 1) to leave");
                         String newNumber = scanner.nextLine();
                         Matcher matcherPhoneNumber = VALID_PHONE_REGEX.matcher(newNumber);
 
@@ -63,14 +63,16 @@ public class ViewMedicalRecord implements Screen {
                             currentPatient.updateContact(user, currentPatient, false);
                         }
                         else{
-                            System.out.println("Invalid Contact Format");
-                            System.out.println("Valid Phone Example: 81234567");
-                            System.out.println("Phone number not updated");
+                            if(!newNumber.equals("1")){
+                                System.out.println("Invalid Contact Format");
+                                System.out.println("Valid Phone Example: 81234567");
+                                System.out.println("Phone number not updated");
+                            }
                         }
                         currentPatient.loadMedicalRecordData(user);
                         break;
                     case 3:
-                        System.out.println("Please Enter New Email");
+                        System.out.println("Please Enter New Email (enter 1) to leave");
                         String newEmail = scanner.nextLine();
                         Matcher matcherEmail = VALID_EMAIL_REGEX.matcher(newEmail);
 
@@ -79,9 +81,11 @@ public class ViewMedicalRecord implements Screen {
                             currentPatient.updateContact(user, currentPatient, true);
                         }
                         else{
-                            System.out.println("Invalid Email Format");
-                            System.out.println("Valid Email Example: someone@example.com");
-                            System.out.println("Email not updated");
+                            if(!newEmail.equals("1")){
+                                System.out.println("Invalid Email Format");
+                                System.out.println("Valid Email Example: someone@example.com");
+                                System.out.println("Email not updated");
+                            }
                         }
                         currentPatient.loadMedicalRecordData(user);
                         break;

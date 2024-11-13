@@ -16,17 +16,17 @@ public class Doctor extends Staff{
     public Doctor(String hospitalID, String staffId, String name, Gender gender, int age) {
         super(hospitalID, staffId, name, gender, age);
         this.availService = new AvailService(null);
-        this.apptService = new ApptService(this.availService);
-        this.availService.setApptManager(this.apptService);
         this.patientService = new PatientService();
+        this.apptService = new ApptService(this.availService, this.patientService);
+        this.availService.setApptManager(this.apptService);
     }
 
     public Doctor(String staffId, String name, Gender gender, int age) {
         super(staffId, staffId, name, gender, age);
         this.availService = new AvailService(null);
-        this.apptService = new ApptService(this.availService);
-        this.availService.setApptManager(this.apptService);
         this.patientService = new PatientService();
+        this.apptService = new ApptService(this.availService, this.patientService);
+        this.availService.setApptManager(this.apptService);
     }
 
 
@@ -109,6 +109,10 @@ public class Doctor extends Staff{
 
     public void viewDoctorSchedule() {
         apptService.viewDoctorSchedule(this.getStaffId());
+    }
+
+    public void viewUpcomingAppt() {
+        apptService.viewUpcomingAppt();
     }
 
 
