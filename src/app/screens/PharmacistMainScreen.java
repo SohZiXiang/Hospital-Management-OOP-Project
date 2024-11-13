@@ -24,7 +24,7 @@ public class PharmacistMainScreen {
 
             System.out.println("\nWelcome, Pharmacist: " + pharmacist.getName());
             System.out.println("What would you like to do?");
-            System.out.println("1. View Existing Prescription Records");
+            System.out.println("1. View Appointment Outcome Records");
             System.out.println("2. Update Existing Prescription Status");
             System.out.println("3. View All Medicine Stock");
             System.out.println("4. View Specific Medicine Stock");

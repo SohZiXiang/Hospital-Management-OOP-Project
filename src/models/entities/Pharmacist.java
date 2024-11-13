@@ -16,6 +16,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 
@@ -47,7 +48,7 @@ public class Pharmacist extends Staff {
     }
 
     public void viewAllPrescriptionRecords() {
-        loadApptList(); // load all appt
+        loadApptList(); // Ensure appointments are loaded
 
         ApptOutcomeLoader outcomeLoader = new ApptOutcomeLoader(this.apptList);
         String filePath = FilePaths.APPTOUTCOME.getPath();
@@ -58,24 +59,28 @@ public class Pharmacist extends Staff {
             return;
         }
 
-        System.out.printf("%-15s %-30s %-15s %-15s %-20s %-40s %-25s %-20s %-10s\n",
-                "Appointment ID", "Date", "Doctor ID", "Patient ID", "Service Type",
-                "Consultation Notes", "Medicine Name(s)", "Medication Status", "Quantity");
+        SimpleDateFormat dateFormatter = new SimpleDateFormat("EEE MMM dd yyyy");
+        // Print headers
+        System.out.printf("%-15s %-15s %-15s %-20s %-25s %-10s %-20s %-40s %-30s\n",
+                "Appointment ID", "Patient ID", "Doctor ID", "Medication Status", "Medicine Name(s)",
+                "Quantity", "Service Type", "Consultation Notes", "Date");
 
         for (AppointmentOutcomeRecord apptOutRecord : outcomeRecords) {
             for (AppointmentOutcomeRecord.PrescribedMedication prescription : apptOutRecord.getPrescriptions()) {
                 String prescribeStatus = prescription.getStatus().toString(); // Convert enum to String
+                String formattedDate = dateFormatter.format(apptOutRecord.getAppointmentDate());
 
-                System.out.printf("%-15s %-30s %-15s %-15s %-20s %-40s %-25s %-20s %-10d\n",
+                // Print each record
+                System.out.printf("%-15s %-15s %-15s %-20s %-25s %-10d %-20s %-40s %-30s\n",
                         apptOutRecord.getAppt().getAppointmentId(),
-                        apptOutRecord.getAppointmentDate(),
-                        apptOutRecord.getAppt().getDoctorId(),
                         apptOutRecord.getAppt().getPatientId(),
+                        apptOutRecord.getAppt().getDoctorId(),
+                        prescribeStatus,
+                        prescription.getMedicine().getName(),
+                        prescription.getQuantityOfMed(),
                         apptOutRecord.getServiceType(),
                         apptOutRecord.getConsultationNotes(),
-                        prescription.getMedicine().getName(),
-                        prescribeStatus,
-                        prescription.getQuantityOfMed());
+                        formattedDate);
             }
         }
     }
