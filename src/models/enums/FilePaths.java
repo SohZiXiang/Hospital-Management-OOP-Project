@@ -49,12 +49,19 @@ public enum FilePaths {
      */
     ACTIVITY_LOG("data/Activity_Logs.xlsx");
 
+    /**
+     * The file path associated with this enum constant.
+     */
     private final String path;
 
+    /**
+     * Constructs a FilePaths enum constant with the specified file path.
+     *
+     * @param path The file path associated with the enum constant.
+     */
     FilePaths(String path) {
         this.path = path;
     }
-
 
     /**
      * Returns the file path associated with the enum constant.

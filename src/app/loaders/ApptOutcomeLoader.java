@@ -11,16 +11,32 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * The ApptOutcomeLoader class implements the DataLoader interface to load appointment outcome records
+ * from an Excel file. It processes appointment outcomes, including prescribed medications and their statuses.
+ */
 public class ApptOutcomeLoader implements DataLoader{
     private List<AppointmentOutcomeRecord> apptOutcomes;
     private final Map<String, Appointment> apptList;
 
+    /**
+     * Constructs an ApptOutcomeLoader with a list of appointments.
+     *
+     * @param appointments The list of appointments to initialize the loader.
+     */
     public ApptOutcomeLoader(List<Appointment> appointments) {
         this.apptList = new HashMap<>();
         for (Appointment oneAppt : appointments) {
             this.apptList.put(oneAppt.getAppointmentId(), oneAppt);
         }
     }
+
+    /**
+     * Loads appointment outcome data from an Excel file.
+     *
+     * @param filePath The file path of the Excel file containing the data.
+     * @return A list of AppointmentOutcomeRecord objects loaded from the file.
+     */
     @Override
     public List<AppointmentOutcomeRecord> loadData(String filePath) {
         apptOutcomes = new ArrayList<>();
@@ -76,6 +92,12 @@ public class ApptOutcomeLoader implements DataLoader{
         return apptOutcomes;
     }
 
+    /**
+     * Splits the content of a cell (comma-separated string) into a list of strings.
+     *
+     * @param cell The cell to process.
+     * @return A list of strings, or an empty list if the cell is null or empty.
+     */
     private List<String> splitCommaStringIntoList(Cell cell) {
         if (cell == null || cell.getStringCellValue().isEmpty()) {
             return List.of(); // Return empty list if cell is empty or null
@@ -83,6 +105,12 @@ public class ApptOutcomeLoader implements DataLoader{
         return Arrays.asList(cell.getStringCellValue().split(",\\s*")); // Split by comma and optional whitespace
     }
 
+    /**
+     * Splits the content of a cell into a list of integers.
+     *
+     * @param cell The cell containing numeric or comma-separated numeric values.
+     * @return A list of integers, or an empty list if the cell is null or invalid.
+     */
     public static List<Integer> splitQuantityClm(Cell cell) {
         List<Integer> quantityList = new ArrayList<>();
         if (cell == null) {

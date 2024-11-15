@@ -199,6 +199,8 @@ public abstract class User {
 
     /**
      * Stores the user's password and salt in an Excel file.
+     *
+     * @param currentUser the current user
      */
     public void storePassword(User currentUser) {
         String filePath = "data/Auth_Data.xlsx";
