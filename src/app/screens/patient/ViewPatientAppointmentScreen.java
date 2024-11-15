@@ -11,14 +11,6 @@ import java.util.*;
 
 public class ViewPatientAppointmentScreen implements Screen {
 
-    public static String addOneHour(String time) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm a");
-        LocalTime localTime = LocalTime.parse(time, formatter);
-        LocalTime newTime = localTime.plus(1, ChronoUnit.HOURS);
-
-        return newTime.format(formatter);
-    }
-
     @Override
     public void display(Scanner scanner, User user) {
 
