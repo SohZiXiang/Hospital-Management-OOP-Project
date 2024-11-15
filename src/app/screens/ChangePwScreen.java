@@ -37,7 +37,7 @@ public class ChangePwScreen {
 
             if (!authData.containsKey(hospitalId)) {
                 System.out.println("User not found. Please check your hospital ID.");
-                return;
+                continue;
             }
 
             String[] userData = authData.get(hospitalId);

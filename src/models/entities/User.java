@@ -192,8 +192,7 @@ public abstract class User {
             this.password = PasswordUtil.hashPassword(password, salt);
             return true;
         } else {
-            System.out.println("Password is too weak! Ensure your password contains between 8-20 characters, " +
-                    "at least one lowercase and uppercase letter, one special character and at least one digit. No white spaces ");
+            System.out.println("Password must be 8-20 characters, with at least one lowercase, uppercase, digit, special character, and no spaces.");
             return false;
         }
     }
