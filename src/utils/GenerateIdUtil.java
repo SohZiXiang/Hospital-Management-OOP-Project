@@ -11,6 +11,10 @@ import java.util.List;
 import java.security.SecureRandom;
 import java.util.Scanner;
 
+/**
+ * The GenerateIdUtil class provides utility methods for generating unique identifiers
+ * and handling two-factor authentication (2FA) processes.
+ */
 public class GenerateIdUtil {
 
     /**

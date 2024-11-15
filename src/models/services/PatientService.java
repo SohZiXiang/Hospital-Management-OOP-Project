@@ -57,6 +57,9 @@ public class PatientService implements PatientManager {
 
     String patientOutcomePath = FilePaths.APPTOUTCOME.getPath();
 
+    /**
+     * Constructs an instance of the PatientService class.
+     */
     public PatientService() {
     }
 

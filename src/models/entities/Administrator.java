@@ -109,6 +109,8 @@ public class Administrator extends Staff{
     /**
      * Loads the ViewAppointmentsScreen page that will list all appointments.
      *
+     * @param scanner A Scanner instance for user input.
+     * @param user    The currently logged-in user.
      */
     public void viewAppointments(Scanner scanner, User user) {
         ViewAppointmentsScreen viewAppointmentsScreen = new ViewAppointmentsScreen();
