@@ -271,6 +271,14 @@ public class PatientService implements PatientManager {
         return format.toString();
     }
 
+    /**
+     * Create an appointment for a user.
+     *
+     * @param user           The user scheduling the appointment.
+     * @param option         The selected option for appointment slot.
+     * @param appointmentID  The unique ID of the appointment.
+     * @param create         Boolean indicating if this creating or reschedule instead.
+     */
     public void createAppointment(User user, int option, String appointmentID, boolean create) {
 
         Map<String, List<Availability>> availabilityMap = appointmentLoader.loadAvailData(availabilityFilePath);
@@ -314,6 +322,13 @@ public class PatientService implements PatientManager {
         }
     }
 
+    /**
+     * Writes appointment details to the Excel file.
+     *
+     * @param currentUser  The current user creating the appointment.
+     * @param appointment  The appointment details.
+     * @param create       Boolean indicating if this creating or reschedule instead.
+     */
     private void writeAppointmentToExcel(User currentUser, Appointment appointment, boolean create) {
         String filePath = FilePaths.APPT_DATA.getPath();
         FileInputStream fis = null;
@@ -393,6 +408,12 @@ public class PatientService implements PatientManager {
         }
     }
 
+    /**
+     * Loads and displays appointment data for a given user.
+     * Includes both upcoming appointments and available slots.
+     *
+     * @param user The user whose appointments are being retrieved. The user's hospital ID is used to filter relevant data.
+     */
     public void loadAppointmentData(User user){
 
         int slotCount = 0;
@@ -468,13 +489,14 @@ public class PatientService implements PatientManager {
         System.out.println();
     }
 
-    public static String addOneHour(String time) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm a");
-        LocalTime localTime = LocalTime.parse(time, formatter);
-        LocalTime newTime = localTime.plus(1, ChronoUnit.HOURS);
-        return newTime.format(formatter);
-    }
-
+    /**
+     * Cancels an existing appointment for the user.
+     *
+     * @param user           The user canceling the appointment.
+     * @param appointmentID  The unique ID of the appointment.
+     * @param cancel         Boolean indicating if the appointment is to be canceled or for reschedule.
+     * @param option         The selected option for rescheduling (if applicable).
+     */
     public void cancelAppointment(User user, String appointmentID, boolean cancel, int option) {
 
         Boolean removeAppointment = false;
@@ -509,6 +531,14 @@ public class PatientService implements PatientManager {
         }
     }
 
+    /**
+     * Removes an appointment from the Excel file and optionally cancels or reschedules it.
+     *
+     * @param currentUser   The user canceling or rescheduling the appointment.
+     * @param appointmentID The ID of the appointment to be removed.
+     * @param cancel        Boolean indicating if the appointment should be canceled or reschedule.
+     * @param option        The selected option for rescheduling (if applicable).
+     */
     private void removeAppointmentInExcel(User currentUser, String appointmentID, boolean cancel, int option) {
         String appt_path = FilePaths.APPT_DATA.getPath();
         try (FileInputStream fis = new FileInputStream(appt_path);
@@ -562,6 +592,13 @@ public class PatientService implements PatientManager {
         }
     }
 
+    /**
+     * Reschedules an existing appointment for the user.
+     *
+     * @param user           The user rescheduling the appointment.
+     * @param option         The selected option for the new appointment slot.
+     * @param appointmentID  The unique ID of the appointment to be rescheduled.
+     */
     public void rescheduleAppointment(User user, int option, String appointmentID) {
 
         boolean exist = false;
@@ -611,6 +648,12 @@ public class PatientService implements PatientManager {
         }
     }
 
+    /**
+     * Loads patient outcome data from an Excel file.
+     *
+     * @param path The file path to the patient outcome data.
+     * @return A list of PatientOutcomeRecord objects containing the outcome details.
+     */
     private List<PatientOutcomeRecord> loadPatientOutcomeData(String path) {
         List<PatientOutcomeRecord> outcomeRecordList = new ArrayList<>();
 
@@ -647,6 +690,12 @@ public class PatientService implements PatientManager {
         return outcomeRecordList;
     }
 
+    /**
+     * Loads and displays past appointment outcomes for a given patient.
+     *
+     * @param user The user (patient) whose appointment outcomes are being retrieved.
+     *             The user's hospital ID is used to filter the outcomes.
+     */
     public void loadOutcomeData(User user){
         System.out.println();
         System.out.println("--------- Displaying Past Appointments Outcome for patient: " + user.getName() + " ---------");
@@ -706,6 +755,11 @@ public class PatientService implements PatientManager {
         }
     }
 
+    /**
+     * Displays and loads medical record data for a user.
+     *
+     * @param user The patient whose medical records are to be displayed.
+     */
     public void loadMedicalRecordData(User user) {
         Patient currentPatient = (Patient) user;
         try {
@@ -771,6 +825,13 @@ public class PatientService implements PatientManager {
         System.out.format("+----------------------+----------------------+\n");
     }
 
+    /**
+     * Updates a user's contact details (email or phone number).
+     *
+     * @param user     The user updating their contact details.
+     * @param patient  The patient object.
+     * @param email    Boolean indicating if the update is for the email or phone number.
+     */
     public void updateContact(User user, Patient patient, boolean email) {
         String type = "";
         String changeValue = "";
@@ -808,6 +869,14 @@ public class PatientService implements PatientManager {
         }
     }
 
+    /**
+     * Updates the availability status of slot in the Excel file.
+     *
+     * @param user      The user performing the update.
+     * @param doctorID  The ID of the doctor whose availability is being updated.
+     * @param date      The date of the availability to be updated.
+     * @param startTime The start time of the availability to be updated.
+     */
     private void updateAvailInExcel(User user, String doctorID, Date date, String startTime) {
         try (FileInputStream fis = new FileInputStream(availabilityFilePath);
              Workbook workbook = WorkbookFactory.create(fis)) {
@@ -835,6 +904,11 @@ public class PatientService implements PatientManager {
         }
     }
 
+    /**
+     * Send an appointment alerts to the user phone if their appointment are 2 days away.
+     *
+     * @param user The patient to whom the alerts are sent.
+     */
     public void loadAppointmentAlert(User user) {
 
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd MM yyyy");
