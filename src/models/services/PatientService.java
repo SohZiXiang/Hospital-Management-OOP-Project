@@ -15,7 +15,6 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 import models.records.PatientOutcomeRecord;
@@ -29,6 +28,13 @@ import utils.StringFormatUtil;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * The PatientService class implements the PatientManager interface and provides comprehensive management
+ * for patient-related operations within a hospital management system. It handles loading, updating, displaying,
+ * and managing patient data, including scheduling, updating, and cancelling appointments, as well as managing
+ * patient medical records and outcome data. The class supports alert notifications, appointment rescheduling, and
+ * managing availability statuses.
+ */
 public class PatientService implements PatientManager {
     private List<Patient> patientList = new ArrayList<>();
     private boolean patientsLoaded = false;
@@ -55,6 +61,9 @@ public class PatientService implements PatientManager {
     }
 
     /* START OF LOAD/UPDATE DATA */
+    /**
+     * Initializes the patient list by loading data from the data source if it hasn't been loaded already.
+     */
     public void getPatientList() {
         if (!patientsLoaded) {
             loadPatientList();
@@ -62,6 +71,9 @@ public class PatientService implements PatientManager {
         }
     }
 
+    /**
+     * Loads patient data from an external file and populates the patient list.
+     */
     private void loadPatientList() {
         String path = FilePaths.PATIENT_DATA.getPath();
         DataLoader loadPatient = new PatientLoader();
@@ -72,21 +84,35 @@ public class PatientService implements PatientManager {
         }
     }
 
-    // Update patient data
+    /**
+     * Updates the patient data by reloading it from the data source.
+     */
     public void updateData() {
+        resetData();
+        getPatientList();
+    }
+
+    /**
+     * Resets the patient data, clearing the list and setting the loaded flag to false.
+     */
+    public void resetData() {
         if (patientList != null) {
             patientList.clear();
         }
         patientsLoaded = false;
-        getPatientList();
     }
 
     /* END OF LOAD/UPDATE DATA */
 
     /* START OF MAIN METHODS */
 
-    // Show all patient records
+    /**
+     * Displays all patient records in a formatted table.
+     * If no records are available, it shows a message indicating so.
+     */
     public void showAllPatientsRecords() {
+        formatter = new SimpleDateFormat("dd/MM/yyyy");
+
         System.out.println("\n--- All Patient Records ---");
         if (patientList.isEmpty()) {
             System.out.println("No patient records available.");
@@ -117,14 +143,18 @@ public class PatientService implements PatientManager {
             String[] treatmentLines = formatTreatments.split("\n");
             int maxLines = Math.max(diagnosisLines.length, treatmentLines.length);
 
+            String bloodType = (onePatient.getBloodType() != null) ? onePatient.getBloodType().getDisplayValue() : "";
+            LocalDate dob = onePatient.getDateOfBirth();
+            Date toFormat = Date.from(dob.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
             for (int i = 0; i < maxLines; i++) {
                 if (i == 0) {
                     System.out.format(formatRow,
                             onePatient.getPatientID(),
                             onePatient.getName(),
-                            onePatient.getDateOfBirth(),
-                            onePatient.getGender(),
-                            onePatient.getBloodType(),
+                            formatter.format(toFormat),
+                            StringFormatUtil.toCamelCase(onePatient.getGender().toString()),
+                            bloodType,
                             diagnosisLines[0],
                             treatmentLines[0]);
                 } else {
@@ -138,9 +168,15 @@ public class PatientService implements PatientManager {
         }
     }
 
+    /**
+     * Filters patients by their ID and displays their details.
+     *
+     * @param patientID The ID of the patient to be filtered.
+     */
     @Override
-    // Filter patients by ID
     public void filterPatients(String patientID) {
+        formatter = new SimpleDateFormat("dd/MM/yyyy");
+
         System.out.println("--- Patient Details ---");
         Patient requestedPatient = patientList.stream()
                 .filter(p -> p.getPatientID().equals(patientID))
@@ -151,39 +187,57 @@ public class PatientService implements PatientManager {
             List<String> indDiagnosis = requestedPatient.getPastDiagnoses();
             List<String> indTreatments = requestedPatient.getPastTreatments();
 
-            StringBuilder formatDiagnoses = new StringBuilder("---- Diagnosis ----\n");
-            if (indDiagnosis == null || indDiagnosis.isEmpty()) {
-                formatDiagnoses.append("No records available\n");
-            } else {
-                for (int i = 0; i < indDiagnosis.size(); i++) {
-                    formatDiagnoses.append("Diagnosis ").append(i + 1).append(": ").append(indDiagnosis.get(i)).append("\n");
+            String bloodType = (requestedPatient.getBloodType() != null) ? requestedPatient.getBloodType().getDisplayValue() : "";
+            LocalDate dob = requestedPatient.getDateOfBirth();
+            Date toFormat = Date.from(dob.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+            String headerFormat = "| %-10s | %-15s | %-12s | %-6s | %-10s | %-25s | %-25s %n";
+            String rowFormat = "| %-10s | %-15s | %-12s | %-6s | %-10s | %-25s | %-25s %n";
+
+            System.out.format("+------------+-----------------+--------------+--------+------------+----------------------+----------------------+\n");
+            System.out.format(headerFormat, "Patient ID", "Name", "Date of Birth", "Gender", "Blood Type", "Diagnoses", "Treatment Plan");
+            System.out.format("+------------+-----------------+--------------+--------+------------+----------------------+----------------------+\n");
+
+            String[] formatDiagnoses = (indDiagnosis == null || indDiagnosis.isEmpty())
+                    ? new String[]{"No records available"}
+                    : indDiagnosis.toArray(new String[0]);
+
+            String[] formatTreatments = (indTreatments == null || indTreatments.isEmpty())
+                    ? new String[]{"No records available"}
+                    : indTreatments.toArray(new String[0]);
+
+            int maxLines = Math.max(formatDiagnoses.length, formatTreatments.length);
+
+            for (int i = 0; i < maxLines; i++) {
+                if (i == 0) {
+                    System.out.format(rowFormat,
+                            requestedPatient.getPatientID(),
+                            requestedPatient.getName(),
+                            formatter.format(toFormat),
+                            StringFormatUtil.toCamelCase(requestedPatient.getGender().toString()),
+                            bloodType,
+                            formatDiagnoses[0],
+                            formatTreatments[0]);
+                } else {
+                    System.out.format(rowFormat, "", "", "", "", "",
+                            i < formatDiagnoses.length ? formatDiagnoses[i] : "",
+                            i < formatTreatments.length ? formatTreatments[i] : "");
                 }
             }
 
-            StringBuilder formatTreatments = new StringBuilder("---- Treatment ----\n");
-            if (indTreatments == null || indTreatments.isEmpty()) {
-                formatTreatments.append("No records available\n");
-            } else {
-                for (int i = 0; i < indTreatments.size(); i++) {
-                    formatTreatments.append("Treatment ").append(i + 1).append(": ").append(indTreatments.get(i)).append("\n");
-                }
-            }
+            System.out.format("+------------+-----------------+--------------+--------+------------+----------------------+----------------------+\n");
 
-            System.out.printf("Patient ID: %s%nName: %s%nDate of Birth: %s%nGender: %s%nBlood Type: %s%nContact Information: %s%n %s%n %s%n",
-                    requestedPatient.getPatientID(),
-                    requestedPatient.getName(),
-                    requestedPatient.getDateOfBirth(),
-                    requestedPatient.getGender(),
-                    requestedPatient.getBloodType(),
-                    requestedPatient.getEmail(),
-                    formatDiagnoses,
-                    formatTreatments);
         } else {
             System.out.println("Patient record not found.");
         }
     }
 
-    // Check if patient is valid
+    /**
+     * Checks if a patient exists in the list by their ID.
+     *
+     * @param patientID The ID of the patient to be checked.
+     * @return The Patient object if found, otherwise null.
+     */
     public Patient checkWhetherPatientValid(String patientID) {
         return patientList.stream()
                 .filter(p -> p.getPatientID().equals(patientID))
@@ -191,14 +245,26 @@ public class PatientService implements PatientManager {
                 .orElse(null);
     }
 
-    // Update medical record
+    /**
+     * Updates a patient's medical record by adding a new diagnosis and treatment.
+     *
+     * @param patient       The Patient object whose record needs updating.
+     * @param newDiagnosis  The new diagnosis to add.
+     * @param newTreatment  The new treatment plan to add.
+     */
     public void updateMedicalRecord(Patient patient, String newDiagnosis, String newTreatment) {
         patient.addDiagnosis(newDiagnosis);
         patient.addTreatment(newTreatment);
         updatePatientRecords(patient.getPatientID(), newDiagnosis, newTreatment);
     }
 
-    // Update patient records in Excel
+    /**
+     * Updates the specified patient's record in the data file with a new diagnosis and treatment plan.
+     *
+     * @param patientID    The ID of the patient to update.
+     * @param indDiagnosis The new diagnosis to be recorded.
+     * @param indTreatment The new treatment plan to be recorded.
+     */
     public void updatePatientRecords(String patientID, String indDiagnosis, String indTreatment) {
         String path = FilePaths.PATIENT_DATA.getPath();
 
@@ -259,7 +325,13 @@ public class PatientService implements PatientManager {
 
     /* END OF MAIN METHODS */
 
-    // Helper method
+    /**
+     * Formats and returns a list of items with labels, e.g., "Diagnosis 1: <item>".
+     *
+     * @param items The list of items to format.
+     * @param label The label to prefix each item.
+     * @return A formatted string with each item labeled and separated by commas.
+     */
     private String displayInDiffFormat(List<String> items, String label) {
         StringBuilder format = new StringBuilder();
         for (int i = 0; i < items.size(); i++) {
@@ -665,7 +737,7 @@ public class PatientService implements PatientManager {
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
                 if (row != null) {
-                    // Appointment ID
+
                     String appointmentID = row.getCell(0, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).getStringCellValue();
 
                     String serviceType = row.getCell(4, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).getStringCellValue();

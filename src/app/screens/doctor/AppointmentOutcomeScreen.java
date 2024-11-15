@@ -7,14 +7,27 @@ import utils.ActivityLogUtil;
 
 import java.util.*;
 
+/**
+ * The AppointmentOutcomeScreen class provides a screen interface for doctors to record and view appointment outcomes.
+ * It allows adding new outcome records for appointments and viewing all existing outcome records.
+ */
 public class AppointmentOutcomeScreen implements Screen {
     private List<AppointmentOutcomeRecord.PrescribedMedication> medicationList = new ArrayList<>();
 
+    /**
+     * Displays the Appointment Outcome Screen, allowing the doctor to interact with appointment outcome records.
+     * Provides options to add a new record, view all outcome records, or return to the main menu.
+     *
+     * @param scanner The Scanner object for user input.
+     * @param user    The User object, which is cast to a Doctor in this context.
+     */
     @Override
     public void display(Scanner scanner, User user) {
         Doctor doc = (Doctor) user;
         doc.getApptList();
         doc.getOutcomeRecords();
+        doc.getPatientList();
+        doc.getMedData();
 
         while (true) {
             System.out.println("\n--- Record Appointment Outcome ---");
@@ -36,7 +49,7 @@ public class AppointmentOutcomeScreen implements Screen {
                     }
                     case 3 -> {
                         System.out.println("Returning to Main Menu...");
-                        doc.resetData("appt");
+                        doc.resetApptData("all");
                         return;
                     }
                 }
@@ -46,8 +59,16 @@ public class AppointmentOutcomeScreen implements Screen {
         }
     }
 
+    /**
+     * Adds a new appointment outcome record for a specific appointment.
+     * Allows the doctor to enter details such as service type, consultation notes, prescribed medications, and outcome status.
+     *
+     * @param scanner The Scanner object for user input.
+     * @param doc     The Doctor object representing the current doctor.
+     */
     private void addOutcome(Scanner scanner, Doctor doc) {
-        System.out.print("Enter Appointment ID to record outcome: ");
+        doc.viewUpcomingAppt();
+        System.out.print("\nEnter Appointment ID to record outcome: ");
         String apptID = scanner.nextLine();
 
         Appointment appt = doc.findApptByID(apptID);
@@ -61,6 +82,7 @@ public class AppointmentOutcomeScreen implements Screen {
 
         System.out.print("Enter consultation notes: ");
         String notes = scanner.nextLine();
+        doc.viewMedsStock();
 
         while (true) {
             System.out.print("Enter medication name (or press Enter to finish): ");

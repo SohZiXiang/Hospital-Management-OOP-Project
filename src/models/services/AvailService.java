@@ -22,21 +22,41 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
+/**
+ * The AvailService class implements the AvailabilityManager interface and provides comprehensive functionality
+ * for managing doctor availability within the hospital management system. This service enables loading, updating,
+ * and viewing of doctor availability data, and handles the addition, modification, and deletion of availability slots.
+ */
 public class AvailService implements AvailabilityManager {
     private List<Availability> availList = new ArrayList<>();
     private boolean availLoaded = false;
     private ApptManager apptManager;
 
+    /**
+     * Constructs an AvailService instance with the specified appointment manager.
+     *
+     * @param apptManager The ApptManager instance to manage appointments.
+     */
     public AvailService(ApptManager apptManager) {
         this.apptManager = apptManager;
     }
 
+    /**
+     * Sets the appointment manager for this availability service.
+     *
+     * @param apptManager The ApptManager instance to set.
+     */
     public void setApptManager(ApptManager apptManager) {
         this.apptManager = apptManager;
     }
 
     /* START OF METHODS TO LOAD/UPDATE DATA */
 
+    /**
+     * Loads the availability list for a specific doctor.
+     *
+     * @param doctorId The ID of the doctor whose availability list to load.
+     */
     public void getAvailList(String doctorId) {
         if (!availLoaded) {
             loadAvailData(doctorId);
@@ -44,6 +64,11 @@ public class AvailService implements AvailabilityManager {
         }
     }
 
+    /**
+     * Loads availability data for the specified doctor ID from file.
+     *
+     * @param doctorId The ID of the doctor whose availability data is loaded.
+     */
     private void loadAvailData(String doctorId) {
         ApptAvailLoader availLoader = new ApptAvailLoader();
         String path = FilePaths.DOCAVAIL_DATA.getPath();
@@ -54,32 +79,50 @@ public class AvailService implements AvailabilityManager {
         }
     }
 
-    // Update availability data
-    public void updateData(String doctorId) {
+    /**
+     * Updates the availability data by reloading the data for a specific doctor.
+     *
+     * @param docID The ID of the doctor whose availability data needs updating.
+     */
+    public void updateData(String docID) {
+        resetData();
+        getAvailList(docID);
+    }
+
+    /**
+     * Resets the availability data by clearing the availability list.
+     */
+    public void resetData() {
         if (availList != null) {
             availList.clear();
         }
         availLoaded = false;
-        getAvailList(doctorId);
     }
 
     /* END OF METHODS TO LOAD/UPDATE DATA */
 
     /* START OF MAIN METHODS */
 
+    /**
+     * Displays all available slots for a specific doctor for the current month.
+     *
+     * @param doctorId The ID of the doctor whose availability is displayed.
+     */
     public void viewAllAvail(String doctorId) {
         try {
-            LocalDate todayDate = LocalDate.now();
-            YearMonth thisMonth = YearMonth.of(todayDate.getYear(), todayDate.getMonth());
+            LocalDateTime rightNow = LocalDateTime.now();
+            YearMonth thisMonth = YearMonth.of(rightNow.getYear(), rightNow.getMonth());
             DateTimeFormatter formatTheDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             DateTimeFormatter formatTheTime = formatTiming();
 
             Map<LocalDate, List<Availability>> allAvail = availList.stream()
                     .filter(oneAvail -> {
-                        LocalDate availDate = oneAvail.getAvailableDate().toInstant()
-                                .atZone(ZoneId.systemDefault()).toLocalDate();
-                        YearMonth availMonth = YearMonth.from(availDate);
-                        return availDate.isAfter(todayDate) && availMonth.equals(thisMonth);
+                        LocalDateTime availDateAndTime =
+                                LocalDateTime.ofInstant(oneAvail.getAvailableDate().toInstant(),
+                                        ZoneId.systemDefault())
+                                .with(LocalTime.parse(oneAvail.getStartTime(), formatTheTime));
+                        YearMonth availMonth = YearMonth.from(availDateAndTime);
+                        return availDateAndTime.isAfter(rightNow) && availMonth.equals(thisMonth);
                     })
                     .collect(Collectors.groupingBy(
                             oneAvail -> oneAvail.getAvailableDate().toInstant()
@@ -93,8 +136,7 @@ public class AvailService implements AvailabilityManager {
                 return;
             }
 
-            System.out.println();
-            System.out.println("\n-- All Availability Dates: --");
+            System.out.println("\n-- All Availability --");
 
             for (LocalDate oneDate: allAvail.keySet()) {
                 System.out.printf("Date: %s\n", oneDate.format(formatTheDate));
@@ -131,18 +173,38 @@ public class AvailService implements AvailabilityManager {
         }
     }
 
+    /**
+     * Adds new availability slots for a doctor, ensuring no overlapping times.
+     *
+     * @param doctorId  The ID of the doctor.
+     * @param date      The date of the availability.
+     * @param startTime The start time of the availability.
+     * @param endTime   The end time of the availability.
+     * @param status    The availability status (e.g., AVAILABLE or BUSY).
+     */
     public void addAvail(String doctorId, LocalDate date, String startTime, String endTime, DoctorAvailability status) {
-        getAvailList(doctorId);
-
         Date formattedNewDate = Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
 
-        LocalTime formatStartTime = checkValidTimeFormat(startTime);
-        if (formatStartTime == null) {
+        Optional<LocalTime> checkStartTime = checkValidTimeFormat(startTime);
+        Optional<LocalTime> checkEndTime = checkValidTimeFormat(endTime);
+
+        if (!checkStartTime.isPresent() || !checkEndTime.isPresent()) {
             return;
         }
 
-        LocalTime formatEndTime = checkValidTimeFormat(endTime);
-        if (formatEndTime == null) {
+        LocalTime formatStartTime = checkStartTime.get();
+        LocalTime formatEndTime = checkEndTime.get();
+
+        LocalDateTime startDateWithTime = LocalDateTime.of(date, formatStartTime);
+        LocalDateTime endDateWithTime = LocalDateTime.of(date, formatEndTime);
+        LocalDateTime now = LocalDateTime.now();
+
+        if (startDateWithTime.isBefore(now)) {
+            System.out.println("Error: The start time must be in the future.");
+            return;
+        }
+        if (endDateWithTime.isBefore(startDateWithTime)) {
+            System.out.println("Error: The end time must be after the start time.");
             return;
         }
 
@@ -168,6 +230,16 @@ public class AvailService implements AvailabilityManager {
         updateData(doctorId);
     }
 
+    /**
+     * Splits a longer availability period into hourly consultation slots.
+     *
+     * @param doctorId     The ID of the doctor.
+     * @param desiredDate  The date of the availability.
+     * @param startTiming  The start time of the availability.
+     * @param endTiming    The end time of the availability.
+     * @param docStatus    The availability status (e.g., AVAILABLE or BUSY).
+     * @return A list of Availability objects representing hourly slots.
+     */
     private List<Availability> separateIntoConsultationSlots(String doctorId, Date desiredDate, LocalTime startTiming,
                                                              LocalTime endTiming, DoctorAvailability docStatus) {
         List<Availability> allSlots = new ArrayList<>();
@@ -194,6 +266,11 @@ public class AvailService implements AvailabilityManager {
         return allSlots;
     }
 
+    /**
+     * Uploads a new availability slot to the data file.
+     *
+     * @param newAvailability The Availability object representing the new slot.
+     */
     private void uploadAvail(Availability newAvailability) {
         String path = FilePaths.DOCAVAIL_DATA.getPath();
 
@@ -227,20 +304,49 @@ public class AvailService implements AvailabilityManager {
         }
     }
 
+    /**
+     * Retrieves all availability slots for a specific date and doctor, filtered to show only future times.
+     *
+     * @param doctorId The ID of the doctor.
+     * @param date     The specific date for which slots are retrieved.
+     * @return A list of Availability objects that match the criteria.
+     */
     public List<Availability> slotsForDate(String doctorId, LocalDate date) {
         return availList.stream()
-                .filter(avail -> avail.getDoctorId().equals(doctorId) &&
-                        avail.getAvailableDate().toInstant()
-                                .atZone(ZoneId.systemDefault()).toLocalDate().equals(date))
+                .filter(oneAvail -> {
+                    LocalDateTime dateTime = LocalDateTime.of(
+                            oneAvail.getAvailableDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+                            getStartTimeAsLocalTime(oneAvail)
+                    );
+
+                    LocalDateTime rightNow = LocalDateTime.now();
+
+                    return oneAvail.getDoctorId().equals(doctorId) &&
+                            oneAvail.getAvailableDate().toInstant()
+                                    .atZone(ZoneId.systemDefault()).toLocalDate().equals(date) &&
+                            dateTime.isAfter(rightNow);
+                })
                 .sorted(Comparator.comparing(this::getStartTimeAsLocalTime))
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Edits an existing availability slot for a specific doctor, date, and time.
+     * Validates the start and end times and ensures they are in the future.
+     *
+     * @param docID         The ID of the doctor.
+     * @param desiredDate   The date of the availability slot to edit.
+     * @param oldStart      The original start time of the slot.
+     * @param changedStart  The new start time of the slot.
+     * @param changedEnd    The new end time of the slot.
+     * @param changedStatus The new status of the slot (e.g., AVAILABLE or BUSY).
+     */
     public void editOneSlot(String docID, LocalDate desiredDate, String oldStart, String changedStart,
                             String changedEnd,
                             DoctorAvailability changedStatus) {
         boolean isUpdated;
         DateTimeFormatter formatTheTime = formatTiming();
+        LocalDateTime rightNow = LocalDateTime.now();
 
         try {
             List<Availability> matchTheDesiredDate = getAllSlots(docID, desiredDate);
@@ -257,13 +363,32 @@ public class AvailService implements AvailabilityManager {
 
             String oldEnd = oneSlot.getEndTime();
 
-            LocalTime formatStartTime = (changedStart != null) ? checkValidTimeFormat(changedStart) : null;
-            LocalTime formatEndTime = (changedEnd != null) ? checkValidTimeFormat(changedEnd) : null;
+            Optional<LocalTime> checkStartFormat = (changedStart != null) ? checkValidTimeFormat(changedStart) :
+                    Optional.of(LocalTime.parse(oneSlot.getStartTime(), formatTheTime));
+            Optional<LocalTime> checkEndFormat = (changedEnd != null) ? checkValidTimeFormat(changedEnd) :
+                    Optional.of(LocalTime.parse(oneSlot.getEndTime(), formatTheTime));
 
-            if (formatStartTime != null) {
+            if (!checkStartFormat.isPresent() || !checkEndFormat.isPresent()) {
+                return;
+            }
+
+            LocalTime formatStartTime = checkStartFormat.get();
+            LocalTime formatEndTime = checkEndFormat.get();
+
+            if (changedStart != null) {
+                LocalDateTime newStartDateTime = LocalDateTime.of(desiredDate, formatStartTime);
+                if (!newStartDateTime.isAfter(rightNow)) {
+                    System.out.println("Cannot set availability to a past time before now.");
+                    return;
+                }
                 oneSlot.setStartTime(formatStartTime.format(formatTheTime));
             }
-            if (formatEndTime != null) {
+            if (changedEnd != null) {
+                if (changedStart == null) formatStartTime = LocalTime.parse(oneSlot.getStartTime(), formatTheTime);
+                if (!formatEndTime.isAfter(formatStartTime)) {
+                    System.out.println("End time must be after start time.");
+                    return;
+                }
                 oneSlot.setEndTime(formatEndTime.format(formatTheTime));
             }
 
@@ -298,6 +423,14 @@ public class AvailService implements AvailabilityManager {
         }
     }
 
+    /**
+     * Updates an existing availability slot in the data file.
+     *
+     * @param newlyEdited The Availability object with updated details.
+     * @param oldStart    The original start time of the slot.
+     * @param oldEnd      The original end time of the slot.
+     * @return true if the slot was updated successfully, false otherwise.
+     */
     public boolean updateSlot(Availability newlyEdited, String oldStart, String oldEnd) {
         String availPath = FilePaths.DOCAVAIL_DATA.getPath();
         String availTempPath = availPath + ".tmp";
@@ -331,20 +464,16 @@ public class AvailService implements AvailabilityManager {
                 }
             }
 
-            // Close input before writing to avoid conflicts
             input.close();
 
             if (updated) {
-                // Write changes to a temporary file first
                 try (FileOutputStream output = new FileOutputStream(availTempPath)) {
                     wkBook.write(output);
                 }
 
-                // Rename the temporary file to the original file
                 java.nio.file.Files.delete(java.nio.file.Paths.get(availPath));
                 java.nio.file.Files.move(java.nio.file.Paths.get(availTempPath), java.nio.file.Paths.get(availPath));
 
-//                System.out.println("Availability updated successfully.");
                 return updated;
             } else {
                 return updated;
@@ -356,7 +485,13 @@ public class AvailService implements AvailabilityManager {
         }
     }
 
-
+    /**
+     * Updates the availability status of a specific slot when an appointment is modified.
+     *
+     * @param oneAppt      The appointment that affects the availability slot.
+     * @param changedStatus The new status of the slot (e.g., BOOKED or AVAILABLE).
+     * @param availFilePath The file path of the availability data.
+     */
     public void updateAvailabilitySlot(Appointment oneAppt, DoctorAvailability changedStatus, String availFilePath) {
         try (FileInputStream availInput = new FileInputStream(availFilePath);
              Workbook availWkBook = new XSSFWorkbook(availInput)) {
@@ -401,11 +536,23 @@ public class AvailService implements AvailabilityManager {
 
 
     /* Helper Methods */
+
+    /**
+     * Retrieves the start time of an availability slot as a LocalTime object.
+     *
+     * @param availability The Availability object from which the start time is retrieved.
+     * @return The start time of the availability slot.
+     */
     private LocalTime getStartTimeAsLocalTime(Availability availability) {
         DateTimeFormatter formatter = formatTiming();
         return LocalTime.parse(availability.getStartTime(), formatter);
     }
 
+    /**
+     * Defines the time format for parsing availability times.
+     *
+     * @return A DateTimeFormatter instance for parsing times in "h:mm a" format.
+     */
     private DateTimeFormatter formatTiming() {
         return new DateTimeFormatterBuilder()
                 .parseCaseInsensitive()
@@ -414,17 +561,30 @@ public class AvailService implements AvailabilityManager {
                 .toFormatter();
     }
 
-    private LocalTime checkValidTimeFormat(String checkedTime) {
+    /**
+     * Validates the provided time string format.
+     *
+     * @param checkedTime The time string to validate.
+     * @return An Optional containing the parsed LocalTime if valid, or empty if invalid.
+     */
+    private Optional<LocalTime> checkValidTimeFormat(String checkedTime) {
         DateTimeFormatter formatTheTime = formatTiming();
 
         try {
-            return LocalTime.parse(checkedTime, formatTheTime);
+            return Optional.of(LocalTime.parse(checkedTime, formatTheTime));
         } catch (Exception e) {
             System.out.println("Please enter a valid time, for example \"10 am/AM etc.\"");
-            return null;
+            return Optional.empty();
         }
     }
 
+    /**
+     * Retrieves all availability slots for a given doctor on a specific date.
+     *
+     * @param doctorId The ID of the doctor.
+     * @param date     The date for which slots are retrieved.
+     * @return A list of Availability objects for the specified date.
+     */
     private List<Availability> getAllSlots(String doctorId, LocalDate date) {
         return availList.stream()
                 .filter(avail -> avail.getDoctorId().equals(doctorId) &&
@@ -433,6 +593,13 @@ public class AvailService implements AvailabilityManager {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Checks if two time strings match.
+     *
+     * @param appTime The appointment time as a string.
+     * @param slot    The slot time as a string.
+     * @return true if the times match, false otherwise.
+     */
     private boolean timeMatches(String appTime, String slot) {
         DateTimeFormatter formatTheTime = formatTiming();
         try {

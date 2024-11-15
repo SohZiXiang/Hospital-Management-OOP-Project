@@ -11,6 +11,7 @@ import models.entities.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -23,14 +24,28 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
+/**
+ * The ApptService class implements the ApptManager interface and manages all aspects of appointments for doctors
+ * within a hospital management system. This class handles appointment scheduling, cancellations, status updates,
+ * outcome recording, and viewing of appointment details for doctors. It also allows viewing of a doctor's schedule
+ * and the management of medicine inventory.
+ */
 public class ApptService implements ApptManager {
     private List<Appointment> apptList = new ArrayList<>();
     private List<AppointmentOutcomeRecord> outcomeRecordsList = new ArrayList<>();
+    private List<Medicine> medList;
     private boolean apptsLoaded = false;
     private boolean outcomeRecordsLoaded = false;
+    private boolean medLoaded = false;
     private final AvailabilityManager availManager;
     private final PatientManager onePatientManager;
 
+    /**
+     * Constructs an instance of ApptService with specified managers.
+     *
+     * @param availManager       The AvailabilityManager instance for managing availability slots.
+     * @param onePatientManager  The PatientManager instance for managing patient information.
+     */
     public ApptService(AvailabilityManager availManager, PatientManager onePatientManager) {
         this.availManager = availManager;
         this.onePatientManager = onePatientManager;
@@ -38,6 +53,12 @@ public class ApptService implements ApptManager {
 
     /* START OF METHODS TO LOAD/UPDATE DATA */
 
+    /**
+     * Retrieves a list of appointments for the specified doctor.
+     *
+     * @param doctorId The ID of the doctor whose appointments are requested.
+     * @return A list of Appointment objects.
+     */
     public List<Appointment> getApptList(String doctorId) {
         if (!apptsLoaded) {
             loadApptData(doctorId);
@@ -46,37 +67,12 @@ public class ApptService implements ApptManager {
         return apptList;
     }
 
-    public void resetData(String type) {
-        if (type.equalsIgnoreCase("appt")) {
-            apptsLoaded = false;
-        } else if (type.equalsIgnoreCase("outcome")) {
-            outcomeRecordsLoaded = false;
-        } else if (type.equalsIgnoreCase("both")){
-            apptsLoaded = false;
-            outcomeRecordsLoaded = false;
-        } else {
-            System.out.println("Invalid list type specified. Please use 'appt' or 'outcome'.");
-        }
-    }
-
-    public void updateData(String docID, String type) {
-        if (type.equalsIgnoreCase("appt")) {
-            if (apptList != null) {
-                apptList.clear();
-            }
-            resetData("appt");
-            getApptList(docID);
-        } else if (type.equalsIgnoreCase("outcome")) {
-            if (outcomeRecordsList != null) {
-                outcomeRecordsList.clear();
-            }
-            resetData("avail");
-            getOutcomeRecords(docID);
-        } else {
-            System.out.println("Invalid list type specified. Please use 'appt' or 'outcome'.");
-        }
-    }
-
+    /**
+     * Retrieves a list of appointment outcome records for a specified doctor.
+     *
+     * @param doctorId The ID of the doctor.
+     * @return A list of AppointmentOutcomeRecord objects.
+     */
     public List<AppointmentOutcomeRecord> getOutcomeRecords(String doctorId) {
         if (!outcomeRecordsLoaded) {
             loadAppointmentOutcomeRecords(doctorId);
@@ -85,6 +81,76 @@ public class ApptService implements ApptManager {
         return outcomeRecordsList;
     }
 
+    /**
+     * Retrieves the inventory of medicines.
+     *
+     * @return A list of Medicine objects representing current inventory.
+     */
+    public List<Medicine> getMedData() {
+        if (!medLoaded) {
+            loadMedData();
+            medLoaded = true;
+        }
+        return medList;
+    }
+
+    /**
+     * Resets specified data lists based on the type specified.
+     *
+     * @param type Specifies which list to reset: "appt", "outcome", or "all".
+     */
+    public void resetData(String type) {
+        if (type.equalsIgnoreCase("appt")) {
+            if (apptList != null) {
+                apptList.clear();
+            }
+            apptsLoaded = false;
+        } else if (type.equalsIgnoreCase("outcome")) {
+            if (outcomeRecordsList != null) {
+                outcomeRecordsList.clear();
+            }
+            outcomeRecordsLoaded = false;
+        } else if (type.equalsIgnoreCase("all")){
+            if (apptList != null && outcomeRecordsList != null && medList != null) {
+                apptList.clear();
+                outcomeRecordsList.clear();
+                medList.clear();
+            }
+            apptsLoaded = false;
+            outcomeRecordsLoaded = false;
+            medLoaded = false;
+        } else {
+            System.out.println("Invalid list type specified. Please use 'appt' or 'outcome'.");
+        }
+    }
+
+    /**
+     * Updates data lists based on the specified type.
+     *
+     * @param docID The doctor ID for filtering.
+     * @param type  The type of data to update: "appt", "outcome", or "both".
+     */
+    public void updateData(String docID, String type) {
+        if (type.equalsIgnoreCase("appt")) {
+            resetData("appt");
+            getApptList(docID);
+        } else if (type.equalsIgnoreCase("outcome")) {
+            resetData("avail");
+            getOutcomeRecords(docID);
+        } else if (type.equalsIgnoreCase("both")){
+            resetData("both");
+            getApptList(docID);
+            getOutcomeRecords(docID);
+        } else {
+            System.out.println("Invalid list type specified. Please use 'appt' or 'outcome'.");
+        }
+    }
+
+    /**
+     * Loads appointment outcome records from file and filters by doctor ID.
+     *
+     * @param doctorId The ID of the doctor for filtering records.
+     */
     private void loadAppointmentOutcomeRecords(String doctorId) {
         ApptOutcomeLoader outcomeLoader = new ApptOutcomeLoader(apptList);
         String path = FilePaths.APPTOUTCOME.getPath();
@@ -97,6 +163,11 @@ public class ApptService implements ApptManager {
         }
     }
 
+    /**
+     * Loads appointments data from file and filters by doctor ID.
+     *
+     * @param doctorId The ID of the doctor for filtering appointments.
+     */
     private void loadApptData(String doctorId) {
         ApptAvailLoader apptLoader = new ApptAvailLoader();
         String path = FilePaths.APPT_DATA.getPath();
@@ -109,10 +180,24 @@ public class ApptService implements ApptManager {
         }
     }
 
+    /**
+     * Loads medicine inventory data from file.
+     */
+    public void loadMedData() {
+        InventoryLoader invLoader = new InventoryLoader();
+        String invPath = FilePaths.INV_DATA.getPath();
+        medList = invLoader.loadData(invPath);
+    }
+
     /* END OF METHODS TO LOAD/UPDATE DATA */
 
     /* START OF DOCTOR APPOINTMENTS METHODS */
 
+    /**
+     * Displays the doctor's schedule, showing appointments and their statuses.
+     *
+     * @param docID The doctor ID whose schedule is to be displayed.
+     */
     public void viewDoctorSchedule(String docID) {
         LocalDate todayDate = LocalDate.now();
         int year = todayDate.getYear();
@@ -141,49 +226,52 @@ public class ApptService implements ApptManager {
         if (onlyConfirmedDates.isEmpty() && allRelevantAppt.isEmpty()) {
             System.out.println();
             System.out.println("No confirmed appointments or appointments to display for this month.");
-            return;
-        }
-
-        System.out.printf("%n%s %d%n", currentYrMth.getMonth(), year);
-        System.out.println("Mon Tue Wed Thu Fri Sat Sun");
-
-        LocalDate firstDay = LocalDate.of(todayDate.getYear(), todayDate.getMonth(), 1);
-        int whichDayOfWk = firstDay.getDayOfWeek().getValue() % 7;
-
-        for (int i = 0; i < whichDayOfWk; i++) {
-            System.out.print("   ");
-        }
-
-        for (int day = 1; day <= noOfDays; day++) {
-            String crossApptDate = onlyConfirmedDates.contains(day) ? "X" : " ";
-            System.out.printf("%2d%s ", day, crossApptDate);
-
-            if ((day + whichDayOfWk - 1) % 7 == 0) {
-                System.out.println();
-            }
-        }
-        System.out.println();
-
-        if (allRelevantAppt.isEmpty()) {
-            System.out.println("No appointment details to display for this month.");
         }
         else {
-            System.out.println();
-            for (Appointment oneApt : allRelevantAppt) {
-                LocalDate apptDate = oneApt.getAppointmentDate().toInstant()
-                        .atZone(TimeZone.getDefault().toZoneId()).toLocalDate();
+            System.out.printf("%n%s %d%n", currentYrMth.getMonth(), year);
+            System.out.println("Mon Tue Wed Thu Fri Sat Sun");
 
-                String date = apptDate.format(desiredDateFormat);
-                System.out.printf("Date: %s | Time: %s | Status: %s | Patient ID: %s%n",
-                        date,
-                        oneApt.getAppointmentTime(),
-                        oneApt.getStatus(),
-                        oneApt.getPatientId());
+            LocalDate firstDay = LocalDate.of(todayDate.getYear(), todayDate.getMonth(), 1);
+            int whichDayOfWk = firstDay.getDayOfWeek().getValue() % 7;
+
+            for (int i = 0; i < whichDayOfWk; i++) {
+                System.out.print("   ");
+            }
+
+            for (int day = 1; day <= noOfDays; day++) {
+                String crossApptDate = onlyConfirmedDates.contains(day) ? "X" : " ";
+                System.out.printf("%2d%s ", day, crossApptDate);
+
+                if ((day + whichDayOfWk - 1) % 7 == 0) {
+                    System.out.println();
+                }
+            }
+            System.out.println();
+
+            if (allRelevantAppt.isEmpty()) {
+                System.out.println("No appointment details to display for this month.");
+            }
+            else {
+                System.out.println();
+                for (Appointment oneApt : allRelevantAppt) {
+                    LocalDate apptDate = oneApt.getAppointmentDate().toInstant()
+                            .atZone(TimeZone.getDefault().toZoneId()).toLocalDate();
+
+                    String date = apptDate.format(desiredDateFormat);
+                    System.out.printf("Date: %s | Time: %s | Status: %s | Patient ID: %s%n",
+                            date,
+                            oneApt.getAppointmentTime(),
+                            oneApt.getStatus(),
+                            oneApt.getPatientId());
+                }
             }
         }
         availManager.viewAllAvail(docID);
     }
 
+    /**
+     * Displays a list of upcoming confirmed appointments.
+     */
     public void viewUpcomingAppt() {
         LocalDate todayDate = LocalDate.now();
         DateTimeFormatter desiredDateFormat = DateTimeFormatter.ofPattern("dd MMM yyyy");
@@ -200,14 +288,15 @@ public class ApptService implements ApptManager {
         }
 
         System.out.println();
-        System.out.println("Upcoming Confirmed Appointments\n");
+        System.out.println("--- Upcoming Confirmed Appointments ---\n");
 
         for (Appointment oneApt : onlyConfirmedAppt) {
             LocalDate apptDate = oneApt.getAppointmentDate().toInstant()
                     .atZone(TimeZone.getDefault().toZoneId()).toLocalDate();
 
             String date = apptDate.format(desiredDateFormat);
-            System.out.printf("Date: %s | Time: %s",
+            System.out.printf("ID: %s | Date: %s | Time: %s",
+                    oneApt.getAppointmentId(),
                     date,
                     oneApt.getAppointmentTime());
             System.out.println();
@@ -216,6 +305,11 @@ public class ApptService implements ApptManager {
         }
     }
 
+    /**
+     * Cancels a specific appointment by updating its status to CANCELLED.
+     *
+     * @param oneAppt The appointment to cancel.
+     */
     public void cancelAppt(Appointment oneAppt) {
         String aptPath = FilePaths.APPT_DATA.getPath();
         String tempFilePath = aptPath + ".tmp";
@@ -261,6 +355,11 @@ public class ApptService implements ApptManager {
         }
     }
 
+    /**
+     * Retrieves a list of appointments pending review for the current month.
+     *
+     * @return A list of Appointment objects pending review.
+     */
     public List<Appointment> apptPendingReviews() {
         LocalDate todayDate = LocalDate.now();
         int currentYear = todayDate.getYear();
@@ -269,12 +368,20 @@ public class ApptService implements ApptManager {
         return apptList.stream()
                 .filter(appt -> appt.getStatus() == AppointmentStatus.SCHEDULED &&
                         appt.getAppointmentDate().toInstant()
+                                .atZone(ZoneId.systemDefault()).toLocalDate().isAfter(todayDate) &&
+                        appt.getAppointmentDate().toInstant()
                                 .atZone(ZoneId.systemDefault()).toLocalDate().getYear() == currentYear &&
                         appt.getAppointmentDate().toInstant()
                                 .atZone(ZoneId.systemDefault()).toLocalDate().getMonthValue() == currentMonth)
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Updates the status of a specific appointment.
+     *
+     * @param oneAppt      The appointment to update.
+     * @param changedStatus The new status to set.
+     */
     public void updateAppointmentStatus(Appointment oneAppt, AppointmentStatus changedStatus) {
         String apptFilePath = FilePaths.APPT_DATA.getPath();
         String availFilePath = FilePaths.DOCAVAIL_DATA.getPath();
@@ -303,8 +410,8 @@ public class ApptService implements ApptManager {
 
                 if (changedStatus == AppointmentStatus.CONFIRMED) {
                     availManager.updateAvailabilitySlot(oneAppt, DoctorAvailability.BOOKED, availFilePath);
+                    System.out.println("Appointment status updated successfully.");
                 }
-                System.out.println("Appointment status updated successfully.");
             } else {
                 System.out.println("Appointment not found.");
             }
@@ -318,6 +425,12 @@ public class ApptService implements ApptManager {
 
     /* START OF RECORDING APPT OUTCOME METHODS */
 
+    /**
+     * Finds an appointment by its ID.
+     *
+     * @param apptID The ID of the appointment.
+     * @return An Optional containing the appointment if found, otherwise empty.
+     */
     public Appointment findApptByID(String apptID) {
         for (Appointment oneAppt : apptList) {
             if (oneAppt.getAppointmentId().equals(apptID)) {
@@ -327,6 +440,41 @@ public class ApptService implements ApptManager {
         return null;
     }
 
+    /**
+     * Displays the entire medicine inventory in a formatted table.
+     * If the inventory list is empty, it displays a message indicating that no stock is available.
+     */
+    public void viewMedsStock() {
+        System.out.println("\n--- Medicine Inventory ---");
+
+        if (medList.isEmpty()) {
+            System.out.println("No medicine stock available.");
+            return;
+        }
+
+        String headerFormat = "| %-25s | %-10s |%n";
+        String rowFormat = "| %-25s | %-10d |%n";
+
+        System.out.format("+---------------------------+------------+%n");
+        System.out.format(headerFormat, "Medicine Name", "Stock");
+        System.out.format("+---------------------------+------------+%n");
+
+        for (Medicine med : medList) {
+            System.out.format(rowFormat, med.getName(), med.getQuantity());
+        }
+
+        System.out.format("+---------------------------+------------+%n");
+    }
+
+    /**
+     * Records the outcome of an appointment, including prescribed medications and consultation notes.
+     *
+     * @param appointment        The appointment being recorded.
+     * @param serviceType        The type of service provided.
+     * @param prescriptions      List of prescribed medications.
+     * @param consultationNotes  Notes from the consultation.
+     * @param outcomeSts         The status of the outcome.
+     */
     public void recordAppointmentOutcome(Appointment appointment, String serviceType,
                                          List<AppointmentOutcomeRecord.PrescribedMedication> prescriptions,
                                          String consultationNotes, String outcomeSts) {
@@ -341,6 +489,13 @@ public class ApptService implements ApptManager {
         uploadNewApptRecord(outcomeRecord);
     }
 
+    /**
+     * Uploads a new appointment outcome record to the outcome data file.
+     * The method writes the details of the outcome record, including prescribed medications, to an Excel file.
+     * If the appointment status is "Completed," it updates the outcome record in the Appointment file.
+     *
+     * @param record The AppointmentOutcomeRecord to be uploaded.
+     */
     private void uploadNewApptRecord(AppointmentOutcomeRecord record) {
         String outcomePath = FilePaths.APPTOUTCOME.getPath();
 
@@ -376,6 +531,7 @@ public class ApptService implements ApptManager {
                 if (names.length() > 0) {
                     names.append(", ");
                     statusOfDispersion.append(", ");
+                    quantities.append(", ");
                 }
                 names.append(oneMedicine.getMedicine().getName());
                 statusOfDispersion.append(oneMedicine.getStatus());
@@ -400,11 +556,12 @@ public class ApptService implements ApptManager {
     }
 
     /**
-     * Updates the outcome record for a specific appointment in the Appointment Excel file.
-     * This method is triggered when the appointment's outcome status is set to "Completed".
+     * Updates an appointment outcome record in the Appointment Excel file.
+     * This method is triggered when the appointment's outcome status is set to "Completed."
      *
      * @param apptID  The ID of the appointment to update.
-     * @param outcome  The outcome record details to add to the appointment.
+     * @param outcome The outcome record details to add to the appointment.
+     * @param apptSts The updated appointment status.
      */
     public void updateApptOutcomeRecord(String apptID, String outcome, AppointmentStatus apptSts) {
         String apptDataPath = FilePaths.APPT_DATA.getPath();
@@ -417,7 +574,7 @@ public class ApptService implements ApptManager {
             for (Row eachRow : desiredSheet) {
                 Cell apptIDCell = eachRow.getCell(0);
                 if (apptIDCell != null && apptIDCell.getStringCellValue().equals(apptID)) {
-                    Cell apptStatusCell = eachRow.getCell(3); // Assuming status is in column 3
+                    Cell apptStatusCell = eachRow.getCell(3);
                     if (apptStatusCell == null) {
                         apptStatusCell = eachRow.createCell(3);
                     }
@@ -441,7 +598,6 @@ public class ApptService implements ApptManager {
 
             try (FileOutputStream output = new FileOutputStream(apptDataPath)) {
                 wkBook.write(output);
-                System.out.println("Outcome record updated successfully in the Appointment file.");
             }
 
         } catch (IOException e) {
@@ -449,23 +605,30 @@ public class ApptService implements ApptManager {
         }
     }
 
+    /**
+     * Displays all appointment outcomes for a specific doctor in a formatted output.
+     *
+     * @param doctorID The ID of the doctor whose appointment outcomes are to be displayed.
+     */
     public void viewAllAppointmentOutcomes(String doctorID) {
-        System.out.println("Appointment Outcomes for Doctor ID: " + doctorID);
-        for (AppointmentOutcomeRecord outcomeRecord : outcomeRecordsList) {
-            Appointment appointment = outcomeRecord.getAppt();
+        System.out.println("\n--- Appointment Outcomes for Doctor ID: ---" + doctorID);
+        for (AppointmentOutcomeRecord oneRecord : outcomeRecordsList) {
+            Appointment appt = oneRecord.getAppt();
 
-            System.out.printf("Appointment ID: %s\n", appointment.getAppointmentId());
-            System.out.printf("Date: %s\n", outcomeRecord.getAppointmentDate());
-            System.out.printf("Service Type: %s\n", outcomeRecord.getServiceType());
-            System.out.printf("Consultation Notes: %s\n", outcomeRecord.getConsultationNotes());
-            System.out.printf("Outcome Status: %s\n", outcomeRecord.getApptStatus());
+            SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+
+            System.out.printf("Appointment ID: %s\n", appt.getAppointmentId());
+            System.out.printf("Date: %s\n", formatter.format(oneRecord.getAppointmentDate()));
+            System.out.printf("Service Type: %s\n", oneRecord.getServiceType());
+            System.out.printf("Consultation Notes: %s\n", oneRecord.getConsultationNotes());
+            System.out.printf("Outcome Status: %s\n", oneRecord.getApptStatus());
 
             System.out.println("Prescribed Medications:");
-            for (AppointmentOutcomeRecord.PrescribedMedication prescription : outcomeRecord.getPrescriptions()) {
+            for (AppointmentOutcomeRecord.PrescribedMedication onePrescribed : oneRecord.getPrescriptions()) {
                 System.out.printf(" - Medicine: %s, Quantity: %d, Status: %s\n",
-                        prescription.getMedicine().getName(),
-                        prescription.getQuantityOfMed(),
-                        prescription.getStatus());
+                        onePrescribed.getMedicine().getName(),
+                        onePrescribed.getQuantityOfMed(),
+                        onePrescribed.getStatus());
             }
             System.out.println("------------------------------------------------------");
         }
@@ -474,6 +637,13 @@ public class ApptService implements ApptManager {
     /* END OF RECORDING APPT OUTCOME METHODS */
 
     /* START OF HELPER METHODS */
+    /**
+     * Finds an appointment by a specific date and start time.
+     *
+     * @param desiredDate The date of the appointment.
+     * @param startTime   The start time of the appointment as a string.
+     * @return An Optional containing the appointment if found, otherwise empty.
+     */
     public Optional<Appointment> findAppt(LocalDate desiredDate, String startTime) {
         return apptList.stream()
                 .filter(appt -> appt.getAppointmentDate().toInstant()
@@ -482,6 +652,13 @@ public class ApptService implements ApptManager {
                 .findFirst();
     }
 
+    /**
+     * Checks if two time strings match.
+     *
+     * @param appTime The appointment time as a string.
+     * @param slot    The slot time as a string.
+     * @return True if the times match, false otherwise.
+     */
     private boolean timeMatches(String appTime, String slot) {
         DateTimeFormatter formatTheTime = formatTiming();
         try {
@@ -494,6 +671,11 @@ public class ApptService implements ApptManager {
         }
     }
 
+    /**
+     * Creates and returns a DateTimeFormatter for parsing and formatting times in "h:mm a" format.
+     *
+     * @return A DateTimeFormatter configured for 12-hour format with AM/PM.
+     */
     private DateTimeFormatter formatTiming() {
         return new DateTimeFormatterBuilder()
                 .parseCaseInsensitive()
@@ -501,6 +683,12 @@ public class ApptService implements ApptManager {
                 .toFormatter();
     }
 
+    /**
+     * Converts a Date to LocalDate.
+     *
+     * @param date The Date to convert.
+     * @return The LocalDate representation of the Date.
+     */
     private LocalDate toLocalDateFormat(Date date) {
         return date.toInstant()
                 .atZone(ZoneId.systemDefault())
