@@ -1,7 +1,7 @@
 package models.managers;
 
 import app.loaders.StaffLoader;
-import interfaces.DataLoader;
+import interfaces.*;
 import models.entities.Doctor;
 import models.entities.Pharmacist;
 import models.entities.Staff;
@@ -26,10 +26,12 @@ import static models.enums.Gender.MALE;
 
 
 /**
- * Manages the operations related to hospital staff, including viewing staff lists, filtering by specific criteria,
+ * Manages operations related to hospital staff, including viewing staff lists, filtering by specific criteria,
  * and adding new staff members. The staff information is stored and retrieved from an Excel file.
+ * This class implements the WriteExcel, UpdateExcel, and DeleteExcel interfaces,
+ * which allow for writing, updating, and deleting staff data in Excel files.
  */
-public class StaffManager {
+public class StaffManager implements WriteExcel, UpdateExcel, DeleteExcel {
     private List<Staff> staffList;
 
     /**
@@ -197,7 +199,7 @@ public class StaffManager {
 
         staffList.add(newStaff);
         newStaff.setPassword("P@ssw0rd123");
-        writeStaffToExcel(newStaff, user);
+        writeToExcel(newStaff, user);
         writeStaffToAuth(newStaff);
     }
 
@@ -279,7 +281,7 @@ public class StaffManager {
             }
             break;
         }
-        updateStaffInExcel(staff, currentUser);
+        updateToExcel(staff, currentUser);
     }
 
 
@@ -306,7 +308,7 @@ public class StaffManager {
         }
 
         staffList.remove(staff);
-        removeStaffFromExcel(staffId, user);
+        removeFromExcel(staffId, user);
         removeStaffAuthData(staffId);
     }
     /**
@@ -367,7 +369,7 @@ public class StaffManager {
      * @param staff      The Staff object containing the details of the staff member to be added.
      * @param currentUser The User object representing the currently logged-in user.
      */
-    public void writeStaffToExcel(Staff staff, User currentUser) {
+    public void writeToExcel(Staff staff, User currentUser) {
         String filePath = FilePaths.STAFF_DATA.getPath();
         FileInputStream fis = null;
         Workbook workbook = null;
@@ -480,7 +482,7 @@ public class StaffManager {
      * @param staff      The Staff object containing the updated details of the staff member.
      * @param currentUser The User object representing the currently logged-in user.
      */
-    public void updateStaffInExcel(Staff staff, User currentUser) {
+    public void updateToExcel(Staff staff, User currentUser) {
         String staffPath = FilePaths.STAFF_DATA.getPath();
         try (FileInputStream fis = new FileInputStream(staffPath);
              Workbook workbook = WorkbookFactory.create(fis)) {
@@ -512,7 +514,7 @@ public class StaffManager {
      * @param staffId    The staff ID of the member to be removed.
      * @param currentUser The User object representing the currently logged-in user.
      */
-    public void removeStaffFromExcel(String staffId, User currentUser) {
+    public void removeFromExcel(String staffId, User currentUser) {
         String staffPath = FilePaths.STAFF_DATA.getPath();
         String staffName  = null;
         try (FileInputStream fis = new FileInputStream(staffPath);

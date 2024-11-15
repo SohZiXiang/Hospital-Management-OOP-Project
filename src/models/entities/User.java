@@ -94,7 +94,7 @@ public abstract class User {
     {
         String regex = "^(?=.*[0-9])"
                 + "(?=.*[a-z])(?=.*[A-Z])"
-                + "(?=.*[@#$%^&+=])"
+                + "(?=.*[*()@#$%^&+=!])"
                 + "(?=\\S+$).{8,20}$";
 
         Pattern p = Pattern.compile(regex);
@@ -192,7 +192,7 @@ public abstract class User {
             this.password = PasswordUtil.hashPassword(password, salt);
             return true;
         } else {
-            System.out.println("Password is too weak!");
+            System.out.println("Password must be 8-20 characters, with at least one lowercase, uppercase, digit, special character, and no spaces.");
             return false;
         }
     }
@@ -200,7 +200,7 @@ public abstract class User {
     /**
      * Stores the user's password and salt in an Excel file.
      */
-    public void storePassword() {
+    public void storePassword(User currentUser) {
         String filePath = "data/Auth_Data.xlsx";
         Workbook workbook = null;
         FileInputStream fileInputStream = null;
@@ -215,9 +215,9 @@ public abstract class User {
 
             for (Row row : sheet) {
                 Cell cell = row.getCell(0);
-                if (cell != null && cell.getStringCellValue().equals(this.hospitalID)) {
-                    row.createCell(1).setCellValue(this.salt);
-                    row.createCell(2).setCellValue(this.password);
+                if (cell != null && cell.getStringCellValue().equals(currentUser.hospitalID)) {
+                    row.createCell(1).setCellValue(currentUser.salt);
+                    row.createCell(2).setCellValue(currentUser.password);
                     found = true;
                     break;
                 }
@@ -225,9 +225,9 @@ public abstract class User {
 
             if (!found) {
                 Row newRow = sheet.createRow(sheet.getLastRowNum() + 1);
-                newRow.createCell(0).setCellValue(this.hospitalID);
-                newRow.createCell(1).setCellValue(this.salt);
-                newRow.createCell(2).setCellValue(this.password);
+                newRow.createCell(0).setCellValue(currentUser.hospitalID);
+                newRow.createCell(1).setCellValue(currentUser.salt);
+                newRow.createCell(2).setCellValue(currentUser.password);
             }
             fileOutputStream = new FileOutputStream(filePath);
             workbook.write(fileOutputStream);

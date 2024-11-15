@@ -2,6 +2,9 @@ package models.managers;
 
 import app.loaders.InventoryLoader;
 import interfaces.DataLoader;
+import interfaces.DeleteExcel;
+import interfaces.UpdateExcel;
+import interfaces.WriteExcel;
 import models.entities.Medicine;
 import models.entities.User;
 import models.enums.FilePaths;
@@ -9,7 +12,6 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import utils.ActivityLogUtil;
-import utils.EmailUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,11 +22,13 @@ import java.util.Scanner;
 
 
 /**
- * The InventoryManager class provides functionality to manage medicine inventory, including
- * viewing, adding, updating, and removing medicines. It also handles interactions with an
- * Excel file for data storage and updates, and includes logging and notification functionalities.
+ * The {@code InventoryManager} class provides functionality to manage a medicine inventory,
+ * including viewing, adding, updating, and removing medicines. It also handles interactions with
+ * an Excel file for data storage and updates, and includes logging and notification functionalities.
+ * This class implements {@link WriteExcel}, {@link UpdateExcel}, and {@link DeleteExcel} interfaces
+ * to manage Excel data operations.
  */
-public class InventoryManager {
+public class InventoryManager implements WriteExcel, UpdateExcel, DeleteExcel {
     private List<Medicine> inventory;
 
     /**
@@ -120,7 +124,7 @@ public class InventoryManager {
 
             Medicine newMedicine = new Medicine(name, stock, stockAlert);
             inventory.add(newMedicine);
-            writeMedicineToExcel(newMedicine, user);
+            writeToExcel(newMedicine, user);
             //EmailUtil.checkInvAndNotify("phclerk00@outlook.com");
             break;
         }
@@ -201,7 +205,7 @@ public class InventoryManager {
                 System.out.println("Invalid choice.");
                 return;
         }
-        updateInventoryInExcel(medicine, name, user);
+        updateToExcel(medicine, name, user);
         //EmailUtil.checkInvAndNotify("phclerk00@outlook.com");
     }
 
@@ -214,7 +218,7 @@ public class InventoryManager {
      */
     public void updateStock(Medicine medicine, int stock, User user) {
         medicine.setStock(stock);
-        updateInventoryInExcel(medicine, medicine.getName(), user);
+        updateToExcel(medicine, medicine.getName(), user);
     }
 
     /**
@@ -235,7 +239,7 @@ public class InventoryManager {
             return;
         }
         inventory.remove(medicine);
-        removeMedicineFromExcel(name, user);
+        removeFromExcel(name, user);
     }
 
     /**
@@ -244,7 +248,7 @@ public class InventoryManager {
      * @param name        The name of the medicine to remove.
      * @param currentUser The User object representing the currently logged-in user.
      */
-    public void removeMedicineFromExcel(String name, User currentUser) {
+    public void removeFromExcel(String name, User currentUser) {
         String staffPath = FilePaths.INV_DATA.getPath();
         try (FileInputStream fis = new FileInputStream(staffPath);
              Workbook workbook = WorkbookFactory.create(fis)) {
@@ -289,7 +293,7 @@ public class InventoryManager {
      * @param oldName     The previous name of the medicine.
      * @param currentUser The User object representing the currently logged-in user.
      */
-    public void updateInventoryInExcel(Medicine medicine, String oldName, User currentUser) {
+    public void updateToExcel(Medicine medicine, String oldName, User currentUser) {
         String filePath = FilePaths.INV_DATA.getPath();
         int prevStock = 0;
         int prevStockAlert = 0;
@@ -328,7 +332,8 @@ public class InventoryManager {
      * @param medicine    The Medicine object to be added to the inventory.
      * @param currentUser The User object representing the currently logged-in user.
      */
-    public void writeMedicineToExcel(Medicine medicine, User currentUser) {
+    @Override
+    public void writeToExcel(Medicine medicine, User currentUser) {
         String filePath = FilePaths.INV_DATA.getPath();
         FileInputStream fis = null;
         Workbook workbook = null;

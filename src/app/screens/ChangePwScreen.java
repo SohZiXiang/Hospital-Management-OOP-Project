@@ -23,51 +23,68 @@ public class ChangePwScreen {
         List<Patient> patientList = new ArrayList<>();
         List<Staff> staffList = new ArrayList<>();
 
-        System.out.print("Enter your hospital ID: ");
-        String hospitalId = scanner.nextLine();
+        while (true) {
+            System.out.print("\nEnter your hospital ID: (or -1 to exit) ");
+            String hospitalId = scanner.nextLine();
 
-        AuthLoader authLoader = new AuthLoader("data/Auth_Data.xlsx");
-        Map<String, String[]> authData = authLoader.loadData();
-
-        if (!authData.containsKey(hospitalId)) {
-            System.out.println("User not found. Please check your hospital ID.");
-            return;
-        }
-
-        String[] userData = authData.get(hospitalId);
-        String salt = userData[0];
-        String hashedPassword = userData[1];
-
-        try {
-            staffList = staffLoader.loadData("data/Staff_List.xlsx");
-            patientList = patientLoader.loadData("data/Patient_List.xlsx");
-        }
-        catch (Exception e) {
-            System.err.println("Error loading data: " + e.getMessage());
-        }
-
-        User user = null;
-        for (Staff staff : staffList) {
-            if (staff.getStaffId().equals(hospitalId)) {
-                user = staff;
+            if (hospitalId.equals("-1")){
+                System.out.println("Exiting password change process.");
                 break;
             }
-        }
-        if(user == null) {
-            for (Patient patient : patientList) {
-                if (patient.getPatientID().equals(hospitalId)) {
-                    user = patient;
+
+            AuthLoader authLoader = new AuthLoader("data/Auth_Data.xlsx");
+            Map<String, String[]> authData = authLoader.loadData();
+
+            if (!authData.containsKey(hospitalId)) {
+                System.out.println("User not found. Please check your hospital ID.");
+                continue;
+            }
+
+            String[] userData = authData.get(hospitalId);
+            String salt = userData[0];
+            String hashedPassword = userData[1];
+
+            try {
+                staffList = staffLoader.loadData("data/Staff_List.xlsx");
+                patientList = patientLoader.loadData("data/Patient_List.xlsx");
+            } catch (Exception e) {
+                System.err.println("Error loading data: " + e.getMessage());
+            }
+
+            User user = null;
+            for (Staff staff : staffList) {
+                if (staff.getStaffId().equals(hospitalId)) {
+                    user = staff;
+                    break;
                 }
             }
-        }
-        if(user != null) {
-            System.out.print("Enter your new password: ");
-            String newPassword = scanner.nextLine();
-            if (user.setPassword(newPassword)) {
-                user.storePassword();
-                System.out.println("Password changed successfully.");
-            } else {
-                System.out.println("Failed to change password. Password does not meet requirements.");
+            if (user == null) {
+                for (Patient patient : patientList) {
+                    if (patient.getPatientID().equals(hospitalId)) {
+                        user = patient;
+                    }
+                }
+            }
+            if (user != null) {
+                System.out.print("Enter your current password: ");
+                String currentPassword = scanner.nextLine();
+
+                // Use LoginScreen.AuthenticateUser to verify the current password
+                User isAuthenticated = LoginScreen.authenticateUser(hospitalId, currentPassword);
+
+                if (isAuthenticated != null) {
+                    System.out.print("Enter your new password: ");
+                    String newPassword = scanner.nextLine();
+                    if (user.setPassword(newPassword)) {
+                        user.storePassword(user);
+                        System.out.println("Password changed successfully.");
+                        break;
+                    } else {
+                        System.out.println("Failed to change password. Password does not meet requirements.");
+                    }
+                } else {
+                    System.out.println("Invalid hospital ID or password. Please try again.");
+                }
             }
         }
     }

@@ -50,6 +50,11 @@ public class ApproveReplenishmentScreen implements Screen {
             loadReplenishmentRequests();
             displayRequests(showAllRequests);
             System.out.print("\nSelect a request number to approve/reject (0 to exit, -1 to view all requests): ");
+            if (!scanner.hasNextInt()) {
+                System.out.println("Invalid input. Please enter a valid number.");
+                scanner.next();
+                continue;
+            }
             int choice = scanner.nextInt();
 
             if (choice == 0) break;
