@@ -9,7 +9,17 @@ import utils.SMSUtil;
 
 import java.util.Scanner;
 
+/**
+ * The PatientScreen class implements the Screen interface to provide a main menu for patients.
+ * This screen allows patients to manage medical records, appointments, and view past appointment outcomes.
+ */
 public class PatientScreen implements Screen {
+
+    /**
+     * Displays the patient menu and handles user input for various actions.
+     * @param scanner The scanner object for capturing user input.
+     * @param user    The user (patient) accessing the screen.
+     */
     public void display(Scanner scanner, User user) {
 
         while (true) {
