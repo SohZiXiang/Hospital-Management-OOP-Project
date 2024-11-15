@@ -16,6 +16,11 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * The ViewMedicalRecord class implements the Screen interface to allow patients
+ * to view and update their medical records, including contact information such as
+ * phone number, email and past diagnosis and treatment.
+ */
 public class ViewMedicalRecord implements Screen {
 
     private final static Pattern VALID_EMAIL_REGEX =
@@ -27,7 +32,13 @@ public class ViewMedicalRecord implements Screen {
     List<Patient> patientList = new ArrayList<>();
     String patientPath = FilePaths.PATIENT_DATA.getPath();
 
-
+    /**
+     * Displays the patient's medical record and provides options to update
+     * phone number or email.
+     *
+     * @param scanner The scanner object to capture user input.
+     * @param user    The user (patient) accessing the screen.
+     */
     @Override
     public void display(Scanner scanner, User user) {
         String logMsg = "Patient " + user.getName() + " (ID: " + user.getHospitalID() + ") viewed medical record.";

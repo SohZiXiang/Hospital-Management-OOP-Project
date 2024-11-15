@@ -9,16 +9,18 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
+/**
+ * The ViewPatientAppointmentScreen class implements the Screen interface to manage
+ * patient appointments. It provides options to view, schedule, reschedule, and cancel appointments.
+ */
 public class ViewPatientAppointmentScreen implements Screen {
 
-    public static String addOneHour(String time) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm a");
-        LocalTime localTime = LocalTime.parse(time, formatter);
-        LocalTime newTime = localTime.plus(1, ChronoUnit.HOURS);
-
-        return newTime.format(formatter);
-    }
-
+    /**
+     * Displays the appointment management menu for the patient and handles user actions.
+     *
+     * @param scanner The scanner object to capture user input.
+     * @param user    The user (patient) accessing the screen.
+     */
     @Override
     public void display(Scanner scanner, User user) {
 
