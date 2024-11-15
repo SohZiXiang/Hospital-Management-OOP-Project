@@ -14,8 +14,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * This screen allows a patient to view the outcome of their appointments.
+ * It loads the appointment outcome data for the patient and provides an option to return to the main menu.
+ */
 public class ViewAppointmentOutcomeScreen implements Screen {
 
+    /**
+     * Displays the appointment outcome screen for the patient.
+     * It loads the appointment outcome data for the patient and presents an option to return to the main menu.
+     *
+     * @param scanner the Scanner instance used to capture user input.
+     * @param user    the currently logged-in user, expected to be an instance of Patient.
+     */
     @Override
     public void display(Scanner scanner, User user) {
         Patient patient = (Patient) user;

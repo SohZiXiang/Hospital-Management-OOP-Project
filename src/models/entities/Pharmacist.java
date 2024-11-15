@@ -19,25 +19,52 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-
+/**
+ * Represents a Pharmacist who can manage prescriptions, update inventory, and handle replenishment requests.
+ * Extends the Staff class and implements specific pharmacist-related functionalities.
+ */
 public class Pharmacist extends Staff {
     private List<Appointment> apptList;
     private boolean apptsLoaded = false;
 
+    /**
+     * Constructs a Pharmacist with specified hospital ID, staff ID, name, gender, and age.
+     *
+     * @param hospitalID The hospital ID of the pharmacist.
+     * @param staffId    The staff ID of the pharmacist.
+     * @param name       The name of the pharmacist.
+     * @param gender     The gender of the pharmacist.
+     * @param age        The age of the pharmacist.
+     */
     public Pharmacist(String hospitalID, String staffId, String name, Gender gender, int age) {
         super(hospitalID, staffId, name, gender, age);
     }
 
+    /**
+     * Constructs a Pharmacist with specified staff ID, name, gender, and age.
+     *
+     * @param staffId The staff ID of the pharmacist.
+     * @param name    The name of the pharmacist.
+     * @param gender  The gender of the pharmacist.
+     * @param age     The age of the pharmacist.
+     */
     public Pharmacist(String staffId, String name, Gender gender, int age) {
         super(staffId,staffId, name, gender, age);
     }
 
+    /**
+     * Gets the role of the pharmacist.
+     *
+     * @return The Role.PHARMACIST enum.
+     */
     @Override
     public Role getRole() {
         return Role.PHARMACIST;
     }
 
-
+    /**
+     * Loads the appointment list if it hasn't been loaded already.
+     */
     private void loadApptList() {
         if (!apptsLoaded) {
             ApptAvailLoader apptLoader = new ApptAvailLoader();
@@ -47,6 +74,9 @@ public class Pharmacist extends Staff {
         }
     }
 
+    /**
+     * Views all prescription records by loading appointment outcomes and displaying them.
+     */
     public void viewAllPrescriptionRecords() {
         loadApptList(); // Ensure appointments are loaded
 
@@ -85,6 +115,12 @@ public class Pharmacist extends Staff {
         }
     }
 
+    /**
+     * Checks if the specified appointment ID exists in the Appointment Outcome file.
+     *
+     * @param appointmentId The appointment ID to check.
+     * @return True if the appointment ID is valid, false otherwise.
+     */
     public boolean AppointmentIDValid(String appointmentId) {
         String filePath = FilePaths.APPTOUTCOME.getPath(); // Path to the Appointment Outcome file
         boolean appointmentFound = false;
@@ -112,6 +148,12 @@ public class Pharmacist extends Staff {
         return appointmentFound;
     }
 
+    /**
+     * Updates the prescription status for a specified medicine in a given appointment.
+     *
+     * @param appointmentID The appointment ID for which the prescription status is updated.
+     * @param medicineName  The name of the medicine to update.
+     */
     public void updatePrescriptionStatus(String appointmentID, String medicineName) {
         String filePath = FilePaths.APPTOUTCOME.getPath();
         boolean appointmentFound = false;
@@ -210,7 +252,12 @@ public class Pharmacist extends Staff {
         }
     }
 
-    // Helper function to update inventory
+    /**
+     * Updates the inventory by decrementing the stock of a specified medicine.
+     *
+     * @param medicineName      The name of the medicine.
+     * @param dispensedQuantity The quantity to be deducted from the stock.
+     */
     private void updateInventory(String medicineName, int dispensedQuantity) {
         String inventoryPath = FilePaths.INV_DATA.getPath();
         boolean medicineFound = false;
@@ -256,6 +303,15 @@ public class Pharmacist extends Staff {
         }
     }
 
+    /**
+     * Checks if there are any pending medicines for the specified appointment ID.
+     * This method searches through the Appointment Outcome file to see if any medications
+     * associated with the given appointment have a status other than "DISPENSED" (ie. PENDING).
+     *
+     * @param appointmentId the ID of the appointment to check for pending medicines.
+     * @return {@code true} if there are any pending medicines for the appointment;
+     *         {@code false} otherwise.
+     */
     public boolean hasPendingMedicines(String appointmentId) {
         String filePath = FilePaths.APPTOUTCOME.getPath();
         boolean hasPending = false;
@@ -304,6 +360,11 @@ public class Pharmacist extends Staff {
         return hasPending;
     }
 
+    /**
+     * Displays the stock of all medicines in a formatted table.
+     *
+     * @param medicineStock the list of medicines with their stock levels.
+     */
     public void viewAllMedicineStock(List<Medicine> medicineStock) {
         System.out.println("Medicine Inventory:");
         System.out.printf("%-25s %-10s\n", "Medicine Name", "Stock");
@@ -313,23 +374,51 @@ public class Pharmacist extends Staff {
         }
     }
 
-    public void viewSpecificMedicineStock(List<Medicine> medicineStock, String inputMedicine) {
-        boolean found = false;
-        for (Medicine med : medicineStock) {
-            if (med.getName().equalsIgnoreCase(inputMedicine)) {
-                System.out.printf("Medicine: %-25s\n", med.getName());
-                System.out.printf("Stock: %-25d\n", med.getQuantity());
-                System.out.printf("Low Stock Alert Level: %-25d\n", med.getLowStockAlert());
-                found = true;
+    /**
+     * Continuously prompts the user to enter the name of a specific medicine to view its stock details.
+     * This includes displaying the medicine name, current stock level, and low stock alert level.
+     * The method continues to prompt for input until the user enters '0' to exit.
+     *
+     * @param medicineStock the list of medicines with their stock levels.
+     * @param scanner       the Scanner instance used to capture user input.
+     */
+    public void viewSpecificMedicineStock(List<Medicine> medicineStock, Scanner scanner) {
+        while (true) {
+            System.out.println("\nEnter medicine name to view current stock (or enter '0' to exit): ");
+            String inputMedicine = scanner.nextLine().trim();
+
+            if (inputMedicine.equals("0")) {
+                System.out.println("Exiting view specific medicine stock.");
                 break;
             }
-        }
 
-        if (!found) {
-            System.out.println("Medicine " + inputMedicine + " not found in inventory.");
+            boolean found = false;
+            for (Medicine med : medicineStock) {
+                if (med.getName().equalsIgnoreCase(inputMedicine)) {
+                    System.out.printf("Medicine: %-25s\n", med.getName());
+                    System.out.printf("Stock: %-25d\n", med.getQuantity());
+                    System.out.printf("Low Stock Alert Level: %-25d\n", med.getLowStockAlert());
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                System.out.println("Medicine " + inputMedicine + " not found in inventory.");
+            }
         }
     }
 
+
+    /**
+     * Submits a replenishment request for a specific medicine if it meets the required conditions.
+     * If the current stock exceeds the low stock alert level, the user is asked for confirmation.
+     * A replenishment request is then created and submitted to the request manager.
+     *
+     * @param medicineName    the name of the medicine to request replenishment for.
+     * @param requestedAmount the amount to be replenished.
+     * @param scanner         a Scanner instance for reading user input.
+     */
     public void submitReplenishmentRequest(String medicineName, int requestedAmount, Scanner scanner) {
         if (requestedAmount <= 0) {
             System.out.println("Value must be more than 0.");
@@ -352,24 +441,8 @@ public class Pharmacist extends Staff {
             return;
         }
 
-//        // Check for existing req (same name)
-        ReplenishmentRequestManager requestManager = new ReplenishmentRequestManager();
-//        List<ReplenishmentRequest> existingRequests = requestManager.getAllRequests();
-//
-//        for (ReplenishmentRequest request : existingRequests) {
-//            if (request.getMedicineName().equalsIgnoreCase(medicineName)) {
-//                System.out.println("Replenishment request for " + medicineName + " has been made previously.");
-//                System.out.println("Proceed to submit this request? (yes/no): ");
-//                String reconfirmation = scanner.nextLine().trim().toLowerCase();
-//
-//                if (!reconfirmation.equals("yes")) {
-//                    System.out.println("Request cancelled.");
-//                    return;
-//                }
-//                break;
-//            }
-//        }
 
+        ReplenishmentRequestManager requestManager = new ReplenishmentRequestManager();
         // Check if current stock > low stock
         if (selectedMedicine.getQuantity() > selectedMedicine.getLowStockAlert()) {
             System.out.println("Current stock for " + medicineName + " is " + selectedMedicine.getQuantity() + ", which is more than the low stock alert (" + selectedMedicine.getLowStockAlert() + ").");

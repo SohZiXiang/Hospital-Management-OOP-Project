@@ -8,8 +8,20 @@ import utils.ActivityLogUtil;
 
 import java.util.*;
 
+/**
+ * Main screen for the pharmacist, providing a menu to view appointment records, update prescriptions,
+ * view and manage medicine stock, and submit replenishment requests.
+ * Handles interaction and actions available to a logged-in pharmacist.
+ */
 public class PharmacistMainScreen {
 
+    /**
+     * Displays the main menu for the pharmacist, allowing them to select from various options.
+     * Provides choices to view records, update prescription status, view medicine stock, and submit replenishment requests.
+     *
+     * @param scanner the Scanner instance used to capture user input.
+     * @param user    the currently logged-in user, which must be an instance of Pharmacist.
+     */
     public void display(Scanner scanner, User user) {
         Pharmacist pharmacist = (Pharmacist) user;
         while (true) {
@@ -52,9 +64,7 @@ public class PharmacistMainScreen {
                         pharmacist.viewAllMedicineStock(medicineStock);
                         break;
                     case 4:
-                        System.out.println("\nEnter medicine name to view current stock: ");
-                        String viewMedName = scanner.nextLine().trim();
-                        pharmacist.viewSpecificMedicineStock(medicineStock, viewMedName);
+                        pharmacist.viewSpecificMedicineStock(medicineStock, scanner);
                         break;
                     case 5:
                         PharmacistRequestScreen requestScreen = new PharmacistRequestScreen(pharmacist);
@@ -62,6 +72,7 @@ public class PharmacistMainScreen {
                         break;
                     case 6:
                         ActivityLogUtil.logout(scanner, user);
+                        return; // Ensures method exits after logout
                     default:
                         System.out.println("Invalid choice, please try again.");
                 }
