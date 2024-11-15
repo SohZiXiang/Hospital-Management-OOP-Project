@@ -12,7 +12,21 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
 import java.util.*;
 
+/**
+ * The ManageAppointmentsScreen class allows a doctor to manage their schedule by setting availability,
+ * reviewing appointments, and viewing personal schedules and upcoming appointments.
+ * It provides an interface for doctors to add, edit, and review appointment slots,
+ * as well as update appointment statuses.
+ */
 public class ManageAppointmentsScreen implements Screen {
+    /**
+     * Displays the main appointment management menu for the doctor.
+     * Options include viewing the personal schedule, viewing upcoming appointments,
+     * setting availability, and reviewing appointment requests.
+     *
+     * @param scanner The scanner for reading user input.
+     * @param user    The current logged-in user, cast to Doctor.
+     */
     @Override
     public void display(Scanner scanner, User user) {
         Doctor doc = (Doctor) user;
@@ -40,16 +54,17 @@ public class ManageAppointmentsScreen implements Screen {
                     case 3 -> {
                         System.out.println("\n--- Manage your Availability ---");
                         doc.viewAllAvail();
-                        System.out.println("\nWould you like to edit or add a new record?");
+                        System.out.println("\nWould you like to edit or add a new record? (Please enter 'add' or " +
+                                "'edit', or 'nil' to exit)");
                         input = scanner.nextLine();
                         if (input.equalsIgnoreCase("add")) addAvailability(scanner, doc);
-                        else if (input.equalsIgnoreCase("edit")) editAvailability(scanner, doc); // NOT
-                        else System.out.println("Please enter 'add' or 'edit' only");
+                        else if (input.equalsIgnoreCase("edit")) editAvailability(scanner, doc);
                     }
                     case 4 -> reviewAppt(scanner, doc);
                     case 5 -> {
                         System.out.println("Returning to Main Menu...");
-                        doc.resetData("both");
+                        doc.resetApptData("all");
+                        doc.resetAvailData();
                         return;
                     }
                     default -> System.out.println("Invalid choice, please try again.");
@@ -60,6 +75,12 @@ public class ManageAppointmentsScreen implements Screen {
         }
     }
 
+    /**
+     * Adds new availability slots for the doctor.
+     *
+     * @param scanner The scanner for reading user input.
+     * @param doc     The doctor whose availability is being set.
+     */
     public void addAvailability(Scanner scanner, Doctor doc) {
         System.out.print("Enter year for availability (e.g., 2024): ");
         int chosenYr = Integer.parseInt(scanner.nextLine());
@@ -78,10 +99,12 @@ public class ManageAppointmentsScreen implements Screen {
 
             LocalDate combinedDate = LocalDate.of(chosenYr, chosenMth, chosenDay);
 
-            System.out.print("Enter start time (hh:mm, 12-hour format): ");
+            System.out.print("Enter start time (hh:mm am/pm, 12-hour format, for example, '11 am/AM' or " +
+                            "'03:00 pm/PM'): ");
             String start = scanner.nextLine();
 
-            System.out.print("Enter end time (hh:mm, 12-hour format): ");
+            System.out.print("Enter end time (hh:mm am/pm, 12-hour format, for example, '11 am/AM' or " +
+                    "'03:00 pm/PM'): ");
             String end = scanner.nextLine();
 
             System.out.print("Is the doctor available or busy at this time? (A for Available, B for Busy): ");
@@ -95,6 +118,12 @@ public class ManageAppointmentsScreen implements Screen {
         }
     }
 
+    /**
+     * Allows the doctor to edit an existing availability slot.
+     *
+     * @param scanner The scanner for reading user input.
+     * @param doc     The doctor whose availability slot is being edited.
+     */
     public void editAvailability(Scanner scanner, Doctor doc) {
         LocalDate selectedDate = changeFormat(scanner);
         DateTimeFormatter displayFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -111,8 +140,8 @@ public class ManageAppointmentsScreen implements Screen {
             System.out.printf("%d. %s - %s : %s%n", i + 1, oneSlot.getStartTime(), oneSlot.getEndTime(), oneSlot.getStatus());
         }
 
-        // Prompt user for start time of the slot to edit
-        System.out.print("Enter the start time of the slot to edit (hh:mm AM/PM) or press Enter to cancel: ");
+        System.out.print("Enter the start time of the slot to edit (hh:mm AM/PM or h:mm am/pm)" +
+                " (Example: 02:00 PM, 11 am, 11:00 AM) or press Enter to cancel: ");
         String desiredStartTime = scanner.nextLine();
         if (desiredStartTime.isEmpty()) {
             System.out.println("Edit cancelled.");
@@ -147,44 +176,12 @@ public class ManageAppointmentsScreen implements Screen {
         ActivityLogUtil.logActivity(logMsg, doc);
     }
 
-    private LocalDate changeFormat(Scanner scanner) {
-        DateTimeFormatter formatDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        LocalDate chosenDate = null;
-
-        while (chosenDate == null) {
-            System.out.print("Enter date (dd/MM/yyyy): ");
-            String date = scanner.nextLine();
-            try {
-                chosenDate = LocalDate.parse(date, formatDate);
-            } catch (DateTimeParseException e) {
-                System.out.println("Invalid date format. Please enter the date as dd/MM/yyyy.");
-            }
-        }
-
-        return chosenDate;
-    }
-
-
-    private DateTimeFormatter formatTiming() {
-        return new DateTimeFormatterBuilder()
-                .parseCaseInsensitive()
-                .appendPattern("h[:mm][ ]a")
-                .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
-                .toFormatter();
-    }
-
-    private boolean timeMatches(String appTime, String slot) {
-        DateTimeFormatter formatTheTime = formatTiming();
-        try {
-            LocalTime formattedApptTime = LocalTime.parse(appTime, formatTheTime);
-            LocalTime formattedSlotTime = LocalTime.parse(slot, formatTheTime);
-            return formattedApptTime.equals(formattedSlotTime);
-        } catch (DateTimeParseException e) {
-            System.err.println("Error parsing time for comparison: " + appTime + " or " + slot);
-            return false;
-        }
-    }
-
+    /**
+     * Reviews pending appointment requests, allowing the doctor to accept or decline them.
+     *
+     * @param scanner The scanner for reading user input.
+     * @param doctor  The doctor reviewing the appointments.
+     */
     public void reviewAppt(Scanner scanner, Doctor doctor) {
         List<Appointment> scheduledAppt = doctor.apptPendingReviews();
 
@@ -222,6 +219,62 @@ public class ManageAppointmentsScreen implements Screen {
             }
         } else {
             System.out.println("Invalid selection. Exiting appointment review.");
+        }
+    }
+
+    /**
+     * Parses and validates the input date from the user.
+     *
+     * @param scanner The scanner for reading user input.
+     * @return A LocalDate
+     * representing the chosen date.
+     */
+    private LocalDate changeFormat(Scanner scanner) {
+        DateTimeFormatter formatDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDate chosenDate = null;
+
+        while (chosenDate == null) {
+            System.out.print("Enter date (dd/MM/yyyy): ");
+            String date = scanner.nextLine();
+            try {
+                chosenDate = LocalDate.parse(date, formatDate);
+            } catch (DateTimeParseException e) {
+                System.out.println("Invalid date format. Please enter the date as dd/MM/yyyy.");
+            }
+        }
+
+        return chosenDate;
+    }
+
+    /**
+     * Defines the time format for parsing availability times.
+     *
+     * @return A DateTimeFormatter instance for parsing times in "h:mm a" format.
+     */
+    private DateTimeFormatter formatTiming() {
+        return new DateTimeFormatterBuilder()
+                .parseCaseInsensitive()
+                .appendPattern("h[:mm][ ]a")
+                .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
+                .toFormatter();
+    }
+
+    /**
+     * Compares two time strings to check if they match.
+     *
+     * @param appTime The time string of the appointment.
+     * @param slot    The time string of the availability slot.
+     * @return true if the times match, false otherwise.
+     */
+    private boolean timeMatches(String appTime, String slot) {
+        DateTimeFormatter formatTheTime = formatTiming();
+        try {
+            LocalTime formattedApptTime = LocalTime.parse(appTime, formatTheTime);
+            LocalTime formattedSlotTime = LocalTime.parse(slot, formatTheTime);
+            return formattedApptTime.equals(formattedSlotTime);
+        } catch (DateTimeParseException e) {
+            System.err.println("Error parsing time for comparison: " + appTime + " or " + slot);
+            return false;
         }
     }
 

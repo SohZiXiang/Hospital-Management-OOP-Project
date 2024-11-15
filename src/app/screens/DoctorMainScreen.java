@@ -8,8 +8,20 @@ import utils.ActivityLogUtil;
 
 import java.util.*;
 
+/**
+ * The DoctorMainScreen class provides the main screen interface for doctors, allowing them to navigate
+ * through options such as viewing and updating patient medical records, managing appointments, recording
+ * appointment outcomes, and logging out.
+ */
 public class DoctorMainScreen implements Screen{
 
+    /**
+     * Displays the Doctor Main Screen, showing a menu with options for the doctor to manage their activities.
+     * Doctors can choose to view/update patient records, manage appointments, record appointment outcomes, or logout.
+     *
+     * @param scanner The Scanner object for user input.
+     * @param user    The User object, which is cast to a Doctor in this context.
+     */
     @Override
     public void display(Scanner scanner, User user) {
         String roleName =

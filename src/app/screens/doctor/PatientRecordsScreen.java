@@ -6,9 +6,18 @@ import utils.ActivityLogUtil;
 
 import java.util.*;
 
+/**
+ * The PatientRecordsScreen class provides a screen interface for doctors to manage patient records.
+ * It allows viewing all patient records, viewing specific patient records, and updating patient records with new consultation notes.
+ */
 public class PatientRecordsScreen implements Screen {
-    private List<Patient> patientList;
-
+    /**
+     * Displays the Patient Records Screen, allowing the doctor to interact with patient records.
+     * Provides options to view all records, view a specific record, update a record, or return to the previous screen.
+     *
+     * @param scanner The Scanner object for user input.
+     * @param user    The User object, which is cast to a Doctor in this context.
+     */
     public void display(Scanner scanner, User user) {
         Doctor doc = (Doctor) user;
         doc.getPatientList();
@@ -44,6 +53,7 @@ public class PatientRecordsScreen implements Screen {
                     case 3 -> addConsulationNotes(scanner, doc);
                     case 4 -> {
                         System.out.println("Returning to the Doctor Main Screen...");
+                        doc.resetPatientData();
                         return;
                     }
                     default -> System.out.println("Invalid option. Please try again.");
@@ -54,6 +64,13 @@ public class PatientRecordsScreen implements Screen {
         }
     }
 
+    /**
+     * Adds consultation notes to a specific patient's record.
+     * Prompts the doctor to enter the patient ID, diagnosis, and treatment plan, then updates the patient record.
+     *
+     * @param scanner The Scanner object for user input.
+     * @param doc     The Doctor object representing the current doctor.
+     */
     public void addConsulationNotes(Scanner scanner, Doctor doc) {
         System.out.print("Enter Patient ID to update record: ");
         String patientID = scanner.nextLine();
