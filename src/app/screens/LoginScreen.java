@@ -92,7 +92,7 @@ public class LoginScreen implements BaseScreen {
             String newPassword = scanner.nextLine();
             passwordValid = user.setPassword(newPassword);
         }
-        user.storePassword();
+        user.storePassword(user);
         System.out.println("Password has been successfully updated!");
     }
 
@@ -104,7 +104,7 @@ public class LoginScreen implements BaseScreen {
      * @param password   The password entered by the user.
      * @return User object if authentication is successful, null otherwise.
      */
-    private User authenticateUser(String hospitalId, String password) {
+    public static User authenticateUser(String hospitalId, String password) {
         DataLoader staffLoader = new StaffLoader();
         DataLoader patientLoader = new PatientLoader();
         List<Patient> patientList = new ArrayList<>();
