@@ -24,8 +24,8 @@ public class EmailUtil {
      * @param body      The body content of the email.
      */
     public static void sendEmail(String recipient, String subject, String body) {
-        final String username = "ce5ac92f0e5561"; //use mailtrap username,pw
-        final String password = "be9161717bdf85";
+        final String username = "INSERT_USERNAME"; //use mailtrap username,pw
+        final String password = "INSERT_PASSWORD";
 
         Properties properties = new Properties();
         properties.put("mail.smtp.host", "smtp.mailtrap.io");
