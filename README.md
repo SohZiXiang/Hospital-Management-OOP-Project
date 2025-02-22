@@ -41,3 +41,13 @@ This is a **Hospital Management System (HMS)** developed in **Java** using **Obj
 - **Mailtrap** for email testing.
 - **MySQL** or **SQLite** for database management (depending on the chosen setup).
 - **OOP principles** such as inheritance, polymorphism, and encapsulation to organize the code and manage system components
+
+## My Contributions
+
+- **System Design**: Contributed to the overall design and architecture of the system using Object-Oriented Programming (OOP) principles.
+- **Email System**: Configured and integrated **Mailtrap** to send email notifications for appointment confirmations and reminders when Inventory system detects low stock to staff email.
+- **Activity Log**: Developed and implemented the activity log feature, allowing administrators to track critical system actions, such as patient record creation and inventory updates.
+- **Inventory Management**: Contributed to the design and implementation of the hospital's inventory management system, including automatic stock level updates and low stock alerts.
+- **Administrator Functions**: Developed and tested functionalities related to the admin's ability to manage users and hospital settings.
+
+
