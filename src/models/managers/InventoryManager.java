@@ -12,6 +12,7 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import utils.ActivityLogUtil;
+import utils.EmailUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -125,7 +126,7 @@ public class InventoryManager implements WriteExcel, UpdateExcel, DeleteExcel {
             Medicine newMedicine = new Medicine(name, stock, stockAlert);
             inventory.add(newMedicine);
             writeToExcel(newMedicine, user);
-            //EmailUtil.checkInvAndNotify("phclerk00@outlook.com");
+            EmailUtil.checkInvAndNotify("phclerk00@outlook.com");
             break;
         }
     }
@@ -206,7 +207,7 @@ public class InventoryManager implements WriteExcel, UpdateExcel, DeleteExcel {
                 return;
         }
         updateToExcel(medicine, name, user);
-        //EmailUtil.checkInvAndNotify("phclerk00@outlook.com");
+        EmailUtil.checkInvAndNotify("phclerk00@outlook.com");
     }
 
     /**
